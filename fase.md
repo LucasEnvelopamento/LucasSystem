@@ -1,0 +1,164 @@
+# Guia de Desenvolvimento - OsSystem (White Label PWA)
+
+Este documento é a bússola do projeto. Ele define as fases, objetivos e o progresso em tempo real. **Consultar este arquivo antes de qualquer nova implementação.**
+
+## 🎯 Objetivo Geral
+Criar uma aplicação White Label para estética automotiva (PPF, Insulfilm, Envelopamento) com:
+- **PWA Mobile:** Para o Operador realizar checklists e gerir OS.
+- **Web Dashboard:** Para o Gestor controlar a loja, estoque e faturamento.
+- **TV Real-time:** Para exibição do status de produção na loja.
+- **Infra:** Supabase (Auth/DB/Realtime) + Vercel (Hospedagem).
+
+---
+
+## 🛠️ Stack Tecnológica
+- **Frontend:** React + Vite
+- **Estilização:** Tailwind CSS (Baseado no `ui-design-system` e `dashboard-layout`)
+- **Backend:** Supabase (PostgreSQL + Realtime)
+- **PWA:** Vite PWA Plugin
+
+---
+
+## 🚀 Fases e Funcionalidades Detalhadas
+
+### ✅ Fase 1: Setup e Fundação (Concluída)
+
+### ✅ Fase 2: Design System e App Shell (Concluída)
+- [x] Criação do `Sidebar` e `Header` profissionais (Skill: `dashboard-layout`).
+- [x] Implementação de **Variáveis de Ambiente (.env)** para personalização.
+- [x] **BrandContext:** Sistema de cores e logos dinâmicos.
+- [x] Layouts base para Desktop (Gestor) e Mobile (Operador).
+
+### ✅ Fase 3: Módulo Gestor - Ordens de Serviço e Checklist (Concluída)
+- [x] **Cadastros:** Clientes, Veículos, Serviços e Materiais/Estoque.
+- [x] **Agenda Inteligente:** Calendário interativo para gestão de horários.
+- [x] **Vendas/Orçamentos:** Fluxo de orçamento que vira OS após aprovação.
+- [x] **Checklist Digital de Avarias (O Diferencial):** Mapa visual do veículo (SVG interativo) onde o gestor marca pontos de dano antes de iniciar.
+- [x] **Certificado de Garantia:** Geração automática de PDF baseado no tempo de garantia do serviço. [x]
+- [x] **Integração WhatsApp:** Botões de um clique para enviar confirmação de agenda e aviso de conclusão de serviço. [x]
+
+### ✅ Fase 4: Módulo Operador (PWA Mobile)
+- [x] **Dashboard Real:** KPIs de Fila Geral, Atribuídos e Finalizados (Histórico).
+- [x] **Fila Organizada:** Divisão entre "Meus Serviços" e "Disponíveis para Coleta".
+- [x] **Perfil:** Edição de Nome, E-mail e Troca de Senha.
+- [x] **Execução Técnica:** Botão de Observação funcional e Sincronização Real-time com a TV.
+- [x] **Finalização:** Registro de tempo de execução e mudança de status real para histórico.
+
+### ✅ Fase 5: Visualização TV (Experiência do Cliente) (Concluída)
+- [x] **Painel Real-time:** Status dos carros em produção com animações de progresso.
+- [x] **Identificação:** Nome do cliente, Veículo e Serviço.
+- [x] **Relógio e Data:** Estética premium sincronizada.
+
+### ✅ Fase 6: Configurações e Persistência de Marca (Concluída)
+- [x] **Tabela de Configurações:** Criar tabela no Supabase para armazenar ID do YouTube, Cores e Logo.
+- [x] **Painel do Gestor:** Tela para editar o link da Playlist/Vídeo do YouTube.
+- [x] **Integração Dinâmica:** Monitor TV passa a ler o vídeo do banco de dados, permitindo trocas sem novo deploy.
+- [x] **White Label Real:** Gestão completa de identidade visual via interface.
+
+### ✅ Fase 7: Autenticação e RBAC (Supabase Auth) - CONCLUÍDO
+- [x] Implementação do Supabase Auth (E-mail/Senha).
+- [x] Criação da tabela `perfis` e Trigger de auto-criação.
+- [x] Desenvolvimento do `AuthContext` e Hook `useAuth`.
+- [x] Criação da Tela de Login Premium.
+- [x] Proteção de Rotas por Cargo (ADM, Gestor, Operador).
+- [x] Garantia de acesso público ao Monitor TV.
+
+### ✅ Fase 8: Gestão de Colaboradores e Realismo de Dados (Concluída)
+- [x] **Painel de Usuários:** Refatoração completa da tela de `Colaboradores` integrada ao Supabase.
+- [x] Fase 8: Dashboard em Tempo Real e Desmockagem
+    - [x] Substituir dados mockados no Dashboard por métricas reais (Supabase)
+    - [x] Fase 10: Orçamentos e OS Inteligentes 🚗🏍️💡
+    - [x] Padronizar tipos de veículos no banco (CARRO/MOTO)
+    - [x] Implementar filtragem dinâmica no modal de orçamento
+    - [x] Implementar campos de Desconto e ajuste de preços finais
+    - [x] Integrar Agendamento (Data e Técnico) ao fluxo de Aprovação
+    - [x] Especializar Checklist Digital para Carro ou Moto
+    - [x] Estabilizar Dashboard e Listas contra dados inconsistentes (Null Guards)
+áficos
+- [x] Fase 9: Especialização de Serviços por Veículo 🚗🏍️
+    - [x] Adicionar distinção entre Carro, Moto ou Ambos no catálogo
+    - [x] Implementar badges visuais de aplicabilidade nos cards
+    - [x] Refinamento visual corporativo (Bordas, Sombras e Tipografia) conforme design system
+    - [x] Validar persistência no Supabase após migração SQL
+- [x] **Regras de Proteção:** Implementação da regra de ouro (ADM não desativa a si mesmo).
+- [x] **Gestão de Marca:** White Label dinâmico e centralizado no `BrandContext` com persistência em banco.
+- [x] **Sincronização Real-time:** Ativação de WebSockets em todas as tabelas principais para espelhamento instantâneo.
+- [x] **Estabilização de Auth & Redirecionamento (F5 Fix):** Resolução definitiva de loops e atrasos no login/logout com redirecionamento RBAC instantâneo.
+- [x] **Dashboard Real-time:** Desmockagem da Performance de Serviços e KPIs baseados em dados reais de catálogo e OS.
+
+### ✅ Fase 11: Refinamentos de UX e Sincronização Final - CONCLUÍDO
+- [x] Correção do link WhatsApp para usar o telefone real do cliente.
+- [x] Implementação de Desconto em Porcentagem (%) com cálculo automático.
+- [x] Retenção de orçamentos aprovados na tela de Vendas para acompanhamento.
+- [x] Agenda de Conflitos: Visualização de ocupação do dia no modal de agendamento.
+- [x] Limpeza de nomes de técnicos (remover e-mails e cargos do select).
+- [x] Estabilização do salvamento de checklist e assinatura digital.
+
+---
+
+## 💎 Diferenciais Estratégicos (Onde vamos ganhar o mercado)
+
+Para entregar um produto superior aos concorrentes, implementaremos:
+
+1. **Checklist Visual 2D/3D:** Em vez de apenas texto, um desenho técnico do carro onde se clica para apontar riscos ou amassados. Isso gera confiança extrema no cliente.
+2. **Histórico de Manutenção Pós-Venda:** O sistema avisará o gestor (e opcionalmente o cliente) após 6 meses/1 ano para uma "revisão de garantia" (ex: conferir se o PPF está levantando). Isso gera recorrência.
+3. **Link de Acompanhamento para o Cliente:** Enviar um link único para o cliente ver o progresso do carro dele pelo celular, sem precisar ligar para a loja.
+4. **Baixa Automática de Estoque:** Gastou 5 metros de PPF? O sistema já retira do estoque e avisa se estiver acabando.
+
+---
+
+## 🏢 Regras White Label (Versão Single-Tenant)
+1. **Instância Única:** Cada cliente terá seu próprio deploy e seu próprio banco de dados Supabase.
+2. **Cores/Logo:** Configuradas via `.env` ou Painel de Configurações do Gestor.
+
+### ✅ Fase 12: Estabilização e Auditoria Técnica
+- [x] **F5 Fix:** Correção definitiva da persistência de sessão no refresh da página.
+- [x] **UI Serviços:** Novo formulário de cadastro (mais bonito), campo de Garantia e ajuste de Descrição.
+- [x] **UI Vendas:** Menu de 3 pontos sem scroll, botão "APROVAR" e correção de texto no WhatsApp.
+- [x] **Monitor TV PRO:** Melhorar legibilidade (texto maior), exibir 4 carros e vídeo reduzido.
+- [x] **Lógica de Entrega:** Botão "Entregue" para limpar a TV e mover para histórico final.
+- [x] **Configurações:** Corrigir persistência de cores, logo e vídeo no banco de dados.
+
+### ✅ Fase 13: Diferenciais Estratégicos e Pós-Venda
+- [x] **Garantia Digital:** Gerador de Certificado em PDF com dados da OS e prazos.
+- [x] **Link do Cliente:** Página pública para o cliente acompanhar o progresso em tempo real. (Sincronizado via TV)
+- [x] **Notificação Automática:** WhatsApp automático ao atingir 100% de conclusão.
+- [x] **Estabilidade PWA:** Ajustes de contraste e fix do cronômetro (Fase 14/15 consolidada).
+- [x] **Ergonomia Mobile:** Redução de escala do cronômetro (4xl) e correção de acessibilidade dos botões de ação para evitar sobreposição do menu.
+
+### ✅ Fase 17: Múltiplos Serviços & Monitor Compacto (Concluído)
+- [x] Controle granular de progresso por item e TV otimizada.
+
+### ✅ Fase 18: Ajustes Habilidade Gestor - Parte 1 (Concluída)
+- [x] **Dashboard:**
+  - Corrigir a barra de rolagem horizontal indevida na listagem de Ordens Recentes.
+  - Revisar e corrigir a lógica de todos os KPIs do Dashboard para garantir que os cálculos batam com a lista real e com a tela de Vendas.
+- [x] **Vendas:**
+  - Transformar o menu de ações de cada orçamento (os 3 pontinhos) em um pop-up flutuante (`absolute`/`fixed`) para não empurrar o layout para baixo nem gerar barras de rolagem.
+- [x] **Ordens de Serviço:**
+  - Substituir o `window.confirm` do fim do Checklist Visual por um pop-up React customizado e bonito com a opção "Enviar Link" e "Não Enviar".
+  - Refatorar o botão "Ações / Enviar Link": Se a OS estiver em andamento, manda o acompanhamento sem precisar refazer checklist; se estiver concluída, exibe alerta "Serviço já concluído".
+  - Criar o botão "Finalizar" para concluir a OS de fato (ex: retirando da TV e mudando status) e para liberar o gerador de Certificado de Garantia.
+
+### ✅ Fase 18: Ajustes Habilidade Gestor - Parte 2 (Resoluções de Bug & CRUDs - Concluída)
+- [x] **Clientes:**
+  - Diagnosticar e resolver problema de demora no carregamento da lista (otimização de view/query).
+  - Expandir as ações do cliente: criar painel ou modal de Edição de Cliente (permitir editar Nomes, Telefones e E-mails), além do Histórico já existente.
+- [x] **Serviços:**
+  - Corrigir o crash fatal da página (`ReferenceError: Type is not defined` na linha 430).
+  - Restabelecer a funcionalidade de todos os botões (Novo Serviço, Detalhes/Edição, Excluir) permitindo ajuste de valor, nome, categorias e tipo de automóvel (Carro, Moto ou Ambos).
+- [x] **Estoque:**
+  - Dar vida à tela: conectar os botões inativos e finalizar o fluxo CRUD (Criar, Ler, Atualizar, Excluir) conectado à tabela real `estoque_materiais` já existente no Supabase.
+
+### ✅ Fase 18: Ajustes Habilidade Gestor - Parte 3 (Colab & Configs - Concluída)
+- [x] **Colaboradores:**
+  - Habilitar edição/exibição correta do campo `nome` para os colaboradores (perfis).
+  - Garantir que os select boxes de agendamento (ex: Vendas) utilizem esse Nome em vez de apenas o E-mail.
+- [x] **Configurações da Loja:**
+  - Diagnosticar por que as alterações de nome_loja, cores e vídeo não estão persistindo após dar F5 (Provável bug na query de Update do Supabase).
+  - Adicionar campo para inserção/upload da Logo da loja (`logo_url`).
+  - Refletir a Logo inserida em todo o ecossistema: TV, Certificado de Garantia e Link de Status da OS do cliente.
+
+---
+*Última atualização: 26/03/2026 - STATUS: HOMOLOGADO 🚀*
+```

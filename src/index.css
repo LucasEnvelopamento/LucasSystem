@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Estas variáveis são substituídas dinamicamente pelo BrandContext */
+  --color-primary: #059669;
+  --color-secondary: #1e293b;
+  --color-accent: #4f46e5;
+  --color-primary-light: rgba(5, 150, 105, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-[#f8fafc] text-slate-700 font-sans antialiased;
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Card profissional conforme skill dashboard-layout */
+  .card-premium {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:opacity-90 text-white font-semibold py-2 px-4 rounded-md transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:opacity-90 text-white font-semibold py-2 px-4 rounded-md transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  /* Scrollbar custom e sutil */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full hover:bg-slate-400;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
