@@ -11,18 +11,18 @@ const StatCard = ({ icon: Icon, label, value, trend, color, loading }) => {
   };
 
   return (
-    <div className="card-premium p-5 flex items-start gap-4">
-      <div className={`p-3 rounded-md ${colors[color] || colors.blue}`}>
-        <Icon size={24} />
+    <div className="card-premium p-7 flex items-start gap-5 hover:scale-[1.02] transition-all duration-300">
+      <div className={`p-4 rounded-2xl ${colors[color] || colors.blue} shadow-sm`}>
+        <Icon size={28} />
       </div>
       <div className="flex-1">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{label}</p>
+        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-3">{label}</p>
         {loading ? (
-          <div className="h-8 w-16 bg-slate-100 animate-pulse rounded-lg"></div>
+          <div className="h-10 w-24 bg-slate-100 animate-pulse rounded-xl"></div>
         ) : (
-          <h4 className="text-2xl font-black text-slate-800 py-0.5">{value}</h4>
+          <h4 className="text-3xl font-black text-slate-800 py-0.5 tracking-tighter">{value}</h4>
         )}
-        <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-tight">{trend}</p>
+        <p className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-tight opacity-70">{trend}</p>
       </div>
     </div>
   );
@@ -59,22 +59,29 @@ const Dashboard = () => {
   const performanceData = (services || [])
     .filter(s => s && s.nome)
     .map(service => {
-      const count = (orders || []).filter(o => o && o.servico === service.nome).length;
-      const totalOrders = (orders || []).length;
+      // Conta se o nome do serviço está presente na string de serviços da OS (pode ter múltiplos)
+      const count = ordensAtivas.filter(o => 
+        o && o.servico && (
+          o.servico === service.nome || 
+          o.servico.split(', ').includes(service.nome)
+        )
+      ).length;
+      
+      const totalOrders = ordensAtivas.length;
       const percentage = totalOrders > 0 ? (count / totalOrders) * 100 : 0;
       return {
         label: service.nome,
         value: Math.round(percentage)
       };
     })
-    .sort((a, b) => b.value - a.value).slice(0, 5);
+    .sort((a, b) => b.value - a.value).slice(0, 6); // Aumentado para 6 itens
 
   const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   return (
     <div className="fade-in space-y-8 pb-10">
       {/* Grid de KPIs Dinâmicos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <StatCard 
           icon={Users} 
           label="Total de Clientes" 
@@ -117,16 +124,16 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* Ordens Recentes Reais */}
-        <div className="card-premium p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-800 text-lg uppercase tracking-tight flex items-center gap-3">
-              <Clock size={20} className="text-primary" /> Ordens Recentes
+        <div className="xl:col-span-2 card-premium p-8 flex flex-col min-h-[500px]">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-bold text-slate-800 text-xl uppercase tracking-tight flex items-center gap-3">
+              <Clock size={24} className="text-primary" /> Ordens Recentes
             </h3>
           </div>
           
-          <div className="space-y-2 flex-1 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar overflow-x-hidden">
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[500px] pr-4 custom-scrollbar overflow-x-hidden">
             {(ordensAtivas.length === 0 && !loadingOrders) && (
               <p className="text-center text-slate-400 py-10 font-bold uppercase tracking-widest text-xs">Nenhuma ordem em andamento</p>
             )}
@@ -158,10 +165,10 @@ const Dashboard = () => {
         </div>
 
         {/* Desempenho Real (Performance de Serviços) */}
-        <div className="card-premium p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-slate-800 text-lg uppercase tracking-tight flex items-center gap-3">
-              <TrendingUp size={20} className="text-primary" /> Performance de Serviços
+        <div className="card-premium p-8 min-h-[500px] flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-bold text-slate-800 text-xl uppercase tracking-tight flex items-center gap-3">
+              <TrendingUp size={24} className="text-primary" /> Performance de Serviços
             </h3>
           </div>
           
