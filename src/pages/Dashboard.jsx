@@ -55,26 +55,27 @@ const Dashboard = () => {
   const concluidas = ordensAtivas.filter(os => String(os.status || '').toUpperCase().includes('CONCLU')).length;
   const entregues = ordensAtivas.filter(os => String(os.status || '').toUpperCase() === 'ENTREGUE').length;
 
-  // Cálculo de Performance de Serviços Real
-  const performanceData = (services || [])
+  // Cálculo de Performance de Serviços Real (Baseado no total de serviços prestados)
+  const performanceRaw = (services || [])
     .filter(s => s && s.nome)
     .map(service => {
-      // Conta se o nome do serviço está presente na string de serviços da OS (pode ter múltiplos)
       const count = ordensAtivas.filter(o => 
         o && o.servico && (
           o.servico === service.nome || 
           o.servico.split(', ').includes(service.nome)
         )
       ).length;
-      
-      const totalOrders = ordensAtivas.length;
-      const percentage = totalOrders > 0 ? (count / totalOrders) * 100 : 0;
-      return {
-        label: service.nome,
-        value: Math.round(percentage)
-      };
-    })
-    .sort((a, b) => b.value - a.value).slice(0, 6); // Aumentado para 6 itens
+      return { label: service.nome, count };
+    });
+
+  const totalServicesCount = performanceRaw.reduce((acc, current) => acc + current.count, 0);
+
+  const performanceData = performanceRaw
+    .map(item => ({
+      label: item.label,
+      value: totalServicesCount > 0 ? Math.round((item.count / totalServicesCount) * 100) : 0
+    }))
+    .sort((a, b) => b.value - a.value).slice(0, 6);
 
   const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
@@ -126,14 +127,14 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* Ordens Recentes Reais */}
-        <div className="xl:col-span-2 card-premium p-8 flex flex-col min-h-[500px]">
+        <div className="xl:col-span-2 card-premium p-8 flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-bold text-slate-800 text-xl uppercase tracking-tight flex items-center gap-3">
               <Clock size={24} className="text-primary" /> Ordens Recentes
             </h3>
           </div>
           
-          <div className="space-y-3 flex-1 overflow-y-auto max-h-[500px] pr-4 custom-scrollbar overflow-x-hidden">
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[450px] pr-4 custom-scrollbar overflow-x-hidden">
             {(ordensAtivas.length === 0 && !loadingOrders) && (
               <p className="text-center text-slate-400 py-10 font-bold uppercase tracking-widest text-xs">Nenhuma ordem em andamento</p>
             )}
@@ -165,7 +166,7 @@ const Dashboard = () => {
         </div>
 
         {/* Desempenho Real (Performance de Serviços) */}
-        <div className="card-premium p-8 min-h-[500px] flex flex-col">
+        <div className="card-premium p-8 flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-bold text-slate-800 text-xl uppercase tracking-tight flex items-center gap-3">
               <TrendingUp size={24} className="text-primary" /> Performance de Serviços
@@ -182,14 +183,17 @@ const Dashboard = () => {
             ) : performanceData.length === 0 ? (
               <p className="text-center text-slate-400 py-10 font-bold uppercase tracking-widest text-xs">Nenhum serviço cadastrado no catálogo</p>
             ) : (
-              (performanceData || []).map((item, idx) => item && (
-                <CategoryStat 
-                  key={idx} 
-                  label={item.label} 
-                  value={item.value} 
-                  color={idx === 0 ? 'bg-primary' : 'bg-slate-400'} 
-                />
-              ))
+              (performanceData || []).map((item, idx) => {
+                const colors = ['bg-primary', 'bg-blue-500', 'bg-amber-500', 'bg-purple-500', 'bg-rose-500', 'bg-emerald-500'];
+                return item && (
+                  <CategoryStat 
+                    key={idx} 
+                    label={item.label} 
+                    value={item.value} 
+                    color={colors[idx % colors.length]} 
+                  />
+                );
+              })
             )}
           </div>
           
