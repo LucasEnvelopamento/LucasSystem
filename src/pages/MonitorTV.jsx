@@ -53,10 +53,10 @@ const MonitorTV = () => {
     };
 
     return (
-      <div className="h-screen bg-slate-950 text-white overflow-hidden flex flex-col font-sans p-6 lg:p-8 gap-6 lg:gap-8">
+      <div className="h-screen text-white overflow-hidden flex flex-col font-sans p-6 lg:p-8 gap-6 lg:gap-8" style={{ backgroundColor: 'var(--color-secondary)' }}>
         
         {/* Top Bar / Branding */}
-        <header className="flex items-center justify-between bg-slate-900/50 backdrop-blur-xl p-6 rounded-3xl border border-white/5 shadow-2xl">
+        <header className="flex items-center justify-between bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/5 shadow-2xl">
           <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
                <Car size={36} className="text-white" />

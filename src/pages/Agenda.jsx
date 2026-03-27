@@ -38,7 +38,7 @@ const AgendaView = () => {
   // Filtra agendamentos reais da lista de OS para o dia selecionado
   const agendamentos = orders
     .filter(os => {
-       if (os.status !== 'AGUARDANDO' && os.status !== 'EM EXECUÇÃO') return false;
+        if (!['AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'].includes(os.status)) return false;
        if (!os.data_agendamento) return false;
        const osDate = new Date(os.data_agendamento);
        return osDate.toDateString() === currentDate.toDateString();
@@ -157,7 +157,10 @@ const AgendaView = () => {
 
               <div className="flex items-center gap-4 mt-4 md:mt-0">
                 <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                  item.status === 'EM EXECUÇÃO' ? 'bg-blue-100 text-blue-600' : 'bg-amber-100 text-amber-600'
+                  item.status === 'EM EXECUÇÃO' ? 'bg-blue-100 text-blue-600' : 
+                  item.status === 'CONCLUÍDO' ? 'bg-emerald-100 text-emerald-600' :
+                  item.status === 'ENTREGUE' ? 'bg-slate-100 text-slate-500' :
+                  'bg-amber-100 text-amber-600'
                 }`}>
                   {item.status}
                 </span>

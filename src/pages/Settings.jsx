@@ -28,7 +28,8 @@ const SettingsPage = () => {
       setStatus({ type: 'success', message: 'Configurações salvas com sucesso! As mudanças foram aplicadas em tempo real.' });
     } catch (err) {
       console.error(err);
-      setStatus({ type: 'error', message: 'Erro ao salvar configurações. Verifique a conexão.' });
+      const errorMsg = err?.message || err?.details || 'Dica: Verifique se o RLS está desativado no Supabase.';
+      setStatus({ type: 'error', message: `Erro: ${errorMsg}` });
     } finally {
       setSaving(false);
     }

@@ -77,10 +77,8 @@ export const BrandProvider = ({ children }) => {
   const updateConfig = async (newData) => {
     try {
       const { data: existingData } = await supabase.from('loja_config').select('id').limit(1).maybeSingle();
-      const configId = existingData?.id || '00000000-0000-0000-0000-000000000000';
-
+      
       const payloadToUpdate = {
-          id: configId,
           nome_loja: newData.nome_loja,
           youtube_id: newData.youtube_id,
           primary_color: newData.primary_color,
@@ -92,9 +90,21 @@ export const BrandProvider = ({ children }) => {
           payloadToUpdate.logo_url = newData.logo_url;
       }
 
-      const { error } = await supabase
-        .from('loja_config')
-        .upsert(payloadToUpdate);
+      let error;
+      if (existingData?.id) {
+          // Atualiza registro existente
+          const { error: updateError } = await supabase
+            .from('loja_config')
+            .update(payloadToUpdate)
+            .eq('id', existingData.id);
+          error = updateError;
+      } else {
+          // Cria o primeiro registro se não houver
+          const { error: insertError } = await supabase
+            .from('loja_config')
+            .insert([payloadToUpdate]);
+          error = insertError;
+      }
 
       if (error) throw error;
       

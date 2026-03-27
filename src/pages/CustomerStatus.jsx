@@ -93,7 +93,7 @@ const CustomerStatus = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 md:p-8 font-sans">
+    <div className="min-h-screen text-white p-4 md:p-8 font-sans transition-colors duration-500" style={{ backgroundColor: 'var(--color-secondary)' }}>
       
       {/* Header Premium PWA */}
       <header className="mb-8 flex items-center justify-center flex-col gap-4 text-center mt-4">
