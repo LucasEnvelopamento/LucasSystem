@@ -92,7 +92,7 @@ const Dashboard = () => {
         />
         <StatCard 
           icon={TrendingUp} 
-          label="Faturamento Convertido" 
+          label="Fat. Convertido" 
           value={formatCurrency(totalFaturamento)} 
           trend="Soma de OS Aprovadas" 
           color="emerald" 
