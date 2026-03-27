@@ -70,7 +70,7 @@ const OrdensServico = () => {
       </div>
 
       {/* Grid de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-amber-500">
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Aguardando</p>
@@ -102,6 +102,17 @@ const OrdensServico = () => {
           </div>
           <div className="w-12 h-12 bg-emerald-50 rounded-md flex items-center justify-center">
             <CheckCircle2 size={24} className="text-emerald-500" />
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between border-l-4 border-l-slate-400">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Entregues</p>
+            <h4 className="text-3xl font-bold text-slate-800 tracking-tight">
+                {(orders || []).filter(o => o && String(o.status || '').toUpperCase() === 'ENTREGUE').length}
+            </h4>
+          </div>
+          <div className="w-12 h-12 bg-slate-50 rounded-md flex items-center justify-center">
+            <ExternalLink size={24} className="text-slate-400" />
           </div>
         </div>
       </div>

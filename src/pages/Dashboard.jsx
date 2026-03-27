@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Users, TrendingUp, Clock, CheckCircle, ExternalLink } from 'lucide-react';
 import { useOrders, useClients, useCatalog } from '../hooks/useData';
 
 const StatCard = ({ icon: Icon, label, value, trend, color, loading }) => {
@@ -53,6 +53,7 @@ const Dashboard = () => {
   const aguardando = ordensAtivas.filter(os => String(os.status || '').toUpperCase().includes('AGUARDA')).length;
   const emExecucao = ordensAtivas.filter(os => String(os.status || '').toUpperCase().includes('EXECU')).length;
   const concluidas = ordensAtivas.filter(os => String(os.status || '').toUpperCase().includes('CONCLU')).length;
+  const entregues = ordensAtivas.filter(os => String(os.status || '').toUpperCase() === 'ENTREGUE').length;
 
   // Cálculo de Performance de Serviços Real
   const performanceData = (services || [])
@@ -73,7 +74,7 @@ const Dashboard = () => {
   return (
     <div className="fade-in space-y-8 pb-10">
       {/* Grid de KPIs Dinâmicos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatCard 
           icon={Users} 
           label="Total de Clientes" 
@@ -100,10 +101,18 @@ const Dashboard = () => {
         />
         <StatCard 
           icon={CheckCircle} 
-          label="Concluídas Total" 
+          label="Concluídas" 
           value={concluidas} 
-          trend="Histórico completo" 
+          trend="Aguardando entrega" 
           color="purple" 
+          loading={loadingOrders} 
+        />
+        <StatCard 
+          icon={ExternalLink} 
+          label="Entregues" 
+          value={entregues} 
+          trend="Histórico para PDF" 
+          color="blue" 
           loading={loadingOrders} 
         />
       </div>
