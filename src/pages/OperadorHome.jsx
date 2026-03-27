@@ -22,7 +22,7 @@ const OperadorHome = ({ onSelectOS }) => {
   // 3. KPI: Finalizadas (Para histórico)
   const minhasFinalizadas = orders.filter(os => 
     os.tecnico_id === profile?.id && 
-    String(os.status).toUpperCase() === 'CONCLUÍDO'
+    (String(os.status).toUpperCase() === 'CONCLUÍDO' || String(os.status).toUpperCase() === 'ENTREGUE')
   );
 
   const formatOS = (os) => ({

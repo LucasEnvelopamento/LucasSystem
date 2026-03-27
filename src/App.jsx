@@ -136,7 +136,8 @@ const OperadorLayoutWrapper = () => {
                {(() => {
                  const history = (orders || []).filter(os => 
                     os && 
-                    String(os.status || '').toUpperCase().includes('CONCLU') && 
+                    (String(os.status || '').toUpperCase().includes('CONCLU') || 
+                     String(os.status || '').toUpperCase() === 'ENTREGUE') && 
                     os.tecnico_id === profile?.id
                  );
                  
