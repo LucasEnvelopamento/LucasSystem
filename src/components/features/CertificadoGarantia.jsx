@@ -34,8 +34,8 @@ const CertificadoGarantia = ({ os, onClose }) => {
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col relative animate-fadeIn no-print max-h-[90vh]">
         
-        {/* Barra de Ações (Visualização) */}
-        <div className="p-6 bg-slate-900 flex items-center justify-between border-b border-white/5 no-print sticky top-0 z-50">
+        {/* Barra de Ações (Visualização) - Cabeçalho Fixo */}
+        <div className="p-6 bg-slate-900 flex items-center justify-between border-b border-white/5 no-print shrink-0 z-50">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
                 <FileCheck className="text-primary" size={24} />
@@ -61,10 +61,10 @@ const CertificadoGarantia = ({ os, onClose }) => {
           </div>
         </div>
 
-        {/* ÁREA DO CERTIFICADO (O QUE SERÁ IMPRESSO) */}
+        {/* ÁREA DO CERTIFICADO (O QUE SERÁ IMPRESSO) - Corpo Rolável */}
         <div 
           ref={printRef}
-          className="certificate-print-area flex-1 overflow-y-auto p-12 bg-white text-slate-900 relative font-sans print:p-0 custom-scrollbar"
+          className="certificate-print-area flex-1 overflow-y-auto p-8 md:p-12 bg-white text-slate-900 font-sans print:p-0 custom-scrollbar"
         >
           <div className="border-[16px] border-slate-50 p-12 relative min-h-[900px] flex flex-col justify-between overflow-hidden">
             

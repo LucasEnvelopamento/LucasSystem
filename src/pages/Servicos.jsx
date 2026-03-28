@@ -176,8 +176,9 @@ const ServicosView = () => {
       {/* Modal - Novo Serviço / Edição */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl border border-white/20 overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-white">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh]">
+            {/* Header Fixo */}
+            <div className="p-8 md:p-10 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
               <div>
                 <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
                   {editingService ? 'Editar Serviço' : 'Cadastrar Serviço'}
@@ -192,7 +193,8 @@ const ServicosView = () => {
               </button>
             </div>
             
-            <form onSubmit={handleAddService} className="p-10 space-y-6">
+            {/* Conteúdo Rolável */}
+            <form onSubmit={handleAddService} className="flex-1 overflow-y-auto p-10 space-y-6 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Serviço</label>
@@ -271,7 +273,7 @@ const ServicosView = () => {
                 </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 pb-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detalhamento Técnico / Descrição</label>
                 <textarea 
                   className="w-full h-32 px-6 py-5 bg-slate-50 border border-slate-100 rounded-[1.5rem] outline-none focus:ring-4 focus:ring-primary/5 focus:bg-white font-bold text-sm resize-none shadow-inner transition-all" 
@@ -280,8 +282,11 @@ const ServicosView = () => {
                   onChange={e => setFormService({...formService, descricao: e.target.value})}
                 ></textarea>
               </div>
+            </form>
 
-              <div className="flex gap-4 pt-4">
+            {/* Rodapé Fixo */}
+            <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
+              <div className="flex gap-4">
                 <button 
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -290,6 +295,7 @@ const ServicosView = () => {
                   Cancelar
                 </button>
                 <button 
+                  onClick={handleAddService}
                   disabled={isSaving}
                   className="flex-1 bg-primary text-white py-5 rounded-[2rem] shadow-xl shadow-primary/20 uppercase tracking-[0.2em] font-black text-[10px] flex items-center justify-center gap-3 hover:bg-emerald-600 transition-all active:scale-[0.98]"
                 >
@@ -297,7 +303,7 @@ const ServicosView = () => {
                   {editingService ? 'Atualizar Serviço' : 'Salvar no Catálogo'}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

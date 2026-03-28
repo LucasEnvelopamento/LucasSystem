@@ -159,6 +159,40 @@ Para entregar um produto superior aos concorrentes, implementaremos:
   - Adicionar campo para inserção/upload da Logo da loja (`logo_url`).
   - Refletir a Logo inserida em todo o ecossistema: TV, Certificado de Garantia e Link de Status da OS do cliente.
 
+### ✅ Fase 19: Refinamento de UX, Responsividade e Sticky Modals (Concluída)
+- [x] **Sticky Modals:** Refatoração de todos os modais extensos (`Agendamento`, `Novo Orcamento`, `Vendas`, `Serviços`, `Checklist`, `Certificado`) para usar cabeçalho e rodapé fixos.
+- [x] **Responsividade Crítica:** Garantia de que botões de ação permaneçam visíveis em monitores pequenos (1366x768) e dispositivos móveis.
+- [x] **Lógica de Faturamento:** Revisão dos contadores de `Vendas.jsx` e `Dashboard.jsx` para incluir ordens "Entregues" no total convertido.
+- [x] **Visibilidade de Histórico:** Inclusão do status "ENTREGUE" na Agenda e telas de Gestão, garantindo que o carro não "suma" após a entrega.
+- [x] **Ergonomia do Executor:** Refatoração da Folha de Obra do Operador para manter o botão "Finalizar" sempre acessível.
+
+### ✅ Fase 20: Sincronização de Faturamento e Fluxo de Entrega (Concluída)
+- [x] Correção do cálculo de faturamento total incluindo ordens "ENTREGUES".
+- [x] Implementação do status "ENTREGUE" na Agenda e telas de Gestão.
+- [x] Garantia de que a entrega remove o veículo da TV em tempo real.
+
+### ✅ Fase 21: Ergonomia e Responsividade Pro (Concluída)
+- [x] Modais com cabeçalho e rodapé fixos para melhor usabilidade em OS longas.
+- [x] Ajuste de escala para resolução 1366x768 (Padrão corporativo).
+- [x] Refatoração da Folha de Obra para manter o botão "Finalizar" sempre visível.
+
+### ✅ Fase 22: Identidade Visual Avançada (Concluída)
+- [x] Persistência da Logomarca dinâmica em todo o sistema (TV, Link Cliente, Certificado).
+- [x] Implementação da Cor de Fundo do Monitor configurável via painel.
+- [x] Sincronização global de marca via BrandContext.
+
+### ✅ Fase 23: Monitor TV Real-time Precision (Concluída)
+- [x] **Layout Dinâmico Inteligente**: 
+    - Sem Vídeo: Grade 2x2 (4 slots) equilibrada.
+    - Com Vídeo: Divisão 50/50 com 3 slots fixos verticais.
+- [x] Refatoração do **Card Bicolor**: Lado Azul (Info) e Lado Escuro (Execução).
+- [x] Tipografia Dinâmica: Ajuste automático de fontes dependendo do layout (Compacto vs. Full).
+
+### ✅ Fase 24: Integração de Redes Sociais e WhatsApp (Concluída)
+- [x] Expansão da tabela `loja_config` para suportar canais sociais.
+- [x] Novos campos em Configurações: WhatsApp, Instagram, YouTube e TikTok.
+- [x] Botões de contato dinâmicos no Link do Cliente (visibilidade condicional).
+
 ---
-*Última atualização: 26/03/2026 - STATUS: HOMOLOGADO 🚀*
+*Última atualização: 28/03/2026 - STATUS: HOMOLOGADO & AUDITADO 🚀*
 ```

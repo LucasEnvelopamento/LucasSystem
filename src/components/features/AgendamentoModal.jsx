@@ -38,8 +38,9 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[250] flex items-center justify-center p-4">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-scaleUp">
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+      <div className="bg-white rounded-[3rem] w-full max-w-lg flex flex-col overflow-hidden shadow-2xl animate-scaleUp max-h-[90vh]">
+        {/* Header Fixo */}
+        <div className="p-8 border-b border-slate-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
               <Calendar size={24} />
@@ -54,7 +55,8 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
           </button>
         </div>
 
-        <div className="p-8 space-y-6">
+        {/* Conteúdo Rolável */}
+        <div className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 italic text-xs text-slate-500">
             <strong>Orçamento #{quote.id}:</strong> {quote.veiculo_desc} - {quote.cliente_nome}
           </div>
@@ -128,23 +130,24 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
               )}
             </div>
           )}
+        </div>
 
-          <div className="pt-4">
-            <button 
-              onClick={handleConfirm}
-              disabled={isSaving}
-              className="w-full py-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
-            >
-              {isSaving ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <><Save size={18} /> Confirmar Agendamento e Aprovar</>
-              )}
-            </button>
-            <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-4 flex items-center justify-center gap-2">
-               <Bell size={10} /> O status mudará automaticamente para 'AGUARDANDO'
-            </p>
-          </div>
+        {/* Rodapé Fixo */}
+        <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
+          <button 
+            onClick={handleConfirm}
+            disabled={isSaving}
+            className="w-full py-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
+          >
+            {isSaving ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : (
+              <><Save size={18} /> Confirmar Agendamento e Aprovar</>
+            )}
+          </button>
+          <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-4 flex items-center justify-center gap-2">
+             <Bell size={10} /> O status mudará automaticamente para 'AGUARDANDO'
+          </p>
         </div>
       </div>
     </div>

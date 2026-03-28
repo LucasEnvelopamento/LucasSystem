@@ -10,7 +10,12 @@ const SettingsPage = () => {
     logo_url: brand.logoUrl || '',
     youtube_id: brand.youtubeId || '',
     primary_color: brand.primaryColor || '#059669',
-    secondary_color: brand.secondaryColor || '#1e293b'
+    secondary_color: brand.secondaryColor || '#1e293b',
+    monitor_bg_color: brand.monitorBgColor || '#0f172a',
+    whatsapp: brand.whatsapp || '',
+    instagram_url: brand.instagramUrl || '',
+    youtube_social_url: brand.youtubeSocialUrl || '',
+    tiktok_url: brand.tiktokUrl || '',
   });
 
   const [saving, setSaving] = useState(false);
@@ -113,6 +118,15 @@ const SettingsPage = () => {
                   className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl p-1 cursor-pointer"
                 />
               </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Cor de Fundo (Monitor TV & Status)</label>
+                <input 
+                  type="color" 
+                  value={formData.monitor_bg_color}
+                  onChange={(e) => setFormData({...formData, monitor_bg_color: e.target.value})}
+                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl p-1 cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -125,7 +139,7 @@ const SettingsPage = () => {
           
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Link/ID do YouTube</label>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Link/ID do YouTube (TV)</label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input 
@@ -153,6 +167,57 @@ const SettingsPage = () => {
                     <Youtube className="text-slate-400" size={32} />
                  </div>
                )}
+            </div>
+          </div>
+        </div>
+
+        {/* Redes Sociais & Contato */}
+        <div className="card-premium p-6 space-y-6 md:col-span-2">
+          <h3 className="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-4">
+            <Globe size={18} className="text-primary" /> Redes Sociais & Contato (Tela do Cliente)
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">WhatsApp (Número)</label>
+              <input 
+                type="text" 
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                placeholder="Ex: 5511999999999"
+              />
+              <p className="text-[9px] text-slate-400 mt-1">Apenas números com DDD (ex: 55...)</p>
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Instagram (Link)</label>
+              <input 
+                type="url" 
+                value={formData.instagram_url}
+                onChange={(e) => setFormData({...formData, instagram_url: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                placeholder="https://instagram.com/perfil"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">YouTube (Link Social)</label>
+              <input 
+                type="url" 
+                value={formData.youtube_social_url}
+                onChange={(e) => setFormData({...formData, youtube_social_url: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                placeholder="https://youtube.com/@seu-canal"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">TikTok (Link)</label>
+              <input 
+                type="url" 
+                value={formData.tiktok_url}
+                onChange={(e) => setFormData({...formData, tiktok_url: e.target.value})}
+                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                placeholder="https://tiktok.com/@perfil"
+              />
             </div>
           </div>
         </div>

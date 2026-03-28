@@ -1,5 +1,5 @@
-import React from 'react';
-import { Users, TrendingUp, Clock, CheckCircle, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, TrendingUp, Clock, CheckCircle, ExternalLink, X, Calendar, User, Car, DollarSign, Activity } from 'lucide-react';
 import { useOrders, useClients, useCatalog } from '../hooks/useData';
 
 const StatCard = ({ icon: Icon, label, value, trend, color, loading }) => {
@@ -40,6 +40,7 @@ const CategoryStat = ({ label, value, color }) => (
 );
 
 const Dashboard = () => {
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const { orders, loading: loadingOrders } = useOrders();
   const { clients, loading: loadingClients } = useClients();
   const { services, loading: loadingCatalog } = useCatalog();
@@ -138,7 +139,11 @@ const Dashboard = () => {
               <p className="text-center text-slate-400 py-10 font-bold uppercase tracking-widest text-xs">Nenhuma ordem em andamento</p>
             )}
             {ordensAtivas.slice(0, 6).map((os) => os && (
-              <div key={os.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-all px-4 rounded-2xl -mx-2 group gap-3">
+              <div 
+                key={os.id} 
+                onClick={() => setSelectedOrder(os)}
+                className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-all px-4 rounded-2xl -mx-2 group gap-3 cursor-pointer"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px] group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all shadow-sm">
                     OS#{os.id}
@@ -203,6 +208,141 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {/* Modal de Detalhes da Ordem */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            {/* Header Fixo */}
+            <div className="p-8 bg-slate-900 flex items-center justify-between shrink-0 border-b border-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
+                  <Activity className="text-primary" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-white font-black uppercase text-xs tracking-widest leading-none mb-1">Detalhes da Ordem</h3>
+                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">OS #{selectedOrder.id}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                className="p-3 hover:bg-white/10 rounded-full transition-all group"
+              >
+                <X size={24} className="text-slate-500 group-hover:text-white" />
+              </button>
+            </div>
+
+            {/* Conteúdo Rolável */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+              {/* Seção Cliente/Veículo */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm">
+                    <User size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Cliente</p>
+                    <p className="text-sm font-black text-slate-800 truncate">{selectedOrder.cliente_nome}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-primary shadow-sm">
+                    <Car size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Veículo</p>
+                    <p className="text-sm font-black text-slate-800 truncate">{selectedOrder.veiculo_desc}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seção Info Execução */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar size={14} className="text-blue-500" />
+                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Agendamento</span>
+                  </div>
+                  <p className="text-sm font-black text-blue-900 leading-none">
+                    {selectedOrder.data_agendamento ? new Date(selectedOrder.data_agendamento).toLocaleDateString('pt-BR') : 'Sem data'}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock size={14} className="text-amber-500" />
+                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Status</span>
+                  </div>
+                  <p className="text-sm font-black text-amber-900 leading-none uppercase truncate">
+                    {selectedOrder.status}
+                  </p>
+                </div>
+              </div>
+
+              {/* Serviços Detalhados */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Detalhamento de Serviços</h4>
+                <div className="bg-slate-50 rounded-[2.5rem] border border-slate-100 overflow-hidden">
+                  <div className="p-6 space-y-4">
+                    {selectedOrder.servicos_detalhados && Array.isArray(selectedOrder.servicos_detalhados) && selectedOrder.servicos_detalhados.length > 0 ? (
+                      selectedOrder.servicos_detalhados.map((s, idx) => (
+                        <div key={idx} className="flex justify-between items-center group/item">
+                          <div className="flex items-center gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/item:bg-primary transition-colors"></div>
+                            <span className="text-sm font-bold text-slate-600">{s.nome}</span>
+                          </div>
+                          <span className="text-sm font-black text-slate-800 font-mono italic">
+                            {formatCurrency(Number(s.preco_base || s.preco || s.valor || 0))}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
+                          <span className="text-sm font-bold text-slate-600">{selectedOrder.servico || 'Serviços Gerais'}</span>
+                        </div>
+                        <span className="text-sm font-black text-slate-800 font-mono italic">
+                          {formatCurrency(Number(selectedOrder.valor_total || selectedOrder.valor || 0))}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Totalizador Interno */}
+                  <div className="bg-slate-900 p-6 flex items-center justify-between text-white">
+                    <div>
+                      <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1">Total da Ordem</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">OS #{selectedOrder.id}</p>
+                    </div>
+                    <div className="text-right">
+                       <p className="text-2xl font-black tracking-tighter text-white font-mono italic">
+                        {formatCurrency(Number(selectedOrder.valor_total || selectedOrder.valor || 0))}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Fixo */}
+            <div className="p-8 bg-slate-50 border-t border-slate-100 shrink-0">
+               <button 
+                onClick={() => setSelectedOrder(null)}
+                className="w-full py-5 bg-white border-2 border-slate-200 text-slate-500 rounded-[2rem] font-black uppercase text-[10px] tracking-widest hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-[0.98]"
+               >
+                 Fechar Detalhes
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style dangerouslySetInnerHTML={{ __html: `
+         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+         .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+      `}} />
     </div>
   );
 };

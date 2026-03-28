@@ -14,6 +14,11 @@ CREATE TABLE IF NOT EXISTS public.loja_config (
     primary_color TEXT DEFAULT '#059669',
     secondary_color TEXT DEFAULT '#1e293b',
     accent_color TEXT DEFAULT '#4f46e5',
+    monitor_bg_color TEXT DEFAULT '#0f172a',
+    whatsapp TEXT,
+    instagram_url TEXT,
+    youtube_social_url TEXT,
+    tiktok_url TEXT,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 

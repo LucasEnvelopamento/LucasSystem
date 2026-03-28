@@ -297,8 +297,9 @@ const Vendas = () => {
       {/* Modal Detalhes do Orçamento */}
       {selectedQuote && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl p-8 md:p-12 shadow-2xl border border-white/20 overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl flex flex-col shadow-2xl border border-white/20 overflow-hidden max-h-[90vh]">
+            {/* Header Fixo */}
+            <div className="p-8 md:p-10 border-b border-slate-50 flex items-center justify-between shrink-0 bg-white">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
                   <ArrowUpRight size={24} />
@@ -316,7 +317,8 @@ const Vendas = () => {
               </button>
             </div>
 
-            <div className="space-y-6">
+            {/* Conteúdo Rolável */}
+            <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cliente</label>
@@ -364,8 +366,11 @@ const Vendas = () => {
                   Este valor é uma estimativa baseada nos serviços pré-selecionados e pode variar após o laudo técnico presencial.
                 </div>
               </div>
+            </div>
 
-               <div className="flex gap-4 pt-4">
+            {/* Rodapé Fixo */}
+            <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
+               <div className="flex gap-4">
                  {selectedQuote.status === 'ORCAMENTO' ? (
                    <button 
                      onClick={() => handleApprove(selectedQuote)}

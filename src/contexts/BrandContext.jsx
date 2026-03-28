@@ -11,6 +11,11 @@ export const BrandProvider = ({ children }) => {
     accentColor: import.meta.env.VITE_ACCENT_COLOR || '#4f46e5',
     logoUrl: import.meta.env.VITE_LOGO_URL || '',
     youtubeId: import.meta.env.VITE_YOUTUBE_ID || '',
+    monitorBgColor: '#0f172a',
+    whatsapp: '',
+    instagramUrl: '',
+    youtubeSocialUrl: '',
+    tiktokUrl: '',
   });
 
   const initialized = React.useRef(false);
@@ -35,12 +40,17 @@ export const BrandProvider = ({ children }) => {
         if (data) {
           setBrand(prev => ({
             ...prev,
-            name: data.nome_loja || prev.name,
-            primaryColor: data.primary_color || prev.primaryColor,
-            secondaryColor: data.secondary_color || prev.secondaryColor,
-            accentColor: data.accent_color || prev.accentColor,
-            logoUrl: data.logo_url || prev.logoUrl,
-            youtubeId: data.youtube_id || prev.youtubeId,
+            name: data.nome_loja ?? prev.name,
+            primaryColor: data.primary_color ?? prev.primaryColor,
+            secondaryColor: data.secondary_color ?? prev.secondaryColor,
+            accentColor: data.accent_color ?? prev.accentColor,
+            logoUrl: data.logo_url ?? prev.logoUrl,
+            youtubeId: data.youtube_id ?? prev.youtubeId,
+            monitorBgColor: data.monitor_bg_color ?? '#0f172a',
+            whatsapp: data.whatsapp ?? '',
+            instagramUrl: data.instagram_url ?? '',
+            youtubeSocialUrl: data.youtube_social_url ?? '',
+            tiktokUrl: data.tiktok_url ?? '',
           }));
         }
       } catch (err) {
@@ -58,12 +68,17 @@ export const BrandProvider = ({ children }) => {
           const newData = payload.new;
           setBrand(prev => ({
             ...prev,
-            name: newData.nome_loja || prev.name,
-            primaryColor: newData.primary_color || prev.primaryColor,
-            secondaryColor: newData.secondary_color || prev.secondaryColor,
-            accentColor: newData.accent_color || prev.accentColor,
-            logoUrl: newData.logo_url || prev.logoUrl,
-            youtubeId: newData.youtube_id || prev.youtubeId,
+            name: newData.nome_loja ?? prev.name,
+            primaryColor: newData.primary_color ?? prev.primaryColor,
+            secondaryColor: newData.secondary_color ?? prev.secondaryColor,
+            accentColor: newData.accent_color ?? prev.accentColor,
+            logoUrl: newData.logo_url ?? prev.logoUrl,
+            youtubeId: newData.youtube_id ?? prev.youtubeId,
+            monitorBgColor: newData.monitor_bg_color ?? prev.monitorBgColor,
+            whatsapp: newData.whatsapp ?? prev.whatsapp,
+            instagramUrl: newData.instagram_url ?? prev.instagramUrl,
+            youtubeSocialUrl: newData.youtube_social_url ?? prev.youtubeSocialUrl,
+            tiktokUrl: newData.tiktok_url ?? prev.tiktokUrl,
           }));
         }
       )
@@ -83,6 +98,11 @@ export const BrandProvider = ({ children }) => {
           youtube_id: newData.youtube_id,
           primary_color: newData.primary_color,
           secondary_color: newData.secondary_color,
+          monitor_bg_color: newData.monitor_bg_color,
+          whatsapp: newData.whatsapp,
+          instagram_url: newData.instagram_url,
+          youtube_social_url: newData.youtube_social_url,
+          tiktok_url: newData.tiktok_url,
           updated_at: new Date().toISOString()
       };
 
@@ -113,7 +133,12 @@ export const BrandProvider = ({ children }) => {
           name: newData.nome_loja,
           primaryColor: newData.primary_color,
           secondaryColor: newData.secondary_color,
+          monitorBgColor: newData.monitor_bg_color,
           youtubeId: newData.youtube_id,
+          whatsapp: newData.whatsapp,
+          instagramUrl: newData.instagram_url,
+          youtubeSocialUrl: newData.youtube_social_url,
+          tiktokUrl: newData.tiktok_url,
           ...(newData.logo_url !== undefined ? { logoUrl: newData.logo_url } : {})
       }));
 
@@ -129,6 +154,7 @@ export const BrandProvider = ({ children }) => {
     root.style.setProperty('--color-primary', brand.primaryColor);
     root.style.setProperty('--color-secondary', brand.secondaryColor);
     root.style.setProperty('--color-accent', brand.accentColor);
+    root.style.setProperty('--color-monitor-bg', brand.monitorBgColor);
     root.style.setProperty('--color-primary-light', brand.primaryColor + '15');
   }, [brand]);
 

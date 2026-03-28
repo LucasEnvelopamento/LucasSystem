@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase, hasRealConnection } from '../lib/supabase';
-import { Car, Activity, CheckCircle2, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Car, Activity, CheckCircle2, ShieldCheck, LayoutGrid, MessageCircle, Instagram, Youtube, Music2 } from 'lucide-react';
 import { useBrand } from '../contexts/BrandContext';
 
 const CustomerStatus = () => {
   const { id } = useParams();
-  const { name } = useBrand();
+  const { name, logoUrl, whatsapp, instagramUrl, youtubeSocialUrl, tiktokUrl } = useBrand();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -93,12 +93,16 @@ const CustomerStatus = () => {
   }
 
   return (
-    <div className="min-h-screen text-white p-4 md:p-8 font-sans transition-colors duration-500" style={{ backgroundColor: 'var(--color-secondary)' }}>
+    <div className="min-h-screen text-white p-4 md:p-8 font-sans transition-colors duration-500" style={{ backgroundColor: 'var(--color-monitor-bg, #0f172a)' }}>
       
       {/* Header Premium PWA */}
       <header className="mb-8 flex items-center justify-center flex-col gap-4 text-center mt-4">
-        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-            <Car size={36} className="text-white" />
+        <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shadow-lg border border-white/10 overflow-hidden">
+             {logoUrl ? (
+               <img src={logoUrl} alt={name} className="w-full h-full object-contain p-2" />
+             ) : (
+               <Car size={36} className="text-white" />
+             )}
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase">{name}</h1>
@@ -189,12 +193,46 @@ const CustomerStatus = () => {
              {(item.status === 'CONCLUÍDO' || item.status === 'ENTREGUE') && (
                <div className="mt-6 ml-4 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center justify-center gap-2">
                  <ShieldCheck size={18} className="text-emerald-500" />
-                 <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Serviço Finalizado! Venha buscar.</span>
+                 <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">SERVIÇO FINALIZADO!</span>
                </div>
              )}
 
           </div>
         ))}
+
+        {/* Botões de Redes Sociais e WhatsApp */}
+        {(whatsapp || instagramUrl || youtubeSocialUrl || tiktokUrl) && (
+          <div className="flex flex-col gap-4 pb-12 animate-slide-up">
+            {whatsapp && (
+              <a 
+                href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#25D366] text-white py-4 rounded-3xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <MessageCircle size={22} fill="white" /> Falar no WhatsApp
+              </a>
+            )}
+            
+            <div className="flex justify-center gap-4">
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg hover:rotate-12 hover:scale-110 transition-all">
+                  <Instagram size={28} />
+                </a>
+              )}
+              {youtubeSocialUrl && (
+                <a href={youtubeSocialUrl} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg hover:-rotate-12 hover:scale-110 transition-all">
+                  <Youtube size={28} />
+                </a>
+              )}
+              {tiktokUrl && (
+                <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="w-14 h-14 bg-black border border-white/20 rounded-2xl flex items-center justify-center shadow-lg hover:rotate-12 hover:scale-110 transition-all">
+                  <Music2 size={28} />
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
        <footer className="mt-12 text-center opacity-40">
