@@ -11,27 +11,31 @@ const CustomerStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // O ID agora é o identificador único para buscar a OS correta (evita conflito histórico)
-  const targetId = Number(id);
-
   const fetchCustomerOrders = async () => {
     if (!hasRealConnection()) {
       setLoading(false);
       return;
     }
 
-    if (!targetId || isNaN(targetId)) {
+    if (!id) {
       setOrders([]);
       setLoading(false);
       return;
     }
 
     try {
-      // Busca a OS específica pelo ID, garantindo isolamento histórico
-      const { data: ordens, error: osError } = await supabase
+      // Busca a OS específica pelo tracking_token (UUID) ou ID numérico (compatibilidade)
+      const query = supabase
         .from('ordens_servico')
-        .select('*, veiculos(marca, modelo)')
-        .eq('id', targetId);
+        .select('*, veiculos(marca, modelo)');
+
+      if (id.length > 10) { // Provável UUID
+        query.eq('tracking_token', id);
+      } else {
+        query.eq('id', id);
+      }
+
+      const { data: ordens, error: osError } = await query;
 
       if (osError) throw osError;
 
@@ -61,14 +65,16 @@ const CustomerStatus = () => {
   useEffect(() => {
     fetchCustomerOrders();
     
-    if (hasRealConnection()) {
+    if (hasRealConnection() && orders.length > 0) {
+      // Usa o ID real da OS para o filtro do canal realtime
+      const realId = orders[0].id;
       const channel = supabase
-        .channel('public-customer-status')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'ordens_servico', filter: `id=eq.${targetId}` }, fetchCustomerOrders)
+        .channel(`public-customer-status-${realId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'ordens_servico', filter: `id=eq.${realId}` }, fetchCustomerOrders)
         .subscribe();
       return () => supabase.removeChannel(channel);
     }
-  }, [id]);
+  }, [id, orders.length]);
 
   if (loading) {
     return (
@@ -87,7 +93,7 @@ const CustomerStatus = () => {
         </div>
         <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Serviço Não Encontrado</h2>
         <p className="text-slate-400 font-medium">Verifique se o link de acompanhamento está correto ou se a Ordem de Serviço foi excluída.</p>
-        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-8">OS Nº: #{targetId || 'Inválida'}</p>
+        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-8">Link: {id || 'Inválido'}</p>
       </div>
     );
   }

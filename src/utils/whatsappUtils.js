@@ -42,14 +42,14 @@ Boas notícias! O serviço no seu veículo *${veiculo}* foi concluído com suces
 Seu veículo já está pronto para retirada. Aguardamos você!`;
 };
 
-export const getServiceFinishedMsg = (cliente, veiculo, osId) => {
+export const getServiceFinishedMsg = (cliente, veiculo, tokenOrId) => {
   return `Olá ${cliente}! 👋
 Temos ótimas notícias: o serviço no seu *${veiculo}* foi concluído com sucesso! ✅
 
 Seu veículo já está pronto para retirada. Também geramos seu *Certificado de Garantia Digital* que você poderá visualizar em nosso sistema.
 
 Acesse o resumo e o status final pelo link:
-${window.location.origin}/status/${osId}
+${window.location.origin}/status/${tokenOrId}
 
 Até breve!`;
 };
@@ -61,12 +61,12 @@ Passando para confirmar seu agendamento no dia *${data}* às *${hora}* para o se
 Podemos confirmar?`;
 };
 
-export const getVehicleReceivedMsg = (cliente, veiculo, osId) => {
+export const getVehicleReceivedMsg = (cliente, veiculo, tokenOrId) => {
   return `Olá ${cliente}! 🚗
 Veículo *${veiculo}* recebido com sucesso na loja e checklist visual assinado!
 
 A partir de agora, você pode acompanhar a execução dos nossos serviços em tempo real através do seu painel exclusivo:
-${window.location.origin}/status/${osId}
+${window.location.origin}/status/${tokenOrId}
 
 Qualquer novidade avisaremos por aqui.`;
 };

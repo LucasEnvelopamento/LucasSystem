@@ -102,10 +102,13 @@ export const useOrders = () => {
     if (hasRealConnection()) {
       try {
         // Intercepta conclusão para dar baixa no estoque
-        if (data.status === 'CONCLUÍDO') {
+        const isFinalStatus = ['CONCLUÍDO', 'ENTREGUE'].includes(data.status);
+        if (isFinalStatus) {
            const { data: currentOs } = await supabase.from('ordens_servico').select('status, servicos_detalhados').eq('id', id).single();
            
-           if (currentOs && currentOs.status !== 'CONCLUÍDO' && currentOs.servicos_detalhados) {
+           const wasAlreadyFinished = ['CONCLUÍDO', 'ENTREGUE'].includes(currentOs?.status);
+
+           if (currentOs && !wasAlreadyFinished && currentOs.servicos_detalhados) {
               for (const serv of currentOs.servicos_detalhados) {
                  if (serv.controle_estoque && Array.isArray(serv.materiais)) {
                     for (const mat of serv.materiais) {

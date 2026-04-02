@@ -28,10 +28,19 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
     // Combina data e hora para formatar como timestamp
     const dataAgendamento = new Date(`${data}T${hora}:00`).toISOString();
     
+    // Busca o nome do técnico para salvar na OS (desnormalização)
+    const selectedProfile = profiles.find(p => p.id === tecnicoId);
+    const tecnicoNome = selectedProfile ? (
+       (selectedProfile.nome && selectedProfile.nome.includes('@')) || !selectedProfile.nome 
+       ? selectedProfile.email.split('@')[0].split(/[._-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+       : selectedProfile.nome
+    ) : null;
+
     await onConfirm({
       id: quote.id,
       data_agendamento: dataAgendamento,
       tecnico_id: tecnicoId || null,
+      tecnico: tecnicoNome, // Salva o nome amigável
       status: 'AGUARDANDO' // Move de ORCAMENTO para AGUARDANDO (Agenda)
     });
     setIsSaving(false);

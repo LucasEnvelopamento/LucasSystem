@@ -13,7 +13,9 @@ import {
   ExternalLink,
   User,
   Car as CarIcon,
-  Zap
+  Zap,
+  PackageCheck,
+  UserMinus
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -117,16 +119,17 @@ const OrdensServico = () => {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cód / Data</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cliente / Veículo</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Serviço / Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Progresso</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Ações</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Veículo / Cliente</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Serviço / Status</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Responsável</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Progresso</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-20 text-center">
+                  <td colSpan="6" className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Carregando ordens...</p>
@@ -162,7 +165,17 @@ const OrdensServico = () => {
                         </span>
                     </div>
                   </td>
-                  <td className="px-6 py-6">
+                  <td className="px-6 py-6 text-center">
+                    <div className="flex flex-col items-center gap-1.5">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black border transition-all ${os.tecnico ? 'bg-primary/10 text-primary border-primary/20' : 'bg-slate-50 text-slate-300 border-slate-100'}`}>
+                          {os.tecnico ? <User size={14} /> : <UserMinus size={14} />}
+                       </div>
+                       <span className={`text-[9px] font-bold uppercase tracking-tight ${os.tecnico ? 'text-slate-600' : 'text-slate-300'}`}>
+                          {os.tecnico || 'Nenhum'}
+                       </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-6 font-mono">
                      <div className="flex flex-col items-center gap-2">
                         <span className="text-[10px] font-black italic text-slate-800">{os.progresso || 0}%</span>
                         <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50 p-0.5">
@@ -186,7 +199,7 @@ const OrdensServico = () => {
                         >
                           <FileText size={20} />
                         </button>
-                        {(os.status && String(os.status).toUpperCase().includes('CONCLU')) && (
+                        {(os.status && String(os.status).toUpperCase() === 'CONCLUÍDO') && (
                           <>
                             <button 
                               onClick={() => { setActiveOS(os); setShowCertificado(true); }}
@@ -196,7 +209,7 @@ const OrdensServico = () => {
                               <Printer size={20} />
                             </button>
                             <button 
-                              onClick={() => sendWhatsApp(os.cliente_telefone || '11999999999', getServiceFinishedMsg(os.cliente_nome, os.veiculo_desc, os.id))}
+                              onClick={() => sendWhatsApp(os.cliente_telefone || '11999999999', getServiceFinishedMsg(os.cliente_nome, os.veiculo_desc, os.tracking_token || os.id))}
                               className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-500 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200"
                               title="Avisar no WhatsApp"
                             >
@@ -215,14 +228,25 @@ const OrdensServico = () => {
                                   if (result.success) toast.success('Veículo entregue com sucesso!');
                                 }
                               }}
-                              className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-600 hover:text-emerald-800 transition-all border border-transparent hover:border-emerald-200"
+                              className="p-2.5 hover:bg-amber-50 rounded-xl text-amber-600 hover:text-amber-800 transition-all border border-transparent hover:border-amber-200"
                               title="Confirmar Entrega"
                             >
-                              <CheckCircle2 size={20} />
+                              <PackageCheck size={20} />
                             </button>
                           </>
                         )}
-                        {(!os.status || !String(os.status).toUpperCase().includes('CONCLU')) && (
+                        {(os.status && String(os.status).toUpperCase() === 'ENTREGUE') && (
+                          <>
+                            <button 
+                              onClick={() => { setActiveOS(os); setShowCertificado(true); }}
+                              className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-400 hover:text-emerald-600 transition-all border border-transparent hover:border-emerald-200"
+                              title="Imprimir Garantia"
+                            >
+                              <Printer size={20} />
+                            </button>
+                          </>
+                        )}
+                        {(os.status && !['CONCLUÍDO', 'ENTREGUE'].includes(String(os.status).toUpperCase())) && (
                            <button 
                              onClick={async () => {
                                 const confirm = await confirmDialog(
@@ -252,7 +276,7 @@ const OrdensServico = () => {
                               toast.info('Esse serviço já foi concluído! Utilize o botão de WhatsApp (Raio Verde) para avisar o cliente da retirada.');
                             } else {
                               const cleanPhone = (os.cliente_telefone || '').replace(/\D/g, '');
-                              sendWhatsApp(cleanPhone || '11999999999', getVehicleReceivedMsg(os.cliente_nome, os.veiculo_desc, os.id));
+                              sendWhatsApp(cleanPhone || '11999999999', getVehicleReceivedMsg(os.cliente_nome, os.veiculo_desc, os.tracking_token || os.id));
                             }
                           }}
                           className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-transparent hover:border-primary/20"

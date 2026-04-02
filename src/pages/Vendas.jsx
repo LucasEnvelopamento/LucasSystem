@@ -53,6 +53,7 @@ const Vendas = () => {
     const result = await approveQuote(appointmentData);
     if (result.success) {
         setShowAgendaModal(false);
+        toast.success('Agendamento realizado e OS criada!');
         
         // Dispara aviso opcional de WhatsApp para Agendamento Confirmado com Dialog Customizado
         const confirmZap = await confirmDialog(

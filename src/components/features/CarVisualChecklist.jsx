@@ -412,7 +412,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
               <button 
                 onClick={() => {
                   const cleanPhone = (osData.cliente_telefone || '').replace(/\D/g, '');
-                  sendWhatsApp(cleanPhone || '11999999999', getVehicleReceivedMsg(osData.cliente_nome, osData.veiculo_desc, osData.id));
+                  sendWhatsApp(cleanPhone || '11999999999', getVehicleReceivedMsg(osData.cliente_nome, osData.veiculo_desc, osData.tracking_token || osData.id));
                   setShowWhatsAppPrompt(false);
                   onClose();
                 }}

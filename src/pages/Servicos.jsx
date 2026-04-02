@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Search, Wrench, ShieldCheck, MoreHorizontal, DollarSign, Loader2, Type, Car, Trash2, X, Zap } from 'lucide-react';
+import { Plus, Search, Wrench, ShieldCheck, MoreHorizontal, DollarSign, Loader2, Type, Car, Trash2, X, Zap, AlertCircle } from 'lucide-react';
 import { useCatalog, useInventory } from '../hooks/useData';
+import { toast } from '../utils/toast';
+import { confirmDialog } from '../utils/confirm';
 
 const ServicosView = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,7 @@ const ServicosView = () => {
 
     setIsSaving(false);
     if (res.success) {
+      toast.success(editingService ? 'Serviço atualizado com sucesso!' : 'Novo serviço adicionado ao catálogo!');
       setShowAddModal(false);
       setEditingService(null);
       setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [] });
@@ -132,8 +135,19 @@ const ServicosView = () => {
               <div className="relative">
                 <button 
                   onClick={async () => {
-                    if (window.confirm('Tem certeza que deseja excluir esse serviço?')) {
-                      await deleteService(s.id);
+                    const confirm = await confirmDialog(
+                      'Excluir Serviço',
+                      `Tem certeza que deseja remover "${s.nome}" do catálogo?`,
+                      'Excluir',
+                      'Cancelar'
+                    );
+                    if (confirm) {
+                      const res = await deleteService(s.id);
+                      if (res.success) {
+                        toast.success('Serviço excluído!');
+                      } else {
+                        toast.error('Erro ao excluir serviço.');
+                      }
                     }
                   }}
                   className="text-slate-300 hover:text-rose-600 p-2 transition-colors rounded-full hover:bg-rose-50"

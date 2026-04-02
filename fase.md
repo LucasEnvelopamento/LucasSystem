@@ -221,22 +221,36 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] Extermínio Inicial dos Alerts: Substituição de ~12 popups cinzas nativos.
 - [x] Polir componentes (como Checklist Automotivo e persistência de Supabase) para se integrarem em silêncio de fundo disparando avisos laterais elegantes de "Sucesso".
 
-- [ ] **Ordens de Serviço**:
-    - [ ] Corrigir botões de "Entrega" e "Conclusão de Serviço".
-- [ ] **Gestão de Clientes**:
-    - [ ] Incluir contador de serviços realizados no grid de clientes.
-    - [ ] Implementar popup de detalhes dos serviços ao clicar no contador.
-- [ ] **Controle de Estoque**:
-    - [ ] Corrigir funcionalidade do botão "Repor Estoque".
-- [ ] **Colaboradores**:
-    - [ ] Incluir campo "Nome" no modal de edição.
-    - [ ] Desabilitar edição do campo "E-mail" (proteção de login).
-- [ ] **Camada de Segurança & Estabilização**:
-    - [ ] Implementar Prevenção de IDOR (UUID Tracking Token) nos links de status dos clientes.
-    - [ ] Hardening de Banco (Habilitar RLS em todas as tabelas e configurar Políticas).
-    - [ ] Estabilizar Sessão no Refresh (Garantir persistência ao dar F5 no navegador).
-    - [ ] Corrigir Erros Críticos (ReferenceError: toast is not defined em múltiplos módulos).
+- [x] **Ordens de Serviço**:
+    - [x] Corrigir botões de "Entrega" e "Conclusão de Serviço".
+    - [x] Garantir baixa única de estoque (Idempotência).
+
+- [x] **Gestão de Clientes**:
+    - [x] Implementar contador de serviços concluídos por cliente.
+    - [x] Melhorar painel lateral de detalhes (perfil do cliente).
+- [x] **Controle de Estoque**:
+    - [x] Substituir `window.prompt` por modal de reposição premium.
+    - [x] Validar entrada de quantidades (apenas números).
+- [x] **Colaboradores**:
+    - [x] Incluir campo "Nome" no modal de edição.
+    - [x] Proteger campo "E-mail" (somente leitura com cadeado).
+- [x] **Camada de Segurança & Estabilização**:
+    - [x] Implementar Prevenção de IDOR (UUID Tracking Token) nos links de status dos clientes. **(Concluído)**
+    - [x] Hardening de Banco (Habilitar RLS em todas as tabelas e configurar Políticas). **(Concluído - SQL Executado)**
+    - [x] Padronização de Notificações (Auditoria completa de Toasts). **(Concluído - Sistema 100% Event-Driven)**
+    - [x] Estabilizar Sessão no Refresh (Garantir persistência ao dar F5 no navegador).
+    - [x] Corrigir Erros Críticos (ReferenceError: toast is not defined em múltiplos módulos).
+
 
 ---
-*Última atualização: 02/04/2026 - STATUS: EM DESENVOLVIMENTO 🚀*
+### ✅ Fase 29: Estabilização Crítica e Segurança de Produção (Concluída)
+- [x] **RLS & Recursion Fix:** Correção do loop infinito nas políticas de segurança da tabela `profiles`.
+- [x] **Schema Profiles:** Adição das colunas `nome` e `telefone` na tabela `profiles` para suporte completo ao CRUD de colaboradores.
+- [x] **Sincronização de Técnicos:** Implantação da desnormalização do nome do técnico nas Ordens de Serviço para persistência de exibição.
+- [x] **Fix de Produção (Require Error):** Implementação de shims de compatibilidade (`global`, `process`, `require`) no `index.html` e `vite.config.js` para resolver crashes em dispositivos móveis (Safari/Vercel).
+- [x] **Auditoria de Importações:** Correção de `ReferenceError` (useState, icons) em `Servicos.jsx` e `OrdensServico.jsx`.
+- [x] **Versionamento Final:** Commit e Push de todas as melhorias para o repositório principal.
+
+---
+*Última atualização: 02/04/2026 - STATUS: FASE 29 CONCLUÍDA ✅*
 ```

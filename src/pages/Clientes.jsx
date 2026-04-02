@@ -69,8 +69,8 @@ const ClientesView = () => {
               <tr>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contato</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">E-mail</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Cadastro</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Serviços</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cadastro</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
@@ -89,10 +89,15 @@ const ClientesView = () => {
                     <span className="text-sm font-semibold text-slate-500 font-mono tracking-tighter">{c.telefone || 'Sem telefone'}</span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-sm text-slate-400 font-medium">{c.email || 'n/a'}</span>
+                    <div className="flex items-center gap-2">
+                       <span className="text-xs font-black text-slate-700 bg-slate-100 px-2 py-1 rounded-lg">
+                          {(quotes || []).filter(q => q.cliente_id === c.id || q.cliente_telefone === c.telefone).length}
+                       </span>
+                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Itens</span>
+                    </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-[11px] font-black px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                       {new Date(c.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </td>
@@ -212,8 +217,11 @@ const ClientesView = () => {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <History size={14} /> Histórico de Orçamentos e OS
+                  <History size={14} /> Histórico de Atendimentos
                 </h4>
+                <span className="text-[10px] font-black text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/10 transition-all">
+                  {(quotes || []).filter(q => q.cliente_id === selectedClientProfile.id || q.cliente_telefone === selectedClientProfile.telefone).length} Serviços
+                </span>
               </div>
 
               <div className="space-y-3">

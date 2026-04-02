@@ -193,6 +193,13 @@ const ColaboradoresView = () => {
               setUpdatingId(null);
             }} className="space-y-5">
               <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">E-mail (Login Protegido)</label>
+                <div className="flex items-center gap-2 mt-1 p-4 bg-slate-100 border border-slate-200 rounded-2xl text-slate-400 font-bold opacity-70">
+                   <Lock size={14} />
+                   <span className="text-sm">{editingColab.email}</span>
+                </div>
+              </div>
+              <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">Nome Completo</label>
                 <input name="nome" defaultValue={editingColab.nome || ''} required className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 font-bold transition-all" placeholder="Ex: Lucas Henrique" />
               </div>

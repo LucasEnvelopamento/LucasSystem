@@ -2,11 +2,11 @@ import React from 'react';
 import { User, Wrench, AlertCircle, Car, Clock, ChevronRight } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
+import { getStatusStyle } from '../utils/statusUtils';
 
 const OperadorHome = ({ onSelectOS }) => {
   const { orders, loading } = useOrders();
   const { profile } = useAuth();
-  const { getStatusStyle } = require('../utils/statusUtils');
 
   // 1. KPI: Fila Geral (Disponíveis sem técnico)
   const filaGeral = orders.filter(os => 
@@ -104,7 +104,6 @@ const OperadorHome = ({ onSelectOS }) => {
 
 // Componente Interno para o Card
 const ServiceCard = ({ os, onSelect, isMine }) => {
-  const { getStatusStyle } = require('../utils/statusUtils');
   
   return (
   <div 

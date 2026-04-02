@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Plus, Search, Package, AlertTriangle, ArrowUpRight, History, Loader2, Edit2, Trash2, X } from 'lucide-react';
 import { useInventory } from '../hooks/useData';
 import { toast } from '../utils/toast';
+import { confirmDialog } from '../utils/confirm';
 
 const MateriaisView = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { inventory, loading, saveItem, updateItem, deleteItem } = useInventory();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [repondoItem, setRepondoItem] = useState(null);
 
   const filteredInventory = inventory.filter(i => 
     i.nome?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -97,15 +99,7 @@ const MateriaisView = () => {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button 
-                          onClick={async () => {
-                            const addStr = window.prompt(`Quantos(as) [${m.unidade}] de ${m.nome} chegaram?`);
-                            if (!addStr) return;
-                            const addedQtd = parseFloat(addStr.replace(',', '.'));
-                            if (!isNaN(addedQtd) && addedQtd > 0) {
-                               const newTotal = (parseFloat(m.quantidade) || 0) + addedQtd;
-                               await updateItem(m.id, { quantidade: newTotal });
-                            }
-                          }}
+                          onClick={() => setRepondoItem(m)}
                           className="text-emerald-500 hover:text-emerald-700 p-2 hover:bg-emerald-100 rounded-xl transition-all font-bold flex items-center gap-1"
                           title="Repor Estoque Rápidamente"
                         >
@@ -120,8 +114,19 @@ const MateriaisView = () => {
                         </button>
                         <button 
                           onClick={async () => {
-                             if (window.confirm('Tem certeza que deseja excluir esse item do estoque?')) {
-                                await deleteItem(m.id);
+                             const confirm = await confirmDialog(
+                               'Excluir Material',
+                               `Tem certeza que deseja remover "${m.nome}" permanentemente do estoque?`,
+                               'Excluir',
+                               'Cancelar'
+                             );
+                             if (confirm) {
+                                const res = await deleteItem(m.id);
+                                if (res.success) {
+                                   toast.success('Material removido do cadastro.');
+                                } else {
+                                   toast.error('Erro ao excluir material.');
+                                }
                              }
                           }}
                           className="text-slate-400 hover:text-rose-600 p-2 hover:bg-rose-100 rounded-xl transition-all"
@@ -202,6 +207,54 @@ const MateriaisView = () => {
               <button type="submit" className="w-full btn-primary py-4 rounded-2xl shadow-xl shadow-primary/20 mt-4 flex items-center justify-center gap-2">
                 <Package size={20} /> {editingItem ? 'Salvar Alterações' : 'Adicionar ao Estoque'}
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Reposição de Estoque (Premium) */}
+      {repondoItem && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[300] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm shadow-2xl overflow-hidden animate-scaleUp">
+            <div className="p-8 text-center bg-emerald-50/50 border-b border-emerald-100/50">
+               <div className="w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+                  <ArrowUpRight size={28} />
+               </div>
+               <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Reposição de Estoque</h3>
+               <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">{repondoItem.nome}</p>
+            </div>
+            
+            <form onSubmit={async (e) => {
+               e.preventDefault();
+               const val = parseFloat(e.target.qtd.value.replace(',', '.'));
+               if (!isNaN(val) && val > 0) {
+                 const newTotal = (parseFloat(repondoItem.quantidade) || 0) + val;
+                 const res = await updateItem(repondoItem.id, { quantidade: newTotal });
+                 if (res.success) {
+                   toast.success(`Estoque atualizado: +${val} ${repondoItem.unidade}`);
+                   setRepondoItem(null);
+                 }
+               } else {
+                 toast.warning("Insira uma quantidade válida.");
+               }
+            }} className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Quantidade que chegou ({repondoItem.unidade})</label>
+                <input 
+                  autoFocus
+                  name="qtd"
+                  type="number" 
+                  step="0.01"
+                  required
+                  placeholder="0,00"
+                  className="w-full text-3xl font-black text-center py-6 bg-slate-50 border-2 border-slate-100 rounded-3xl outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner placeholder:text-slate-200"
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setRepondoItem(null)} className="flex-1 py-4 text-[10px] font-black uppercase text-slate-400 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all">Cancelar</button>
+                <button type="submit" className="flex-[2] py-4 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-2xl shadow-xl shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">Confirmar Entrada</button>
+              </div>
             </form>
           </div>
         </div>
