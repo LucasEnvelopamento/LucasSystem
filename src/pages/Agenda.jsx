@@ -36,13 +36,21 @@ const AgendaView = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
   };
 
+  // Função utilitária para comparação de datas segura (ignora horário)
+  const isSameDay = (date1, date2) => {
+    if (!date1 || !date2) return false;
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1.getFullYear() === d2.getFullYear() && 
+           d1.getMonth() === d2.getMonth() && 
+           d1.getDate() === d2.getDate();
+  };
+
   // Filtra agendamentos reais da lista de OS para o dia selecionado
   const agendamentos = orders
     .filter(os => {
-        if (!['AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'].includes(os.status)) return false;
-       if (!os.data_agendamento) return false;
-       const osDate = new Date(os.data_agendamento);
-       return osDate.toDateString() === currentDate.toDateString();
+       if (!['AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'].includes(os.status)) return false;
+       return isSameDay(os.data_agendamento, currentDate);
     })
     .sort((a, b) => new Date(a.data_agendamento) - new Date(b.data_agendamento));
 
@@ -91,20 +99,34 @@ const AgendaView = () => {
               {/* Dias do mês */}
               {Array.from({ length: getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth()) }).map((_, i) => {
                 const day = i + 1;
+                const dDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                 const isSelected = day === currentDate.getDate();
-                const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+                const isToday = isSameDay(dDate, new Date());
                 
+                // Busca se há agendamentos para este dia específico para mostrar um indicador
+                const dayAgendamentos = orders.filter(os => 
+                  ['AGUARDANDO', 'EM EXECUÇÃO'].includes(os.status) && 
+                  isSameDay(os.data_agendamento, dDate)
+                );
+
                 return (
                   <button 
                     key={i} 
                     onClick={() => handleDayClick(day)}
-                    className={`aspect-square text-xs font-black rounded-xl flex items-center justify-center transition-all ${
+                    className={`aspect-square text-xs font-black rounded-xl flex flex-col items-center justify-center transition-all relative ${
                       isSelected ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110 z-10' 
                       : isToday ? 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20' 
                       : 'text-slate-500 hover:bg-slate-50'
                     }`}
                   >
-                    {day}
+                    <span>{day}</span>
+                    {dayAgendamentos.length > 0 && !isSelected && (
+                      <div className="absolute bottom-1.5 flex gap-0.5">
+                        {dayAgendamentos.slice(0, 3).map((_, idx) => (
+                          <div key={idx} className="w-1 h-1 bg-primary rounded-full"></div>
+                        ))}
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -190,6 +212,9 @@ const AgendaView = () => {
          <NovoOrcamentoModal 
            onClose={() => setShowNovoModal(false)}
            onSave={saveQuote}
+           defaultStatus="AGUARDANDO"
+           defaultDate={currentDate}
+           existingOrders={orders}
          />
       )}
 

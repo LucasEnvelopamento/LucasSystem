@@ -20,6 +20,8 @@ import AgendamentoModal from '../components/features/AgendamentoModal';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import { sendWhatsApp, getBudgetMsg, getAppointmentMsg } from '../utils/whatsappUtils';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
+import { confirmDialog } from '../utils/confirm';
+import { toast } from '../utils/toast';
 
 const Vendas = () => {
   const navigate = useNavigate();
@@ -52,8 +54,15 @@ const Vendas = () => {
     if (result.success) {
         setShowAgendaModal(false);
         
-        // Dispara aviso opcional de WhatsApp para Agendamento Confirmado
-        if (window.confirm('Orçamento aprovado e agendado com sucesso! Deseja enviar a confirmação de horário por WhatsApp ao cliente?')) {
+        // Dispara aviso opcional de WhatsApp para Agendamento Confirmado com Dialog Customizado
+        const confirmZap = await confirmDialog(
+          'Agendamento Confirmado',
+          'Orçamento aprovado com sucesso! Deseja enviar o comprovante de agendamento por WhatsApp?',
+          'Sim, enviar',
+          'Agora não'
+        );
+
+        if (confirmZap) {
             const dateObj = new Date(appointmentData.data_agendamento);
             const dataStr = dateObj.toLocaleDateString('pt-BR');
             const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -66,18 +75,46 @@ const Vendas = () => {
   };
 
   const handleReopen = async (quote) => {
-    if (window.confirm(`Deseja reabrir o orçamento #${quote.id}? O agendamento anterior será removido.`)) {
+    const confirm = await confirmDialog(
+      'Reabrir Orçamento',
+      `Deseja reabrir o orçamento #${quote.id}? O agendamento atual será cancelado e ele voltará ao status de proposta.`,
+      'Reabrir Proposta',
+      'Manter como está'
+    );
+
+    if (confirm) {
       const result = await reopenQuote(quote.id);
       if (result.success) {
+        toast.success('Orçamento reaberto para ajustes!');
         setSelectedQuote(null);
+      } else {
+        toast.error('Erro ao reabrir: ' + result.error.message);
       }
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este orçamento permanentemente?')) {
-      const result = await deleteQuote(id);
-      if (result.success) setActiveMenuQuote(null);
+  const handleDelete = async (quote) => {
+    // Regra de segurança: Não permitir excluir se estiver aguardando execução (agendado)
+    if (quote.status === 'AGUARDANDO') {
+      toast.warning('Ação Negada: Esta ordem está AGUARDADA na agenda. Cancele o agendamento (Reabrir) antes de excluí-la permanentemente.');
+      return;
+    }
+
+    const confirm = await confirmDialog(
+      'Excluir Permanente',
+      `Tem certeza que deseja apagar o registro #${quote.id}? Esta ação não pode ser desfeita.`,
+      'Excluir Agora',
+      'Cancelar'
+    );
+
+    if (confirm) {
+      const result = await deleteQuote(quote.id);
+      if (result.success) {
+        toast.success('Registro removido com sucesso.');
+        setActiveMenuQuote(null);
+      } else {
+        toast.error('Erro ao excluir: ' + result.error.message);
+      }
     }
   };
 
@@ -430,7 +467,7 @@ const Vendas = () => {
               
               <div className="pt-4 mt-4 border-t border-slate-50">
                 <button 
-                  onClick={() => handleDelete(activeMenuQuote.id)} 
+                  onClick={() => handleDelete(activeMenuQuote)} 
                   className="w-full py-4 text-rose-500 font-bold uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-rose-50 transition-all"
                 >
                   <AlertCircle size={14} /> Excluir Permanentemente

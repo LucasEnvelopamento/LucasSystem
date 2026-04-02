@@ -204,7 +204,13 @@ const OrdensServico = () => {
                             </button>
                             <button 
                               onClick={async () => {
-                                if (window.confirm('Confirma a entrega do veículo ao cliente? Esta OS será movida para o histórico.')) {
+                                const confirm = await confirmDialog(
+                                  'Confirmar Entrega',
+                                  'Deseja registrar a entrega do veículo ao cliente? Esta OS será finalizada e sairá da lista ativa.',
+                                  'Confirmar Entrega',
+                                  'Cancelar'
+                                );
+                                if (confirm) {
                                   const result = await deliverOrder(os.id);
                                   if (result.success) toast.success('Veículo entregue com sucesso!');
                                 }
@@ -219,12 +225,19 @@ const OrdensServico = () => {
                         {(!os.status || !String(os.status).toUpperCase().includes('CONCLU')) && (
                            <button 
                              onClick={async () => {
-                                if (window.confirm('Deseja marcar esta Ordem de Serviço como CONCLUÍDA? Ela sairá da TV e liberará o Certificado de Garantia.')) {
+                                const confirm = await confirmDialog(
+                                  'Concluir Serviço',
+                                  'Deseja marcar esta Ordem de Serviço como CONCLUÍDA? O status será atualizado na TV e o certificado de garantia será liberado.',
+                                  'Concluir Agora',
+                                  'Voltar'
+                                );
+                                if (confirm) {
                                   const result = await updateOrderProgress(os.id, { 
                                      status: 'CONCLUÍDO', 
                                      progresso: 100,
                                      data_fim: new Date().toISOString()
                                   });
+                                  if (result.success) toast.success('Serviço concluído com sucesso!');
                                 }
                              }}
                              className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-500 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200"

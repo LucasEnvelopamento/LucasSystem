@@ -255,12 +255,11 @@ export const useQuotes = () => {
 
   const saveQuote = async (quoteData) => {
     if (hasRealConnection()) {
-      // Orçamentos são salvos na tabela de ordens_servico com status 'ORCAMENTO'
       const { data, error } = await supabase
         .from('ordens_servico')
         .insert([{ 
           ...quoteData, 
-          status: 'ORCAMENTO',
+          status: quoteData.status || 'ORCAMENTO',
           created_at: new Date().toISOString() 
         }])
         .select();

@@ -216,21 +216,26 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Enquadramento A4:** Ajuste de paddings verticais e borders (`print:`) permitindo respiro visual na tela comum e encolhimento harmonioso no papel de 285mm.
 - [x] **Design do Símbolo da Loja:** Conserto de variância de dados (`logoUrl`) e melhoria da UX de símbolos espalhados. Sidebar e TV agora abraçam perfeitamente as imagens de logotipo que o usuário manda, arredondando cantos estilo MacOS (App Icon).
 
-### ✅ Fase 28.3: Sistema Global de Notificações - Toasts (Concluída / Refinamento em Aberto)
+### ✅ Fase 28.3: Sistema Global de Notificações - Toasts (Concluída)
 - [x] Padrão Ouro: Desenvolver arquitetura Global de Popups Event-Driven para dispensar re-renders com uso de bibliotecas pesadas de fora.
 - [x] Extermínio Inicial dos Alerts: Substituição de ~12 popups cinzas nativos.
-- [ ] **Refinamento de Alertas**: Encontrar e substituir alertas remanescentes em fluxos secundários apontados pelo usuário.
 - [x] Polir componentes (como Checklist Automotivo e persistência de Supabase) para se integrarem em silêncio de fundo disparando avisos laterais elegantes de "Sucesso".
 
-### 🚀 Fase 25: Correção de Bugs e Estabilização (Em Andamento)
-- [ ] **Fluxo da Agenda**: Corrigir erro no fluxo de agendamento (conforme reportado em teste real).
-- [ ] **Identificação de Erros Críticos**: Analisar logs do console e comportamentos inesperados (ReferenceError: toast is not defined).
-- [ ] **Refinamento de UX**: Pequenos ajustes sugeridos pelo usuário durante os testes.
-- [ ] **Estabilização da Sessão**: Garantir persistência absoluta (F5) em todas as telas.
-
-### 🚀 Fase 26: Segurança e Proteção de Dados (Próximos Passos)
-- [ ] **Prevenção de IDOR**: Substituir IDs sequenciais por `tracking_token` (UUID) nos links públicos de acompanhamento.
-- [ ] **Hardening de Banco**: Ativar e configurar Row Level Security (RLS) em todas as tabelas sensíveis.
+- [ ] **Ordens de Serviço**:
+    - [ ] Corrigir botões de "Entrega" e "Conclusão de Serviço".
+- [ ] **Gestão de Clientes**:
+    - [ ] Incluir contador de serviços realizados no grid de clientes.
+    - [ ] Implementar popup de detalhes dos serviços ao clicar no contador.
+- [ ] **Controle de Estoque**:
+    - [ ] Corrigir funcionalidade do botão "Repor Estoque".
+- [ ] **Colaboradores**:
+    - [ ] Incluir campo "Nome" no modal de edição.
+    - [ ] Desabilitar edição do campo "E-mail" (proteção de login).
+- [ ] **Camada de Segurança & Estabilização**:
+    - [ ] Implementar Prevenção de IDOR (UUID Tracking Token) nos links de status dos clientes.
+    - [ ] Hardening de Banco (Habilitar RLS em todas as tabelas e configurar Políticas).
+    - [ ] Estabilizar Sessão no Refresh (Garantir persistência ao dar F5 no navegador).
+    - [ ] Corrigir Erros Críticos (ReferenceError: toast is not defined em múltiplos módulos).
 
 ---
 *Última atualização: 02/04/2026 - STATUS: EM DESENVOLVIMENTO 🚀*

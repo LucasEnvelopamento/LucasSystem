@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap } from 'lucide-react';
+import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap, Clock } from 'lucide-react';
 import { useClients, useVehicles, useCatalog, useInventory } from '../../hooks/useData';
 import { toast } from '../../utils/toast';
 
-const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
+const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, defaultDate, existingOrders = [] }) => {
   const { clients, saveClient } = useClients();
   const { services: catalog } = useCatalog();
   
@@ -20,6 +20,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
   const [valorTotal, setValorTotal] = useState(0);
   const [observacoes, setObservacoes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('08:00');
 
   // Estados para cadastro rápido de veículo
   const [showQuickAddVehicle, setShowQuickAddVehicle] = useState(false);
@@ -97,6 +98,13 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
       valor_total: valorTotal,
       desconto: desconto,
       observacoes,
+      status: defaultStatus || 'ORCAMENTO',
+      data_agendamento: defaultDate ? (() => {
+        const d = new Date(defaultDate);
+        const [h, m] = selectedTime.split(':');
+        d.setHours(parseInt(h), parseInt(m), 0, 0);
+        return d.toISOString();
+      })() : null,
       servico: selectedServices.map(sId => catalog.find(item => item.id === sId)?.nome).join(', '),
       servicos_detalhados: selectedServices.map(sId => {
         const serv = catalog.find(item => item.id === sId);
@@ -130,7 +138,9 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
               <Plus size={28} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-2xl font-black tracking-tight uppercase">Novo Orçamento</h3>
+              <h3 className="text-2xl font-black tracking-tight uppercase">
+                {defaultStatus === 'AGUARDANDO' ? 'Novo Agendamento (OS)' : 'Novo Orçamento'}
+              </h3>
               <div className="flex items-center gap-3 mt-1.5">
                 {[1, 2, 3, 4].map((s) => (
                   <div key={s} className="flex items-center gap-2">
@@ -420,7 +430,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                     </div>
 
                     <div>
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Serviços</span>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Serviços Selecionados</span>
                       <div className="space-y-2">
                         {selectedServices.map(sId => {
                           const s = catalog.find(item => item.id === sId);
@@ -457,6 +467,73 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                       </div>
                     </div>
                   </div>
+
+                  {defaultStatus === 'AGUARDANDO' && (
+                    <div className="space-y-4">
+                      {/* Seletor de Horário */}
+                      <div className="bg-white p-6 rounded-2xl border-2 border-primary/20 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                              <Clock size={18} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Horário do Agendamento</p>
+                              <p className="text-xs font-bold text-slate-700">{defaultDate?.toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          </div>
+                          <input 
+                            type="time" 
+                            value={selectedTime}
+                            onChange={(e) => setSelectedTime(e.target.value)}
+                            className="bg-slate-100 border-none rounded-xl px-4 py-2 font-black text-primary outline-none focus:ring-2 focus:ring-primary/20 text-lg"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Spoiler de Agenda (Ocupação) */}
+                      <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <Info size={12} className="text-primary" /> Ocupação deste dia
+                        </h5>
+                        <div className="space-y-3">
+                          {existingOrders
+                            .filter(os => {
+                              if (!['AGUARDANDO', 'EM EXECUÇÃO'].includes(os.status)) return false;
+                              if (!os.data_agendamento || !defaultDate) return false;
+                              const osD = new Date(os.data_agendamento);
+                              const defD = new Date(defaultDate);
+                              return osD.getFullYear() === defD.getFullYear() && 
+                                     osD.getMonth() === defD.getMonth() && 
+                                     osD.getDate() === defD.getDate();
+                            })
+                            .sort((a, b) => new Date(a.data_agendamento) - new Date(b.data_agendamento))
+                            .map((os, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100 text-[11px]">
+                                <div className="flex items-center gap-3">
+                                  <span className="font-black text-slate-900 border-r pr-3 border-slate-100">
+                                    {new Date(os.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                  <span className="font-bold text-slate-600 uppercase truncate max-w-[120px]">{os.cliente_nome}</span>
+                                </div>
+                                <span className="text-[9px] font-black bg-primary/5 text-primary px-2 py-0.5 rounded uppercase tracking-tighter">{os.servico}</span>
+                              </div>
+                            ))}
+                          {existingOrders.filter(os => {
+                            if (!['AGUARDANDO', 'EM EXECUÇÃO'].includes(os.status)) return false;
+                            if (!os.data_agendamento || !defaultDate) return false;
+                            const osD = new Date(os.data_agendamento);
+                            const defD = new Date(defaultDate);
+                            return osD.getFullYear() === defD.getFullYear() && 
+                                   osD.getMonth() === defD.getMonth() && 
+                                   osD.getDate() === defD.getDate();
+                          }).length === 0 && (
+                            <p className="text-[10px] text-slate-300 font-bold uppercase italic text-center py-2">Sem outros serviços para este dia</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações</label>
@@ -507,7 +584,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                       {isSaving ? (
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       ) : (
-                          <><Save size={16} strokeWidth={3} /> Gerar Orçamento</>
+                          <><Save size={16} strokeWidth={3} /> {defaultStatus === 'AGUARDANDO' ? 'Confirmar Agendamento' : 'Gerar Orçamento'}</>
                       )}
                     </button>
                   )}
