@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Calendar, Clock, User, Save, Bell } from 'lucide-react';
 import { useProfiles, useOrders } from '../../hooks/useData';
+import { toast } from '../../utils/toast';
 
 const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
   const { profiles, loading: loadingProfiles } = useProfiles();
@@ -19,7 +20,7 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
 
   const handleConfirm = async () => {
     if (!data || !hora) {
-      alert('Data e Hora são obrigatórias');
+      toast.warning('Data e Hora são obrigatórias');
       return;
     }
     

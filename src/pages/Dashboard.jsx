@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, TrendingUp, Clock, CheckCircle, ExternalLink, X, Calendar, User, Car, DollarSign, Activity } from 'lucide-react';
 import { useOrders, useClients, useCatalog } from '../hooks/useData';
+import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 
 const StatCard = ({ icon: Icon, label, value, trend, color, loading }) => {
   const colors = {
@@ -77,8 +78,6 @@ const Dashboard = () => {
     }))
     .sort((a, b) => b.value - a.value).slice(0, 6);
 
-  const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-
   return (
     <div className="fade-in space-y-8 pb-10">
       {/* Grid de KPIs Dinâmicos */}
@@ -125,7 +124,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
         {/* Ordens Recentes Reais */}
         <div className="xl:col-span-2 card-premium p-8 flex flex-col">
           <div className="flex items-center justify-between mb-8">
@@ -156,11 +155,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="flex justify-start sm:justify-end shrink-0">
-                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    String(os.status || '').toUpperCase().includes('EXECU') ? 'bg-blue-100 text-blue-600' : 
-                    String(os.status || '').toUpperCase().includes('AGUARDA') ? 'bg-amber-100 text-amber-600' :
-                    'bg-emerald-100 text-emerald-600'
-                  }`}>
+                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${getStatusStyle(os.status)}`}>
                     {os.status}
                   </span>
                 </div>
@@ -258,7 +253,7 @@ const Dashboard = () => {
               </div>
 
               {/* Seção Info Execução */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
                   <div className="flex items-center gap-2 mb-2">
                     <Calendar size={14} className="text-blue-500" />

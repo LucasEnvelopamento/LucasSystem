@@ -60,7 +60,7 @@ const MonitorTV = () => {
           <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shadow-lg border border-white/10 overflow-hidden">
                {logoUrl ? (
-                 <img src={logoUrl} alt={name} className="w-full h-full object-contain p-2" />
+                 <img src={logoUrl} alt={name} className="w-full h-full object-cover" />
                ) : (
                  <Car size={36} className="text-white" />
                )}

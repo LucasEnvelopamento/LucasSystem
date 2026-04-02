@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from '../utils/toast';
 import { supabase, hasRealConnection } from '../lib/supabase';
 
 export const useOrders = () => {
@@ -100,6 +101,27 @@ export const useOrders = () => {
   const updateOrderProgress = async (id, data) => {
     if (hasRealConnection()) {
       try {
+        // Intercepta conclusão para dar baixa no estoque
+        if (data.status === 'CONCLUÍDO') {
+           const { data: currentOs } = await supabase.from('ordens_servico').select('status, servicos_detalhados').eq('id', id).single();
+           
+           if (currentOs && currentOs.status !== 'CONCLUÍDO' && currentOs.servicos_detalhados) {
+              for (const serv of currentOs.servicos_detalhados) {
+                 if (serv.controle_estoque && Array.isArray(serv.materiais)) {
+                    for (const mat of serv.materiais) {
+                       if (mat.material_id && mat.quantidade_utilizada > 0) {
+                          const { data: matData } = await supabase.from('estoque_materiais').select('quantidade').eq('id', mat.material_id).single();
+                          if (matData) {
+                             const novoEstoque = Math.max(0, matData.quantidade - mat.quantidade_utilizada);
+                             await supabase.from('estoque_materiais').update({ quantidade: novoEstoque }).eq('id', mat.material_id);
+                          }
+                       }
+                    }
+                 }
+              }
+           }
+        }
+
         const { error } = await supabase
           .from('ordens_servico')
           .update(data)
@@ -353,14 +375,26 @@ export const useCatalog = () => {
       const { data, error } = await supabase.from('servicos').insert([serviceData]).select();
       
       if (error) {
-        // Fallback: Tenta sem a coluna 'garantia' se ela não existir no banco
-        if (error.code === '42703' || error.message?.includes('garantia')) {
+        if (error.code === '42703') {
           const safeData = { ...serviceData };
-          delete safeData.garantia;
+          
+          if (error.message?.includes('garantia')) {
+             delete safeData.garantia;
+          }
+          if (error.message?.includes('materiais')) {
+             delete safeData.materiais;
+             toast.warning("Aviso: Os MATERIAIS não foram salvos pois a coluna 'materiais' não foi encontrada!");
+          }
+
           const { data: retryData, error: retryError } = await supabase.from('servicos').insert([safeData]).select();
-          if (!retryError) await fetchCatalog();
-          return { success: !retryError, error: retryError, data: retryData?.[0] };
+          if (!retryError) {
+             await fetchCatalog();
+             return { success: true, data: retryData?.[0] };
+          }
+          toast.error('Erro no fallback de serviço: ' + retryError.message);
+          return { success: false, error: retryError };
         }
+        toast.error('Erro ao salvar serviço: ' + error.message);
         return { success: false, error };
       }
 
@@ -375,14 +409,26 @@ export const useCatalog = () => {
       const { error } = await supabase.from('servicos').update(serviceData).eq('id', id);
       
       if (error) {
-        // Fallback: Tenta sem a coluna 'garantia' se ela não existir no banco
-        if (error.code === '42703' || error.message?.includes('garantia')) {
+        if (error.code === '42703') {
           const safeData = { ...serviceData };
-          delete safeData.garantia;
+          
+          if (error.message?.includes('garantia')) {
+             delete safeData.garantia;
+          }
+          if (error.message?.includes('materiais')) {
+             delete safeData.materiais;
+             toast.warning("Aviso: Os MATERIAIS não foram atualizados pois a coluna 'materiais' não foi encontrada!");
+          }
+
           const { error: retryError } = await supabase.from('servicos').update(safeData).eq('id', id);
-          if (!retryError) await fetchCatalog();
-          return { success: !retryError, error: retryError };
+          if (!retryError) {
+             await fetchCatalog();
+             return { success: true };
+          }
+          toast.error('Erro no fallback de atualizar serviço: ' + retryError.message);
+          return { success: false, error: retryError };
         }
+        toast.error('Erro ao atualizar serviço: ' + error.message);
         return { success: false, error };
       }
 

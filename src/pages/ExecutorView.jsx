@@ -14,6 +14,7 @@ import {
 
 import { useOrders } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from '../utils/toast';
 
 const ExecutorView = ({ os, onBack, onComplete }) => {
   const { updateOrderProgress } = useOrders();
@@ -67,7 +68,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
 
   const handleStart = async () => {
     if (!os.has_checklist) {
-        alert('Realize o checklist de entrada antes de iniciar.');
+        toast.warning('Realize o checklist de entrada antes de iniciar.');
         return;
     }
     
@@ -110,9 +111,10 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     });
     
     if (result.success) {
+        toast.success('Serviço concluído com sucesso!');
         onComplete();
     } else {
-        alert('Erro ao finalizar OS: ' + (result.error?.message || 'Erro desconhecido. Verifique a conexão.'));
+        toast.error('Erro ao finalizar OS: ' + (result.error?.message || 'Erro desconhecido. Verifique a conexão.'));
     }
     setIsFinishing(false);
   };
@@ -140,7 +142,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     // Aqui no futuro implementaremos o upload real para o Bucket do Supabase
     const newPhotos = files.map(file => URL.createObjectURL(file));
     setPhotos(prev => [...prev, ...newPhotos]);
-    alert('Fotos carregadas (Upload real em desenvolvimento)');
+    toast.info('Fotos carregadas (Upload real em desenvolvimento)');
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Search, Wrench, ShieldCheck, MoreHorizontal, DollarSign, Loader2, Type, Car, Trash2 } from 'lucide-react';
-import { useCatalog } from '../hooks/useData';
+import { Plus, Search, Wrench, ShieldCheck, MoreHorizontal, DollarSign, Loader2, Type, Car, Trash2, X, Zap } from 'lucide-react';
+import { useCatalog, useInventory } from '../hooks/useData';
 
 const ServicosView = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,8 +13,12 @@ const ServicosView = () => {
     preco_base: '',
     categoria: 'Geral',
     tipo_veiculo: 'AMBOS',
-    garantia: '12 meses'
+    garantia: '12 meses',
+    controle_estoque: false,
+    materiais: []
   });
+
+  const { inventory } = useInventory();
 
   const { services, loading, saveService, updateService, deleteService } = useCatalog();
 
@@ -26,7 +30,9 @@ const ServicosView = () => {
       preco_base: service.preco_base || '',
       categoria: service.categoria || 'Geral',
       tipo_veiculo: service.tipo_veiculo || 'AMBOS',
-      garantia: service.garantia || '12 meses'
+      garantia: service.garantia || '12 meses',
+      controle_estoque: service.controle_estoque || false,
+      materiais: service.materiais || []
     });
     setShowAddModal(true);
   };
@@ -51,8 +57,14 @@ const ServicosView = () => {
     if (res.success) {
       setShowAddModal(false);
       setEditingService(null);
-      setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses' });
+      setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [] });
     }
+  };
+
+  const handleOpenAdd = () => {
+     setEditingService(null);
+     setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [] });
+     setShowAddModal(true);
   };
 
   const filteredServices = services.filter(s => 
@@ -77,11 +89,7 @@ const ServicosView = () => {
           <p className="text-sm text-slate-500 font-medium">Defina os serviços oferecidos e seus tempos de garantia.</p>
         </div>
         <button 
-          onClick={() => {
-            setEditingService(null);
-            setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses' });
-            setShowAddModal(true);
-          }}
+          onClick={handleOpenAdd}
           className="bg-primary text-white px-5 py-2.5 rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 hover:bg-emerald-600 transition-all font-black uppercase text-[10px] tracking-widest"
         >
           <Plus size={18} /> Novo Serviço
@@ -147,6 +155,15 @@ const ServicosView = () => {
                   <span className="text-xs font-bold text-slate-600">{s.garantia || 'Consultar'}</span>
                 </div>
                 
+                {s.controle_estoque && (
+                  <div className="flex flex-col border-l border-slate-100 pl-6">
+                     <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1 items-center flex gap-1">
+                      <ShieldCheck size={10} className="text-blue-500" /> Estoque
+                    </span>
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-widest mt-0.5">Controlado</span>
+                  </div>
+                )}
+                
                 <div className="flex flex-col border-l border-slate-100 pl-6">
                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1 items-center flex gap-1">
                     <DollarSign size={10} className="text-primary" /> Investimento
@@ -178,7 +195,7 @@ const ServicosView = () => {
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl border border-white/20 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh]">
             {/* Header Fixo */}
-            <div className="p-8 md:p-10 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
+            <div className="p-6 md:p-10 border-b border-slate-50 flex justify-between items-center bg-white shrink-0">
               <div>
                 <h3 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
                   {editingService ? 'Editar Serviço' : 'Cadastrar Serviço'}
@@ -282,11 +299,97 @@ const ServicosView = () => {
                   onChange={e => setFormService({...formService, descricao: e.target.value})}
                 ></textarea>
               </div>
+
+              <div className="flex flex-col gap-4 bg-blue-50/50 p-6 rounded-2xl border border-blue-100 transition-all">
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="checkbox" 
+                    id="controle_estoque" 
+                    className="w-6 h-6 rounded-lg text-primary border-slate-300 focus:ring-primary/20 transition-all cursor-pointer"
+                    checked={formService.controle_estoque}
+                    onChange={(e) => setFormService({...formService, controle_estoque: e.target.checked})}
+                  />
+                  <label htmlFor="controle_estoque" className="cursor-pointer select-none">
+                    <span className="block text-sm font-black text-slate-800 tracking-tight">Habilitar Controle de Estoque</span>
+                    <span className="block text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-widest">Exige baixa obrigatória de material na OS (ex: Metros de PPF).</span>
+                  </label>
+                </div>
+
+                {formService.controle_estoque && (
+                  <div className="pt-4 border-t border-blue-100 flex flex-col mt-2 mb-2 animate-in fade-in slide-in-from-top-4">
+                     <div className="flex items-center justify-between mb-4 px-1">
+                         <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1">
+                             <Zap size={12} className="text-blue-500" /> Insumos Padrão do Serviço
+                         </label>
+                     </div>
+
+                     {(formService.materiais || []).map((mat, matIdx) => (
+                       <div key={mat.id || matIdx} className="flex items-end gap-3 mb-3">
+                         <div className="flex-1 space-y-1.5">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Material do Almoxarifado</label>
+                            <select 
+                              className="w-full px-4 py-3 bg-white border border-blue-100 rounded-xl outline-none focus:ring-4 focus:ring-blue-100 text-sm font-bold shadow-sm"
+                              value={mat.material_id || ''}
+                              onChange={e => {
+                                 const next = [...(formService.materiais || [])];
+                                 next[matIdx].material_id = e.target.value;
+                                 setFormService({ ...formService, materiais: next });
+                              }}
+                            >
+                              <option value="">Selecione o Produto...</option>
+                              {inventory.map(inv => (
+                                <option key={inv.id} value={inv.id}>{inv.nome} ({inv.quantidade} {inv.unidade})</option>
+                              ))}
+                            </select>
+                         </div>
+                         <div className="w-24 space-y-1.5">
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Qtd</label>
+                            <input 
+                              type="number" 
+                              min="0.1" 
+                              step="any"
+                              className="w-full px-4 py-3 bg-white border border-blue-100 rounded-xl outline-none focus:ring-4 focus:ring-blue-100 text-sm font-bold shadow-sm text-center"
+                              value={mat.quantidade}
+                              onChange={e => {
+                                 const next = [...(formService.materiais || [])];
+                                 next[matIdx].quantidade = e.target.value === '' ? '' : parseFloat(e.target.value) || 0;
+                                 setFormService({ ...formService, materiais: next });
+                              }}
+                              placeholder="0"
+                            />
+                         </div>
+                         <button 
+                           type="button"
+                           onClick={() => {
+                              const next = (formService.materiais || []).filter((_, i) => i !== matIdx);
+                              setFormService({ ...formService, materiais: next });
+                           }}
+                           className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-all font-black"
+                           title="Remover Insumo"
+                         >
+                           <X size={16} strokeWidth={3} />
+                         </button>
+                       </div>
+                     ))}
+
+                     <button 
+                       type="button"
+                       onClick={() => {
+                          const next = [...(formService.materiais || []), { id: Date.now(), material_id: '', quantidade: '' }];
+                          setFormService({ ...formService, materiais: next });
+                       }}
+                       className="mt-2 text-[10px] font-black uppercase text-blue-500 hover:text-blue-700 bg-white/50 hover:bg-white px-4 py-2.5 rounded-xl self-start flex items-center gap-2 transition-all border border-blue-200/50 shadow-sm"
+                     >
+                       <Plus size={14} /> Adicionar Item
+                     </button>
+                  </div>
+                )}
+              </div>
             </form>
 
             {/* Rodapé Fixo */}
-            <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
-              <div className="flex gap-4">
+            <div className="p-6 md:p-8 border-t border-slate-50 shrink-0 bg-white">
+              <div className="flex flex-col-reverse md:flex-row gap-4">
                 <button 
                   type="button"
                   onClick={() => setShowAddModal(false)}

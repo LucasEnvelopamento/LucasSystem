@@ -14,31 +14,21 @@ import {
   Zap,
   X
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useQuotes, useCatalog } from '../hooks/useData';
 import AgendamentoModal from '../components/features/AgendamentoModal';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import { sendWhatsApp, getBudgetMsg, getAppointmentMsg } from '../utils/whatsappUtils';
+import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 
 const Vendas = () => {
+  const navigate = useNavigate();
   const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote } = useQuotes();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNovoModal, setShowNovoModal] = useState(false);
   const [showAgendaModal, setShowAgendaModal] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [activeMenuQuote, setActiveMenuQuote] = useState(null);
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case 'APROVADO': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'PENDENTE': return 'bg-amber-50 text-amber-600 border-amber-100';
-      case 'REJEITADO': return 'bg-rose-50 text-rose-600 border-rose-100';
-      case 'AGUARDANDO': return 'bg-blue-50 text-blue-600 border-blue-100';
-      case 'EM EXECUÇÃO': return 'bg-blue-50 text-blue-500 border-blue-100';
-      case 'CONCLUÍDO': return 'bg-emerald-50 text-emerald-500 border-emerald-50';
-      case 'ENTREGUE': return 'bg-slate-100 text-slate-500 border-slate-200';
-      default: return 'bg-slate-50 text-slate-600 border-slate-100';
-    }
-  };
 
   // Cálculos Reais de Vendas
   const aguardandoFaturamento = (quotes || [])
@@ -90,8 +80,6 @@ const Vendas = () => {
       if (result.success) setActiveMenuQuote(null);
     }
   };
-
-  const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   const filteredQuotes = (quotes || []).filter(q => 
     q && (
@@ -237,7 +225,7 @@ const Vendas = () => {
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm font-black text-slate-800">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(q.valor || 0)}
+                      {formatCurrency(q.valor)}
                     </p>
                   </td>
                   <td className="px-6 py-4">
@@ -380,10 +368,10 @@ const Vendas = () => {
                    </button>
                  ) : (
                    <button 
-                     onClick={() => handleReopen(selectedQuote)}
-                     className="flex-1 py-5 bg-amber-500 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-amber-200 hover:-translate-y-1 active:translate-y-0 transition-all font-bold"
+                     onClick={() => navigate('/ordens')}
+                     className="flex-1 py-5 bg-blue-600 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-200 hover:-translate-y-1 active:translate-y-0 transition-all font-bold"
                    >
-                     Reabrir Orçamento
+                     Ver Ordem de Serviço
                    </button>
                  )}
                 <button 
@@ -424,12 +412,20 @@ const Vendas = () => {
                   <CheckCircle2 size={16} /> Aproveitar Proposta
                 </button>
               ) : (
-                <button 
-                  onClick={() => { handleReopen(activeMenuQuote); setActiveMenuQuote(null); }} 
-                  className="w-full py-4 bg-amber-50 text-amber-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-amber-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <Zap size={16} /> Reabrir Orçamento
-                </button>
+                <>
+                  <button 
+                    onClick={() => navigate('/ordens')} 
+                    className="w-full py-4 bg-blue-50 text-blue-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-100 hover:scale-[1.02] active:scale-[0.98] transition-all mb-2"
+                  >
+                    <ArrowUpRight size={16} /> Ir para OS
+                  </button>
+                  <button 
+                    onClick={() => { handleReopen(activeMenuQuote); setActiveMenuQuote(null); }} 
+                    className="w-full py-2 text-amber-500 bg-transparent font-bold text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-amber-50 transition-all uppercase"
+                  >
+                    <Zap size={12} /> Reabrir e Cancelar OS Atual
+                  </button>
+                </>
               )}
               
               <div className="pt-4 mt-4 border-t border-slate-50">

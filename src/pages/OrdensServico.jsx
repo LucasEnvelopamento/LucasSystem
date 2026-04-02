@@ -19,6 +19,9 @@ import { useOrders } from '../hooks/useData';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
 import CertificadoGarantia from '../components/features/CertificadoGarantia';
 import { sendWhatsApp, getServiceFinishedMsg, getVehicleReceivedMsg } from '../utils/whatsappUtils';
+import { getStatusStyle } from '../utils/statusUtils';
+import { toast } from '../utils/toast';
+import { confirmDialog } from '../utils/confirm';
 
 const OrdensServico = () => {
   const { orders, loading, deliverOrder, updateOrderProgress } = useOrders();
@@ -27,17 +30,8 @@ const OrdensServico = () => {
   const [showCertificado, setShowCertificado] = useState(false);
   const [activeOS, setActiveOS] = useState(null);
 
-  const getStatusStyle = (status) => {
-    if (!status) return 'bg-slate-100 text-slate-600 border-slate-200';
-    const s = status.toLowerCase();
-    if (s.includes('concluído') || s.includes('concluido')) return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-    if (s.includes('execução')) return 'bg-blue-100 text-blue-600 border-blue-200';
-    if (s.includes('aguardando')) return 'bg-amber-100 text-amber-600 border-amber-200';
-    return 'bg-slate-100 text-slate-600 border-slate-200';
-  };
-
   const filteredOrders = (orders || []).filter(os => 
-    os && (
+    os && os.status !== 'ORCAMENTO' && (
       String(os.cliente_nome || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
       String(os.veiculo_desc || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
       String(os.id || '').toLowerCase().includes(String(searchTerm || '').toLowerCase())
@@ -212,7 +206,7 @@ const OrdensServico = () => {
                               onClick={async () => {
                                 if (window.confirm('Confirma a entrega do veículo ao cliente? Esta OS será movida para o histórico.')) {
                                   const result = await deliverOrder(os.id);
-                                  if (result.success) alert('Veículo entregue com sucesso!');
+                                  if (result.success) toast.success('Veículo entregue com sucesso!');
                                 }
                               }}
                               className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-600 hover:text-emerald-800 transition-all border border-transparent hover:border-emerald-200"
@@ -242,7 +236,7 @@ const OrdensServico = () => {
                         <button 
                           onClick={() => {
                             if (String(os.status || '').toUpperCase().includes('CONCLU')) {
-                              alert('Esse serviço já foi concluído! Utilize o botão de WhatsApp (Raio Verde) para avisar o cliente da retirada.');
+                              toast.info('Esse serviço já foi concluído! Utilize o botão de WhatsApp (Raio Verde) para avisar o cliente da retirada.');
                             } else {
                               const cleanPhone = (os.cliente_telefone || '').replace(/\D/g, '');
                               sendWhatsApp(cleanPhone || '11999999999', getVehicleReceivedMsg(os.cliente_nome, os.veiculo_desc, os.id));

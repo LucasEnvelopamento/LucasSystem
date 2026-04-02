@@ -193,6 +193,45 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] Novos campos em Configurações: WhatsApp, Instagram, YouTube e TikTok.
 - [x] Botões de contato dinâmicos no Link do Cliente (visibilidade condicional).
 
+### ✅ Fase 27: Responsividade Global - Gestor Mobile & Tablet (Concluída)
+- [x] **App Shell:** Refatoração do `DashboardLayout` e `Sidebar` com controle Offcanvas (Menu Hamburger).
+- [x] **Grades Automáticas:** Layout do `Dashboard`, `Vendas` e `OrdensServico` configurado de `grid-cols-4` limitante para contêineres colapsáveis flexíveis (`sm:grid-cols-2`, `xl:grid-cols-4`).
+- [x] **Prevenção de Quebra (Tabelas e Cards):** Implementação de rolagens nativas seguras horizontais (`overflow-x-auto`) nas telas de Clientes e Serviços.
+- [x] **Ergonomia Modular:** Ajustes em modais de Orçamento (paddings variáveis `p-6 md:p-10`) e botões flexíveis expansíveis para acomodar o toque.
+
+### ✅ Fase 28: Padronização UX e Estoque Avançado (Concluída)
+- [x] **Padronização Visual:** Unificar as cores de status (Aguardando, Em Execução, Concluído, Entregue) em todas as telas (`Dashboard`, `Vendas`, `OrdensServico`, `Operador`, `TV` e `Agenda`).
+- [x] **Fluxo de Vendas:** Novo botão de atalho "Ir para Ordem de Serviço" para propostas aprovadas, simplificando os próximos passos.
+- [x] **Integração de Estoque na OS:** Habilitado flag `Controle de Estoque` no Catálogo de Serviços, vinculando materiais específicos (Ex: metros de PPF) diretamente à etapa do orçamento/OS com baixa automática na conclusão.
+- [x] **Estoque Rápido:** Adição de atalho para "Repor Produto" diretamente na tela de listagem de materiais.
+- [x] **Branding e PWA:** Inserção dinâmica da Logomarca (do Banco de Dados) como Favicon da aplicação em tempo real.
+
+### ✅ Fase 28.1: Estoque Avançado - Automação Baseada no Catálogo (Concluída)
+- [x] **Configuração Mestre:** Refatorada a interface de Catálogo de Serviços (`Servicos.jsx`) permitindo gerentes construírem "receitas" com múltiplos insumos necessários para execução de cada pacote.
+- [x] **Redução de Fricção (Orçamento):** Retirada toda a carga dos Vendedores. O modal do Orçamento não exibe nem exige vínculo de múltiplos materiais (já são copiados ativamente e silenciosamente do catálogo em formato JSON Array).
+- [x] **Lógica de Dedução:** A engine `updateOrderProgress` percorre a lista de produtos (injetada na OS) e faz os descontos sequenciais no estoque da corporação sem atrito.
+
+### ✅ Fase 28.2: Refinamento Visual (Certificados e Logos) (Concluída)
+- [x] **Impressão Cirúrgica:** Refatoração drástica (`window.open`) para emissão do Certificado de Garantia em PDF, injetando CSS dinâmico que ignora o layout pai e evita dores de cabeça como corte de páginas.
+- [x] **Enquadramento A4:** Ajuste de paddings verticais e borders (`print:`) permitindo respiro visual na tela comum e encolhimento harmonioso no papel de 285mm.
+- [x] **Design do Símbolo da Loja:** Conserto de variância de dados (`logoUrl`) e melhoria da UX de símbolos espalhados. Sidebar e TV agora abraçam perfeitamente as imagens de logotipo que o usuário manda, arredondando cantos estilo MacOS (App Icon).
+
+### ✅ Fase 28.3: Sistema Global de Notificações - Toasts (Concluída / Refinamento em Aberto)
+- [x] Padrão Ouro: Desenvolver arquitetura Global de Popups Event-Driven para dispensar re-renders com uso de bibliotecas pesadas de fora.
+- [x] Extermínio Inicial dos Alerts: Substituição de ~12 popups cinzas nativos.
+- [ ] **Refinamento de Alertas**: Encontrar e substituir alertas remanescentes em fluxos secundários apontados pelo usuário.
+- [x] Polir componentes (como Checklist Automotivo e persistência de Supabase) para se integrarem em silêncio de fundo disparando avisos laterais elegantes de "Sucesso".
+
+### 🚀 Fase 25: Correção de Bugs e Estabilização (Em Andamento)
+- [ ] **Fluxo da Agenda**: Corrigir erro no fluxo de agendamento (conforme reportado em teste real).
+- [ ] **Identificação de Erros Críticos**: Analisar logs do console e comportamentos inesperados (ReferenceError: toast is not defined).
+- [ ] **Refinamento de UX**: Pequenos ajustes sugeridos pelo usuário durante os testes.
+- [ ] **Estabilização da Sessão**: Garantir persistência absoluta (F5) em todas as telas.
+
+### 🚀 Fase 26: Segurança e Proteção de Dados (Próximos Passos)
+- [ ] **Prevenção de IDOR**: Substituir IDs sequenciais por `tracking_token` (UUID) nos links públicos de acompanhamento.
+- [ ] **Hardening de Banco**: Ativar e configurar Row Level Security (RLS) em todas as tabelas sensíveis.
+
 ---
-*Última atualização: 28/03/2026 - STATUS: HOMOLOGADO & AUDITADO 🚀*
+*Última atualização: 02/04/2026 - STATUS: EM DESENVOLVIMENTO 🚀*
 ```

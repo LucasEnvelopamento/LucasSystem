@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useProfiles } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from '../utils/toast';
 import { supabase } from '../lib/supabase';
 
 const ColaboradoresView = () => {
@@ -29,13 +30,13 @@ const ColaboradoresView = () => {
   const toggleStatus = async (user) => {
     // Regra: Somente ADM pode desativar/ativar usuários
     if (!isAdmin) {
-      alert("Apenas administradores podem gerenciar o status da equipe.");
+      toast.warning("Apenas administradores podem gerenciar o status da equipe.");
       return;
     }
 
     // Regra: Não permitir que um ADM desative a si mesmo (para não perder acesso total)
     if (user.id === currentUserProfile.id) {
-      alert("Você não pode desativar seu próprio perfil de administrador.");
+      toast.warning("Você não pode desativar seu próprio perfil de administrador.");
       return;
     }
 
@@ -43,10 +44,11 @@ const ColaboradoresView = () => {
     try {
       const { success, error } = await updateProfile(user.id, { status: !user.status });
       if (!success) throw error;
+      toast.success('Status atualizado com sucesso!');
       // Realtime lidará com a atualização da lista
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status do colaborador.');
+      toast.error('Erro ao atualizar status do colaborador.');
     } finally {
       setUpdatingId(null);
     }
@@ -57,7 +59,7 @@ const ColaboradoresView = () => {
     
     // Regra: Não permitir que o próprio usuário logado mude seu cargo (evita auto-rebaixamento acidental)
     if (user.id === currentUserProfile.id && newRole !== 'ADM') {
-        alert("Você não pode alterar seu próprio cargo de administrador.");
+        toast.warning("Você não pode alterar seu próprio cargo de administrador.");
         return;
     }
 
@@ -65,8 +67,10 @@ const ColaboradoresView = () => {
     try {
       const { success, error } = await updateProfile(user.id, { cargo: newRole });
       if (!success) throw error;
+      toast.success(`Cargo do colaborador atualizado para ${newRole}!`);
     } catch (error) {
       console.error('Erro ao atualizar cargo:', error);
+      toast.error('Erro ao atualizar cargo.');
     } finally {
       setUpdatingId(null);
     }

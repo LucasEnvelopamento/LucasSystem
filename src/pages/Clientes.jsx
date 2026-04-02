@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2 } from 'lucide-react';
 import { useClients, useQuotes } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
+import { toast } from '../utils/toast';
 
 const ClientesView = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,8 +63,8 @@ const ClientesView = () => {
 
       {/* Tabela de Clientes */}
       <div className="card-premium overflow-hidden border-0 shadow-xl shadow-slate-200/50">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead className="bg-slate-50/50 border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
@@ -148,13 +149,14 @@ const ClientesView = () => {
               }
 
               if (res.success) {
+                  toast.success(editingClient ? 'Cliente atualizado!' : 'Cliente cadastrado com sucesso!');
                   setShowAddModal(false);
                   setEditingClient(null);
                   if (selectedClientProfile && editingClient?.id === selectedClientProfile.id) {
                      setSelectedClientProfile({...selectedClientProfile, ...data});
                   }
               } else {
-                  alert('Erro ao salvar. Verifique o banco!');
+                  toast.error('Erro ao salvar. Verifique o banco!');
               }
             }} className="p-6 space-y-4">
               <div className="space-y-1">

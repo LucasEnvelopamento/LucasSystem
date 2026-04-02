@@ -1,6 +1,7 @@
 /**
  * Utilitário para integração rápida com WhatsApp via Deep Links
  */
+import { toast } from './toast';
 
 export const formatWhatsAppLink = (phone, message) => {
   // Remove caracteres não numéricos
@@ -72,7 +73,7 @@ Qualquer novidade avisaremos por aqui.`;
 
 export const sendWhatsApp = (phone, message) => {
   if (!phone) {
-    alert('Telefone do cliente não cadastrado.');
+    toast.error('Telefone do cliente não cadastrado.');
     return;
   }
   const link = formatWhatsAppLink(phone, message);

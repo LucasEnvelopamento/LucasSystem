@@ -1,16 +1,22 @@
 import React from 'react';
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-const Header = ({ activePage }) => {
+const Header = ({ activePage, onMenuClick }) => {
   const { profile, signOut } = useAuth();
   
   const formattedPageName = activePage.charAt(0).toUpperCase() + activePage.slice(1);
 
   return (
-    <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-40">
-      <div className="flex items-center gap-4">
-        <h2 className="text-lg font-black text-slate-800 tracking-tight uppercase tracking-tighter italic">
+    <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+      <div className="flex items-center gap-3 md:gap-4">
+        <button 
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+        >
+          <Menu size={24} />
+        </button>
+        <h2 className="text-base md:text-lg font-black text-slate-800 tracking-tight uppercase tracking-tighter italic whitespace-nowrap overflow-hidden text-ellipsis">
           {formattedPageName === 'Dashboard' ? 'Painel de Controle' : formattedPageName}
         </h2>
       </div>

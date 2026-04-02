@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Package, AlertTriangle, ArrowUpRight, History, Loader2, Edit2, Trash2, X } from 'lucide-react';
 import { useInventory } from '../hooks/useData';
+import { toast } from '../utils/toast';
 
 const MateriaisView = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,6 +97,21 @@ const MateriaisView = () => {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button 
+                          onClick={async () => {
+                            const addStr = window.prompt(`Quantos(as) [${m.unidade}] de ${m.nome} chegaram?`);
+                            if (!addStr) return;
+                            const addedQtd = parseFloat(addStr.replace(',', '.'));
+                            if (!isNaN(addedQtd) && addedQtd > 0) {
+                               const newTotal = (parseFloat(m.quantidade) || 0) + addedQtd;
+                               await updateItem(m.id, { quantidade: newTotal });
+                            }
+                          }}
+                          className="text-emerald-500 hover:text-emerald-700 p-2 hover:bg-emerald-100 rounded-xl transition-all font-bold flex items-center gap-1"
+                          title="Repor Estoque Rápidamente"
+                        >
+                          <Plus size={16} /> 
+                        </button>
+                        <button 
                           onClick={() => { setEditingItem(m); setShowAddModal(true); }}
                           className="text-slate-400 hover:text-primary p-2 hover:bg-primary/10 rounded-xl transition-all"
                           title="Editar Material"
@@ -153,10 +169,11 @@ const MateriaisView = () => {
               }
 
               if (res.success) {
+                  toast.success(editingItem ? 'Material atualizado!' : 'Material adicionado ao estoque!');
                   setShowAddModal(false);
                   setEditingItem(null);
               } else {
-                  alert('Erro ao salvar. Verifique o banco!');
+                  toast.error('Erro ao salvar. Verifique o banco!');
               }
             }} className="p-6 space-y-4">
               <div className="space-y-1">

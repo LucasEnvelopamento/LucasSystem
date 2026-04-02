@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User, Car, Loader2 } fr
 import { useOrders, useQuotes } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import AgendamentoModal from '../components/features/AgendamentoModal';
+import { getStatusStyle } from '../utils/statusUtils';
 
 const AgendaView = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -156,12 +157,7 @@ const AgendaView = () => {
               </div>
 
               <div className="flex items-center gap-4 mt-4 md:mt-0">
-                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                  item.status === 'EM EXECUÇÃO' ? 'bg-blue-100 text-blue-600' : 
-                  item.status === 'CONCLUÍDO' ? 'bg-emerald-100 text-emerald-600' :
-                  item.status === 'ENTREGUE' ? 'bg-slate-100 text-slate-500' :
-                  'bg-amber-100 text-amber-600'
-                }`}>
+                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${getStatusStyle(item.status)}`}>
                   {item.status}
                 </span>
                 <button 

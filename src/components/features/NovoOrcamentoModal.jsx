@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap } from 'lucide-react';
-import { useClients, useVehicles, useCatalog } from '../../hooks/useData';
+import { useClients, useVehicles, useCatalog, useInventory } from '../../hooks/useData';
+import { toast } from '../../utils/toast';
 
 const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
   const { clients, saveClient } = useClients();
@@ -25,6 +26,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
   const [newVehicleData, setNewVehicleData] = useState({ marca: '', modelo: '', placa: '', cor: '', tipo: 'CARRO' });
 
   const { vehicles, saveVehicle } = useVehicles(selectedClient);
+  const { inventory } = useInventory();
 
   useEffect(() => {
     const total = selectedServices.reduce((acc, sId) => {
@@ -45,7 +47,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
 
   const handleQuickAddClient = async () => {
     if (!newClientData.nome || !newClientData.telefone) {
-      alert('Nome e Telefone são obrigatórios');
+      toast.warning('Nome e Telefone são obrigatórios');
       return;
     }
     const result = await saveClient(newClientData);
@@ -56,17 +58,32 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
     }
   };
 
+  const handleQuickAddVehicle = async () => {
+    if (!newVehicleData.marca || !newVehicleData.modelo || !newVehicleData.placa) {
+      toast.warning('Marca, Modelo e Placa são obrigatórios');
+      return;
+    }
+    const result = await saveVehicle(newVehicleData);
+    if (result.success) {
+      setSelectedVehicle(result.data.id);
+      setShowQuickAddVehicle(false);
+      setStep(3);
+    }
+  };
+
   const handleServiceToggle = (serviceId) => {
-    setSelectedServices(prev => 
-      prev.includes(serviceId) 
-        ? prev.filter(id => id !== serviceId) 
-        : [...prev, serviceId]
-    );
+    setSelectedServices(prev => {
+      if (prev.includes(serviceId)) {
+        return prev.filter(id => id !== serviceId);
+      } else {
+        return [...prev, serviceId];
+      }
+    });
   };
 
   const handleFinalSave = async () => {
     if (!selectedClient || !selectedVehicle || selectedServices.length === 0) {
-      alert('Por favor, preencha todos os campos obrigatórios.');
+      toast.warning('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
@@ -83,7 +100,17 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
       servico: selectedServices.map(sId => catalog.find(item => item.id === sId)?.nome).join(', '),
       servicos_detalhados: selectedServices.map(sId => {
         const serv = catalog.find(item => item.id === sId);
-        return { nome: serv?.nome || 'Serviço', preco_base: serv?.preco_base || 0, progresso: 0 };
+        const mats = serv?.materiais || [];
+        return { 
+          nome: serv?.nome || 'Serviço', 
+          preco_base: serv?.preco_base || 0, 
+          progresso: 0,
+          controle_estoque: serv?.controle_estoque || false,
+          materiais: mats.map(m => ({
+            material_id: m.material_id || null,
+            quantidade_utilizada: m.quantidade || 0
+          }))
+        };
       })
     };
 
@@ -167,7 +194,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
 
                   {showQuickAddClient ? (
                       <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 space-y-4 animate-scaleUp">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
                                   <input 
@@ -251,7 +278,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
 
                   {showQuickAddVehicle ? (
                       <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 space-y-4 animate-scaleUp">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
                                   <input 
@@ -344,9 +371,9 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                         return st === 'AMBOS' || st === vt;
                       })
                       .map(service => (
-                      <button 
-                        key={service.id}
-                        onClick={() => handleServiceToggle(service.id)}
+                      <div key={service.id} className="flex flex-col">
+                        <button 
+                          onClick={() => handleServiceToggle(service.id)}
                         className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
                           selectedServices.includes(service.id) ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 bg-white'
                         }`}
@@ -359,13 +386,14 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-slate-700">{service.nome}</p>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{service.categoria}</p>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{service.categoria} {service.controle_estoque && '• Exige Material'}</p>
                           </div>
                         </div>
                         <p className="text-sm font-black text-slate-800">
                           R$ {service.preco_base.toLocaleString('pt-BR')}
                         </p>
                       </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -377,7 +405,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                   <h4 className="text-xl font-black text-slate-800 uppercase">Resumo da Proposta</h4>
                   
                   <div className="bg-slate-50 rounded-[2.5rem] p-8 space-y-6 border border-slate-100 shadow-inner">
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div>
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Cliente</span>
                           <p className="font-bold text-slate-700">{clients.find(c => c.id == selectedClient)?.nome}</p>
@@ -444,7 +472,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
             </div>
 
             {/* Rodapé Fixo */}
-            <div className="p-8 border-t border-slate-50 bg-white shrink-0">
+            <div className="p-6 md:p-8 border-t border-slate-50 bg-white shrink-0">
                <div className="flex gap-4">
                   {step > 1 && (
                     <button 
@@ -459,6 +487,8 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient }) => {
                       onClick={async () => {
                         if (step === 1 && showQuickAddClient) {
                           await handleQuickAddClient();
+                        } else if (step === 2 && showQuickAddVehicle) {
+                          await handleQuickAddVehicle();
                         } else {
                           setStep(step + 1);
                         }

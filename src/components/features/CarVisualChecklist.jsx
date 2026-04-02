@@ -3,6 +3,7 @@ import { X, Save, AlertCircle, Info, MousePointer2, Trash2, ShieldCheck, Chevron
 import { useBrand } from '../../contexts/BrandContext';
 import { useOrders } from '../../hooks/useData';
 import { sendWhatsApp, getVehicleReceivedMsg } from '../../utils/whatsappUtils';
+import { toast } from '../../utils/toast';
 
 const SignaturePad = ({ onSave, onCancel }) => {
   const canvasRef = React.useRef(null);
@@ -189,7 +190,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
 
   const handleFinalSave = async (signatureData) => {
     if (!osData?.id) {
-      alert('Erro: ID da Ordem de Serviço não encontrado.');
+      toast.error('Erro: ID da Ordem de Serviço não encontrado.');
       return;
     }
 
@@ -210,29 +211,29 @@ const CarVisualChecklist = ({ onClose, osData }) => {
       
     } else {
       console.error('LOG DE ERRO DO CHECKLIST:', result.error);
-      alert(`Erro ao salvar o checklist.\nDetalhe: ${result.error?.message || result.error?.details || 'Erro desconhecido no banco de dados.'}`);
+      toast.error(`Erro ao salvar o checklist. Detalhe: ${result.error?.message || result.error?.details || 'Erro desconhecido no banco de dados.'}`);
     }
   };
 
-  const ImageView = ({ title, viewId, className }) => {
+  const ImageView = ({ title, viewId, className, imageClassName = "object-contain", containerClassName = "min-h-[200px] md:min-h-[250px]" }) => {
     const [imgError, setImgError] = useState(false);
     return (
-      <div className={`relative flex flex-col items-center gap-2 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-primary/20 transition-all ${className}`}>
-        <div className="flex items-center justify-between w-full px-1">
-            <span className="text-[8px] font-black uppercase text-slate-400 tracking-[0.1em]">{title}</span>
-            <Camera size={10} className="text-slate-200" />
+      <div className={`relative flex flex-col gap-3 p-4 bg-white rounded-[2rem] border-2 border-slate-100/50 shadow-sm hover:border-primary/30 transition-all overflow-hidden group ${className}`}>
+        <div className="flex items-center justify-between w-full px-2 z-10 shrink-0">
+            <span className="text-[10px] md:text-xs font-black uppercase text-slate-500 tracking-[0.15em]">{title}</span>
+            <Camera size={16} className="text-slate-200 group-hover:text-primary transition-colors" />
         </div>
-        <div className="relative w-full aspect-video cursor-crosshair rounded-xl overflow-hidden bg-white flex items-center justify-center" onClick={(e) => handleContainerClick(e, viewId)}>
+        <div className={`relative w-full flex-1 cursor-crosshair rounded-2xl overflow-hidden bg-slate-50/50 flex items-center justify-center border border-slate-50/80 ${containerClassName}`} onClick={(e) => handleContainerClick(e, viewId)}>
           {!imgError ? (
-            <img src={`/assets/checklist/${vehicleType}/${viewId}.png`} alt={title} className="w-full h-full object-contain mix-blend-multiply p-2" onError={() => setImgError(true)} />
+            <img src={`/assets/checklist/${vehicleType}/${viewId}.png`} alt={title} className={`w-full h-full p-4 mix-blend-multiply opacity-90 drop-shadow-xl select-none transition-transform duration-500 group-hover:scale-105 ${imageClassName}`} onError={() => setImgError(true)} />
           ) : (
-             <div className="text-[8px] font-black text-slate-200 uppercase">Falta: {viewId}.png</div>
+             <div className="text-[10px] font-black text-slate-300 uppercase">Falta: {viewId}.png</div>
           )}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+          <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md">
             {points.filter(p => p.view === viewId).map(p => (
-              <g key={p.id} onClick={(e) => { e.stopPropagation(); removePoint(p.id); }} className="pointer-events-auto cursor-pointer">
-                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="8" className="fill-rose-500/30 stroke-rose-600 stroke-2" />
-                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="2" className="fill-rose-600" />
+              <g key={p.id} onClick={(e) => { e.stopPropagation(); removePoint(p.id); }} className="pointer-events-auto cursor-pointer transition-transform hover:scale-125 hover:drop-shadow-2xl">
+                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="14" className="fill-rose-500/20 stroke-rose-500 stroke-[3]" />
+                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="5" className="fill-rose-600 shadow-xl" />
               </g>
             ))}
           </svg>
@@ -271,32 +272,41 @@ const CarVisualChecklist = ({ onClose, osData }) => {
         ) : (
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50/10">
             {/* Visualização de Imagens Rolável */}
-            <div className="flex-1 p-3 md:p-6 overflow-y-auto custom-scrollbar">
-              <div className="max-w-6xl mx-auto space-y-3 md:space-y-4">
-                
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4">
+            <div className="flex-1 p-4 md:p-8 xl:p-10 overflow-y-auto custom-scrollbar">
+              <div className="w-full h-full flex flex-col">
+                <div className="flex flex-col lg:flex-row gap-4 md:gap-6 h-full lg:min-h-0">
+                  {/* Visão Superior - Em Tablets(Landscape)/Desktop ocupa a altura toda à esquerda */}
                   <ImageView 
                     title="Visão Superior" 
                     viewId="superior" 
-                    className="md:col-span-3 min-h-[200px] md:min-h-[320px]" 
+                    className="w-full lg:w-[40%] flex-shrink-0 lg:h-full"
+                    containerClassName="min-h-[290px] md:min-h-[380px] lg:min-h-[330px] max-h-[380px] lg:max-h-full"
                   />
-                  <div className="md:col-span-2 grid grid-cols-1 gap-3 md:gap-4">
-                    <ImageView title="Vista Frontal" viewId="frontal" className="min-h-[100px] md:min-h-[150px]" />
-                    {vehicleType !== 'moto' && (
-                      <ImageView title="Vista Traseira" viewId="traseira" className="min-h-[100px] md:min-h-[150px]" />
-                    )}
+                  
+                  {/* Outras Visões */}
+                  <div className="w-full lg:w-[60%] flex flex-col gap-4 md:gap-6 lg:h-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 flex-1 lg:h-1/2">
+                      <ImageView 
+                        title="Vista Frontal" 
+                        viewId="frontal" 
+                        className={`h-full ${vehicleType === 'moto' ? 'sm:col-span-2' : ''}`}
+                        containerClassName={vehicleType === 'moto' ? "min-h-[320px] md:min-h-[390px] max-h-[390px] lg:max-h-full lg:min-h-[440px]" : "min-h-[200px] md:min-h-[250px]"}
+                      />
+                      {vehicleType !== 'moto' && (
+                        <ImageView title="Vista Traseira" viewId="traseira" className="h-full" />
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 flex-1 lg:h-1/2">
+                      <ImageView title="Lateral Esquerda" viewId={vehicleType === 'moto' ? 'perfil_esq' : 'lateral_esquerda'} className="h-full" />
+                      <ImageView title="Lateral Direita" viewId={vehicleType === 'moto' ? 'perfil_dir' : 'lateral_direita'} className="h-full" />
+                    </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  <ImageView title="Lateral Esquerda" viewId={vehicleType === 'moto' ? 'perfil_esq' : 'lateral_esquerda'} className="min-h-[100px] md:min-h-[150px]" />
-                  <ImageView title="Lateral Direita" viewId={vehicleType === 'moto' ? 'perfil_dir' : 'lateral_direita'} className="min-h-[100px] md:min-h-[150px]" />
                 </div>
               </div>
             </div>
 
             {/* Painel Lateral com Rodapé Fixo Próprio */}
-            <div className="w-full lg:w-72 xl:w-96 bg-white border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.02)] shrink-0 lg:shrink lg:flex-1 max-h-[40vh] lg:max-h-full">
+            <div className="w-full lg:w-80 xl:w-96 bg-white border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.02)] shrink-0 lg:shrink lg:flex-1 max-h-[50vh] lg:max-h-full">
               <div className="p-5 md:p-6 border-b border-slate-50 flex items-center justify-between shrink-0">
                   <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Resumo do Laudo</h4>
                   <div className="px-3 py-1 bg-rose-500 text-white rounded-full text-[9px] font-black">{points.length} Avarias</div>
@@ -359,7 +369,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
       {showSignature && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300] flex items-center justify-center p-4 md:p-6 animate-fadeIn">
           <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            <div className="p-8 md:p-10 bg-white border-b border-slate-50 flex items-center justify-between shrink-0">
+            <div className="p-6 md:p-10 bg-white border-b border-slate-50 flex items-center justify-between shrink-0">
               <div>
                 <h4 className="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-tight">Assinatura do Cliente</h4>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Confirmação do laudo visual de entrada.</p>
@@ -372,7 +382,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
               <SignaturePad 
                 onSave={handleFinalSave} 
                 onCancel={() => setShowSignature(false)} 
@@ -389,7 +399,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
       {/* Modal de Envio de WhatsApp */}
       {showWhatsAppPrompt && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[400] flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-white rounded-[3rem] p-8 max-w-md w-full shadow-2xl text-center border border-white/20">
+          <div className="bg-white rounded-[3rem] p-6 md:p-8 max-w-md w-full shadow-2xl text-center border border-white/20">
             <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-2xl border border-emerald-100 flex items-center justify-center mx-auto mb-6 shadow-inner">
               <ShieldCheck size={40} />
             </div>

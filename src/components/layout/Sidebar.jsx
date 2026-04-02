@@ -10,13 +10,14 @@ import {
   Settings, 
   LogOut,
   ChevronRight,
-  Monitor
+  Monitor,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBrand } from '../../contexts/BrandContext';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ activePage, setActivePage }) => {
+const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
   const { profile, signOut } = useAuth();
   const { name: lojaName, logoUrl } = useBrand();
   const navigate = useNavigate();
@@ -39,12 +40,20 @@ const Sidebar = ({ activePage, setActivePage }) => {
   );
 
   return (
-    <aside className="w-72 bg-white border-r border-slate-100 flex flex-col h-screen sticky top-0 z-50">
+    <aside className={`w-72 bg-white border-r border-slate-100 flex flex-col h-screen fixed lg:sticky top-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 shadow-2xl lg:shadow-none' : '-translate-x-full lg:translate-x-0'}`}>
       {/* Brand Logo */}
-      <div className="p-8">
+      <div className="p-8 relative">
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="lg:hidden absolute top-6 right-6 p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+        >
+          <X size={20} />
+        </button>
         <div className="flex flex-col items-center justify-center text-center gap-2">
           {logoUrl ? (
-             <img src={logoUrl} alt="Logo" className="max-w-[12rem] h-12 object-contain" />
+             <div className="w-16 h-16 mb-2 rounded-2xl shadow-xl overflow-hidden border border-slate-100 flex-shrink-0">
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+             </div>
           ) : (
             <div className="w-12 h-12 mb-2 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3">
               <Wrench className="text-white" size={24} />

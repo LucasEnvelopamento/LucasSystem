@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 const OperadorHome = ({ onSelectOS }) => {
   const { orders, loading } = useOrders();
   const { profile } = useAuth();
+  const { getStatusStyle } = require('../utils/statusUtils');
 
   // 1. KPI: Fila Geral (Disponíveis sem técnico)
   const filaGeral = orders.filter(os => 
@@ -102,7 +103,10 @@ const OperadorHome = ({ onSelectOS }) => {
 };
 
 // Componente Interno para o Card
-const ServiceCard = ({ os, onSelect, isMine }) => (
+const ServiceCard = ({ os, onSelect, isMine }) => {
+  const { getStatusStyle } = require('../utils/statusUtils');
+  
+  return (
   <div 
     onClick={() => onSelect(os)}
     className={`bg-white rounded-2xl p-4 border shadow-sm active:scale-[0.98] transition-all duration-200 ${isMine ? 'border-primary/20 bg-primary/[0.02]' : 'border-slate-100'}`}
@@ -115,9 +119,7 @@ const ServiceCard = ({ os, onSelect, isMine }) => (
         }`} />
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{os.id}</span>
       </div>
-      <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg ${
-        String(os.status).toUpperCase() === 'EM EXECUÇÃO' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'
-      }`}>
+      <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${getStatusStyle(os.status)}`}>
         {os.status}
       </span>
     </div>
@@ -158,5 +160,6 @@ const ServiceCard = ({ os, onSelect, isMine }) => (
     </button>
   </div>
 );
+}
 
 export default OperadorHome;

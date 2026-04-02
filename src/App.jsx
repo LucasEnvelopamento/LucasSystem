@@ -5,8 +5,10 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import MobileLayout from './components/layout/MobileLayout';
-import { useOrders } from './hooks/useData';
 import { ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { useBrand } from './contexts/BrandContext';
+import { ToastContainer } from './components/ui/ToastContainer';
+import { ConfirmContainer } from './components/ui/ConfirmContainer';
 
 // Páginas
 import Dashboard from './pages/Dashboard';
@@ -24,6 +26,32 @@ import LoginPage from './pages/LoginPage';
 import ExecutorView from './pages/ExecutorView';
 import ProfilePage from './pages/Profile';
 import CustomerStatus from './pages/CustomerStatus';
+import { useOrders } from './hooks/useData';
+
+// Sincronizador de Favicon e Title
+const DocumentHead = () => {
+   const { name, logoUrl } = useBrand();
+   
+   useEffect(() => {
+     if (name) {
+        document.title = `${name} | OsSystem`;
+     } else {
+        document.title = 'OsSystem';
+     }
+
+     if (logoUrl) {
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+           link = document.createElement('link');
+           link.rel = 'icon';
+           document.head.appendChild(link);
+        }
+        link.href = logoUrl;
+     }
+   }, [name, logoUrl]);
+
+   return null;
+};
 
 // Componente para Proteção de Rotas
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -178,6 +206,7 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const path = location.pathname.substring(1) || 'dashboard';
@@ -187,17 +216,26 @@ const AppLayout = ({ children }) => {
   const handleNavigate = (pageId) => {
     const path = pageId === 'dashboard' ? '/' : `/${pageId}`;
     navigate(path);
+    setIsSidebarOpen(false);
   };
 
   return (
-    <div className="flex bg-[#F8FAFC] min-h-screen font-sans selection:bg-primary/10 selection:text-primary">
-      <Sidebar activePage={activePage} setActivePage={handleNavigate} />
+    <div className="flex bg-[#F8FAFC] min-h-screen font-sans selection:bg-primary/10 selection:text-primary relative overflow-hidden">
       
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Header activePage={activePage} />
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      <Sidebar activePage={activePage} setActivePage={handleNavigate} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      
+      <main className="flex-1 flex flex-col h-screen overflow-hidden w-full max-w-full">
+        <Header activePage={activePage} onMenuClick={() => setIsSidebarOpen(true)} />
         
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-7xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar relative">
+          <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
         </div>
@@ -211,6 +249,9 @@ function App() {
     <Router>
       <AuthProvider>
         <BrandProvider>
+          <DocumentHead />
+          <ToastContainer />
+          <ConfirmContainer />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/tv" element={<MonitorTV />} />
