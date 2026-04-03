@@ -247,13 +247,17 @@ const AppLayout = ({ children }) => {
         />
       )}
 
-      <Sidebar activePage={activePage} setActivePage={handleNavigate} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="no-print">
+        <Sidebar activePage={activePage} setActivePage={handleNavigate} isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      </div>
       
-      <main className="flex-1 flex flex-col h-screen overflow-hidden w-full max-w-full">
-        <Header activePage={activePage} onMenuClick={() => setIsSidebarOpen(true)} />
+      <main className="flex-1 flex flex-col h-screen overflow-hidden w-full max-w-full print:h-auto print:overflow-visible print:block">
+        <div className="no-print">
+          <Header activePage={activePage} onMenuClick={() => setIsSidebarOpen(true)} />
+        </div>
         
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar relative">
-          <div className="max-w-7xl mx-auto w-full">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 custom-scrollbar relative print:overflow-visible print:h-auto print:p-0">
+          <div className="max-w-7xl mx-auto w-full print:max-w-full print:m-0">
             {children}
           </div>
         </div>
