@@ -36,8 +36,9 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
   ];
 
   // Filtra itens permitidos para o cargo
+  const userRole = String(profile?.cargo || '').toUpperCase();
   const filteredItems = menuItems.filter(item => 
-    item.roles.includes(profile?.cargo) || profile?.cargo === 'ADM'
+    item.roles.map(r => r.toUpperCase()).includes(userRole) || userRole === 'ADM'
   );
 
   return (

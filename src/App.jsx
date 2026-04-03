@@ -9,6 +9,8 @@ import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useBrand } from './contexts/BrandContext';
 import { ToastContainer } from './components/ui/ToastContainer';
 import { ConfirmContainer } from './components/ui/ConfirmContainer';
+import { useOrders } from './hooks/useData';
+import ReloadPrompt from './components/ui/ReloadPrompt';
 
 // Páginas
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -27,8 +29,6 @@ const ExecutorView = React.lazy(() => import('./pages/ExecutorView'));
 const ProfilePage = React.lazy(() => import('./pages/Profile'));
 const CustomerStatus = React.lazy(() => import('./pages/CustomerStatus'));
 const Relatorios = React.lazy(() => import('./pages/Relatorios'));
-import { useOrders } from './hooks/useData';
-import ReloadPrompt from './components/ui/ReloadPrompt';
 
 // Componente de Loading Premium para Transições de Rota
 const PageLoading = () => (
@@ -45,7 +45,6 @@ const PageLoading = () => (
     </div>
   </div>
 );
-import { useOrders } from './hooks/useData';
 
 // Sincronizador de Favicon e Title
 const DocumentHead = () => {
