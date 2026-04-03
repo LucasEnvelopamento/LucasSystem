@@ -45,6 +45,15 @@ const Relatorios = () => {
   const [startDate, setStartDate] = useState(getStartOfMonth());
   const [endDate, setEndDate] = useState(getEndOfMonth());
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedService, setSelectedService] = useState('TODOS');
+  const [hideValues, setHideValues] = useState(false);
+
+  // Lista de Serviços Únicos para o Filtro
+  const serviceOptions = useMemo(() => {
+    if (!orders) return [];
+    const unique = [...new Set(orders.map(os => os.servico || 'Serviços Gerais'))];
+    return ['TODOS', ...unique.sort()];
+  }, [orders]);
 
   // Lógica de Filtragem e Agregação
   const filteredData = useMemo(() => {
@@ -58,10 +67,12 @@ const Relatorios = () => {
         os.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         os.placa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         os.servico?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesService = selectedService === 'TODOS' || os.servico === selectedService;
         
-      return inInterval && matchesSearch;
+      return inInterval && matchesSearch && matchesService;
     });
-  }, [orders, startDate, endDate, searchTerm]);
+  }, [orders, startDate, endDate, searchTerm, selectedService]);
 
   // Estatísticas do Período
   const stats = useMemo(() => {
@@ -137,8 +148,19 @@ const Relatorios = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner">
-             <div className="flex items-center gap-2 px-3 py-2">
+          <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner">
+             <div className="flex items-center gap-2 px-3 py-2 border-r border-slate-200">
+                <Wrench size={12} className="text-primary" />
+                <select 
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="text-[10px] font-black text-slate-600 outline-none bg-transparent uppercase max-w-[120px]"
+                >
+                  {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+             </div>
+             
+             <div className="flex items-center gap-2 px-3 py-2 border-r border-slate-200">
                 <Calendar size={12} className="text-primary" />
                 <input 
                   type="date" 
@@ -147,7 +169,6 @@ const Relatorios = () => {
                   className="text-[10px] font-black text-slate-600 outline-none bg-transparent uppercase"
                 />
              </div>
-             <ChevronDown size={12} className="text-slate-300" />
              <div className="flex items-center gap-2 px-3 py-2">
                 <input 
                   type="date" 
@@ -158,12 +179,22 @@ const Relatorios = () => {
              </div>
           </div>
 
+          <label className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all select-none">
+            <input 
+              type="checkbox" 
+              checked={hideValues}
+              onChange={(e) => setHideValues(e.target.checked)}
+              className="w-4 h-4 rounded-lg border-2 border-slate-200 text-primary focus:ring-primary/20 accent-primary"
+            />
+            <span className="text-[10px] font-black uppercase text-slate-500">Ocultar Valores</span>
+          </label>
+
           <button 
             onClick={handlePrint}
             className="flex items-center gap-2 px-6 py-3.5 bg-slate-800 text-white rounded-2xl hover:bg-slate-700 transition-all shadow-lg shadow-slate-200 active:scale-95 no-print"
           >
             <Printer size={16} />
-            <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Imprimir Relatório</span>
+            <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Imprimir</span>
           </button>
         </div>
       </div>
@@ -292,7 +323,7 @@ const Relatorios = () => {
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Veículo / Placa</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Serviço Realizado</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Valor Bruto</th>
+                  {!hideValues && <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Valor Bruto</th>}
                 </tr>
                 {/* Header fixo para o print */}
                 <tr className="hidden print:table-row">
@@ -328,16 +359,18 @@ const Relatorios = () => {
                           </span>
                        </div>
                     </td>
-                    <td className="px-6 py-5">
+                       <td className="px-6 py-5">
                        <span className="text-[10px] font-bold text-slate-400 uppercase italic line-clamp-1 max-w-[200px] group-hover:text-slate-600 transition-colors">
                          {os.servico || 'Serviços Gerais'}
                        </span>
                     </td>
-                    <td className="px-8 py-5 text-right font-mono">
-                       <span className="text-xs font-black text-slate-800 italic">
-                         R$ {Number(os.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                       </span>
-                    </td>
+                    {!hideValues && (
+                      <td className="px-8 py-5 text-right font-mono">
+                        <span className="text-xs font-black text-slate-800 italic">
+                          R$ {Number(os.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </td>
+                    )}
                   </tr>
                 ))}
                 {filteredData.length === 0 && (
@@ -349,7 +382,7 @@ const Relatorios = () => {
                   </tr>
                 )}
               </tbody>
-              {filteredData.length > 0 && (
+              {filteredData.length > 0 && !hideValues && (
                 <tfoot className="bg-slate-50/50 border-t-2 border-slate-100">
                    <tr>
                      <td colSpan="4" className="px-8 py-8 text-[11px] font-black text-slate-500 uppercase tracking-[0.3em] text-right">Faturamento Total do Período</td>
