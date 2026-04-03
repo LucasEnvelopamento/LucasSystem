@@ -26,6 +26,7 @@ const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const ExecutorView = React.lazy(() => import('./pages/ExecutorView'));
 const ProfilePage = React.lazy(() => import('./pages/Profile'));
 const CustomerStatus = React.lazy(() => import('./pages/CustomerStatus'));
+const Relatorios = React.lazy(() => import('./pages/Relatorios'));
 import { useOrders } from './hooks/useData';
 import ReloadPrompt from './components/ui/ReloadPrompt';
 
@@ -286,6 +287,7 @@ function App() {
             <Route path="/servicos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Servicos /></AppLayout></ProtectedRoute>} />
             <Route path="/estoque" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Estoque /></AppLayout></ProtectedRoute>} />
             <Route path="/colaboradores" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Colaboradores /></AppLayout></ProtectedRoute>} />
+            <Route path="/relatorios" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
 
             {/* Rota do Operador */}

@@ -31,6 +31,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
     { id: 'servicos', label: 'Serviços', icon: UserSquare2, roles: ['ADM', 'GESTOR'] },
     { id: 'estoque', label: 'Estoque', icon: Package, roles: ['ADM', 'GESTOR'] },
     { id: 'colaboradores', label: 'Colaboradores', icon: UserSquare2, roles: ['ADM', 'GESTOR'] },
+    { id: 'relatorios', label: 'Relatórios', icon: TrendingUp, roles: ['ADM', 'GESTOR'] },
     { id: 'settings', label: 'Configurações', icon: Settings, roles: ['ADM', 'GESTOR'] },
   ];
 

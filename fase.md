@@ -258,6 +258,13 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Maturidade de Código:** Limpeza de arquivos temporários e padronização da estrutura do projeto.
 - [x] **Versionamento:** Sincronização final com o repositório Git.
 
+### ✅ Fase 31: Módulo de Relatórios Estratégicos (Concluído)
+- [x] **Data Aggregation:** Queries de filtragem reativa por período integrada ao hook `useOrders`.
+- [x] **Relatórios UI:** Dashboard de análise com KPIs de Faturamento, Ticket Médio e Eficiência.
+- [x] **Gráficos de Performance:** Barra de produtividade por técnico baseada em valor gerado.
+- [x] **Relatório Detalhado:** Tabela específica com Cliente, Placa, Serviço e Valor (Filtro por Período).
+- [x] **Exportação:** Suporte a impressão A4 Print-Friendly para auditoria física.
+
 ---
-*Última atualização: 02/04/2026 - STATUS: SISTEMA ESTABILIZADO E SEGURO (FASE 30 OK) ✅*
+*Última atualização: 03/04/2026 - STATUS: FASE 31 CONCLUÍDA ✅*
 ```
