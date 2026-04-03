@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   BarChart3, 
   Calendar, 
@@ -7,32 +7,71 @@ import {
   TrendingUp, 
   Users, 
   Wrench,
-  FileText
+  FileText,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { useOrders, useProfiles } from '../hooks/useData';
 
-// Funções Utilitárias Nativas
-const formatDate = (date) => {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleDateString('pt-BR');
-};
+// Componente de Dropdown para Multisseleção
+const MultiSelectDropdown = ({ label, options, selected, onToggle, icon: Icon }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-const getStartOfMonth = () => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
-};
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-const getEndOfMonth = () => {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
-};
+  const isAllSelected = selected.includes('TODOS');
+  const count = isAllSelected ? 'TODOS' : selected.length;
 
-const isDateInInterval = (target, start, end) => {
-  const t = new Date(target).setHours(0,0,0,0);
-  const s = new Date(start).setHours(0,0,0,0);
-  const e = new Date(end).setHours(23,59,59,999);
-  return t >= s && t <= e;
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 border-r border-slate-200 hover:bg-slate-100/50 transition-all min-w-[140px]"
+      >
+        <Icon size={12} className="text-primary shrink-0" />
+        <div className="flex flex-col items-start overflow-hidden">
+          <span className="text-[8px] font-black uppercase text-slate-400 leading-none mb-0.5">{label}</span>
+          <span className="text-[10px] font-black text-slate-600 uppercase truncate w-full flex items-center gap-1">
+            {isAllSelected ? 'TODOS' : `${count} SELEC.`}
+            <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </span>
+        </div>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-slate-100 shadow-2xl rounded-2xl z-50 py-2 animate-in fade-in zoom-in duration-200">
+          <div className="max-h-64 overflow-y-auto custom-scrollbar">
+            {options.map((opt) => {
+              const isSelected = selected.includes(opt);
+              return (
+                <button
+                  key={opt}
+                  onClick={() => onToggle(opt)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 transition-colors group"
+                >
+                  <span className={`text-[10px] font-black uppercase transition-colors ${isSelected ? 'text-primary' : 'text-slate-600'}`}>
+                    {opt}
+                  </span>
+                  <div className={`w-4 h-4 rounded-md border-2 transition-all flex items-center justify-center ${isSelected ? 'bg-primary border-primary' : 'border-slate-200 group-hover:border-primary/30'}`}>
+                    {isSelected && <Check size={10} className="text-white stroke-[4]" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const Relatorios = () => {
@@ -42,7 +81,8 @@ const Relatorios = () => {
   const [startDate, setStartDate] = useState(getStartOfMonth());
   const [endDate, setEndDate] = useState(getEndOfMonth());
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedService, setSelectedService] = useState('TODOS');
+  const [selectedServices, setSelectedServices] = useState(['TODOS']);
+  const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
   const [hideValues, setHideValues] = useState(false);
 
   const serviceOptions = useMemo(() => {
@@ -50,6 +90,24 @@ const Relatorios = () => {
     const unique = [...new Set(orders.map(os => os.servico || 'Serviços Gerais'))];
     return ['TODOS', ...unique.sort()];
   }, [orders]);
+
+  const statusOptions = ['TODOS', 'PENDENTE', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'];
+
+  const toggleSelection = (item, currentBatch, setBatch) => {
+    if (item === 'TODOS') {
+      setBatch(['TODOS']);
+      return;
+    }
+
+    let next = currentBatch.filter(i => i !== 'TODOS');
+    if (next.includes(item)) {
+      next = next.filter(i => i !== item);
+      if (next.length === 0) next = ['TODOS'];
+    } else {
+      next = [...next, item];
+    }
+    setBatch(next);
+  };
 
   const filteredData = useMemo(() => {
     if (!orders) return [];
@@ -60,20 +118,26 @@ const Relatorios = () => {
         os.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         os.placa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         os.servico?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesService = selectedService === 'TODOS' || os.servico === selectedService;
-      return inInterval && matchesSearch && matchesService;
+      
+      const osService = os.servico || 'Serviços Gerais';
+      const matchesService = selectedServices.includes('TODOS') || selectedServices.includes(osService);
+      
+      const osStatusNorm = String(os.status || '').trim().toUpperCase();
+      const matchesStatus = selectedStatuses.includes('TODOS') || selectedStatuses.includes(osStatusNorm);
+
+      return inInterval && matchesSearch && matchesService && matchesStatus;
     }).sort((a, b) => {
       const dateA = new Date(a.data_agendamento || a.created_at);
       const dateB = new Date(b.data_agendamento || b.created_at);
       return dateA - dateB;
     });
-  }, [orders, startDate, endDate, searchTerm, selectedService]);
+  }, [orders, startDate, endDate, searchTerm, selectedServices, selectedStatuses]);
 
   const stats = useMemo(() => {
     const total = filteredData.reduce((acc, os) => acc + (Number(os.valor_total) || 0), 0);
     const count = filteredData.length;
     const finishedCount = filteredData.filter(os => 
-      ['CONCLUÍDO', 'ENTREGUE'].includes(String(os.status || '').toUpperCase())
+      ['CONCLUÍDO', 'ENTREGUE'].includes(String(os.status || '').toUpperCase().trim())
     ).length;
     return { total, count, finishedCount, ticketMedio: count > 0 ? total / count : 0 };
   }, [filteredData]);
@@ -124,13 +188,26 @@ const Relatorios = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner">
-             <div className="flex items-center gap-2 px-3 py-2 border-r border-slate-200">
-                <Wrench size={12} className="text-primary" />
-                <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="text-[10px] font-black text-slate-600 outline-none bg-transparent uppercase max-w-[120px]">
-                  {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-             </div>
+          <div className="flex items-center gap-0 bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner">
+             
+             {/* Filtro Multi-Serviço */}
+             <MultiSelectDropdown 
+               label="Serviços"
+               options={serviceOptions}
+               selected={selectedServices}
+               onToggle={(opt) => toggleSelection(opt, selectedServices, setSelectedServices)}
+               icon={Wrench}
+             />
+
+             {/* Filtro Multi-Status */}
+             <MultiSelectDropdown 
+               label="Status"
+               options={statusOptions}
+               selected={selectedStatuses}
+               onToggle={(opt) => toggleSelection(opt, selectedStatuses, setSelectedStatuses)}
+               icon={TrendingUp}
+             />
+
              <div className="flex items-center gap-2 px-3 py-2 border-r border-slate-200">
                 <Calendar size={12} className="text-primary" />
                 <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="text-[10px] font-black text-slate-600 outline-none bg-transparent uppercase"/>
@@ -243,7 +320,7 @@ const Relatorios = () => {
                 <tr className="bg-slate-50/80 border-b border-slate-100 print:bg-slate-200 print:border-b-2 print:border-black">
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Data OS</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Cliente</th>
-                  <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Veículo / Placa</th>
+                  <th className="px-6 py-6 text-[10px) font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Veículo / Placa</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Serviço Realizado</th>
                   {!hideValues && <th className="px-8 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest text-right print:py-4">Valor</th>}
                 </tr>
@@ -364,6 +441,23 @@ const Relatorios = () => {
       </div>
     </div>
   );
+};
+
+const getStartOfMonth = () => {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+};
+
+const getEndOfMonth = () => {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+};
+
+const isDateInInterval = (target, start, end) => {
+  const t = new Date(target).setHours(0,0,0,0);
+  const s = new Date(start).setHours(0,0,0,0);
+  const e = new Date(end).setHours(23,59,59,999);
+  return t >= s && t <= e;
 };
 
 export default Relatorios;
