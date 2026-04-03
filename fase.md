@@ -262,9 +262,14 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Data Aggregation:** Queries de filtragem reativa por período integrada ao hook `useOrders`.
 - [x] **Relatórios UI:** Dashboard de análise com KPIs de Faturamento, Ticket Médio e Eficiência.
 - [x] **Gráficos de Performance:** Barra de produtividade por técnico baseada em valor gerado.
-- [x] **Relatório Detalhado:** Tabela específica com Cliente, Placa, Serviço e Valor (Filtro por Período).
-- [x] **Exportação:** Suporte a impressão A4 Print-Friendly para auditoria física.
+- [x] **Multisseleção Pro:** Implementação de filtros de Status e Serviços com checkboxes (Check-all logic).
+- [x] **Impressão Cirúrgica:** Refatoração de CSS global para focar apenas no grid de auditoria (A4 optimized).
+- [x] **Ordenação Cronológica:** Exibição crescente por data para auditoria de linha do tempo.
+
+### ⬜ Fase 32: Flexibilidade de Preços nos Orçamentos (Próxima Etapa)
+- [ ] **Edição de Valor no Orçamento:** Permitir que o gestor altere o valor de um serviço manualmente no momento da criação do orçamento/OS, mesmo que exista um valor pré-definido no catálogo.
+- [ ] **Ajuste por Dificuldade:** Campo de entrada numérica que herda o preço padrão mas permite override manual.
 
 ---
-*Última atualização: 03/04/2026 - STATUS: FASE 31 CONCLUÍDA ✅*
+*Última atualização: 03/04/2026 às 01:05 - STATUS: AGUARDANDO FASE 32 🌙*
 ```
