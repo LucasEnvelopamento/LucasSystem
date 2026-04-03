@@ -398,14 +398,14 @@ const Relatorios = () => {
          {/* Estilo Customizado para Impressão e Responsividade */}
          <style dangerouslySetInnerHTML={{ __html: `
            @media print {
-             @page { size: portrait; margin: 10mm; }
+             @page { size: landscape; margin: 10mm; }
              body { background: white !important; }
              aside, nav, header, .no-print { display: none !important; }
              .print\\:block, table { visibility: visible !important; width: 100% !important; margin: 0 !important; }
              main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
              .card-premium { border: none !important; box-shadow: none !important; padding: 0 !important; }
-             table { border-collapse: collapse; width: 100%; }
-             th, td { border: 1px solid #e2e8f0; padding: 12px; font-size: 9pt !important; }
+             table { border-collapse: collapse; width: 100%; border: 1px solid #e2e8f0; }
+             th, td { border: 1px solid #e2e8f0; padding: 8px; font-size: 8pt !important; }
              tfoot td { background: #f8fafc !important; border-top: 2px solid #cbd5e1; }
            }
            
