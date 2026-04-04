@@ -15,6 +15,7 @@ import {
   Lock,
   Edit2
 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { useProfiles } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../utils/toast';
@@ -26,6 +27,9 @@ const ColaboradoresView = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingColab, setEditingColab] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', cargo: 'OPERADOR' });
+  const [isCreating, setIsCreating] = useState(false);
 
   const toggleStatus = async (user) => {
     // Regra: Somente ADM pode desativar/ativar usuários
@@ -92,7 +96,13 @@ const ColaboradoresView = () => {
           <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Equipe de Especialistas</h2>
           <p className="text-sm text-slate-500 font-medium">Gerencie os profissionais e permissões de acesso.</p>
         </div>
-        <button className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2 hover:-translate-y-0.5 transition-all">
+        <button 
+          onClick={() => {
+            setNewUser({ nome: '', email: '', password: '', cargo: 'OPERADOR' });
+            setShowAddModal(true);
+          }}
+          className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2 hover:-translate-y-0.5 transition-all"
+        >
           <Plus size={18} /> Novo Usuário
         </button>
       </div>
@@ -216,6 +226,123 @@ const ColaboradoresView = () => {
         </div>
       )}
 
+
+      {/* Modal Novo Usuário */}
+      {showAddModal && !editingColab && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-scaleUp">
+            <h3 className="text-xl font-black text-slate-800 uppercase mb-6 tracking-tighter">Novo Colaborador</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setIsCreating(true);
+              
+              try {
+                // 1. Criar uma instância temporária que NÃO persiste sessão
+                // Isso evita que o ADM seja deslogado ao criar um novo usuário
+                const tempSupabase = createClient(
+                  import.meta.env.VITE_SUPABASE_URL,
+                  import.meta.env.VITE_SUPABASE_ANON_KEY,
+                  { 
+                    auth: { 
+                      persistSession: false,
+                      autoRefreshToken: false,
+                      detectSessionInUrl: false
+                    } 
+                  }
+                );
+
+                const { data, error } = await tempSupabase.auth.signUp({
+                  email: newUser.email,
+                  password: newUser.password,
+                  options: {
+                    data: {
+                      full_name: newUser.nome,
+                      cargo: newUser.cargo
+                    }
+                  }
+                });
+
+                if (error) throw error;
+
+                toast.success('Usuário criado com sucesso!');
+                setShowAddModal(false);
+                fetchProfiles(); // Atualiza a lista
+                
+                // Alerta adicional
+                toast.info('Se o login falhar, verifique o e-mail para confirmação da conta.');
+              } catch (err) {
+                console.error(err);
+                toast.error(err.message || 'Erro ao criar usuário.');
+              } finally {
+                setIsCreating(false);
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">Nome Completo</label>
+                <input 
+                  required 
+                  value={newUser.nome}
+                  onChange={(e) => setNewUser({...newUser, nome: e.target.value})}
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 font-bold transition-all" 
+                  placeholder="Ex: Carlos Silva" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">E-mail Corporativo</label>
+                <input 
+                  type="email" 
+                  required 
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 font-bold transition-all" 
+                  placeholder="carlos@detailing.com" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">Senha Temporária</label>
+                <input 
+                  type="password" 
+                  required 
+                  minLength={6}
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 font-bold transition-all" 
+                  placeholder="••••••••" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 px-1 tracking-widest">Cargo / Permissão</label>
+                <select 
+                  value={newUser.cargo}
+                  onChange={(e) => setNewUser({...newUser, cargo: e.target.value})}
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 font-bold transition-all"
+                >
+                  <option value="OPERADOR">OPERADOR</option>
+                  <option value="GESTOR">GESTOR</option>
+                  <option value="ADM">ADMINISTRADOR</option>
+                </select>
+              </div>
+              
+              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 mb-2">
+                <p className="text-[9px] text-amber-700 font-bold uppercase tracking-widest leading-relaxed text-center">
+                  ⚠️ Importante: Se o e-mail não abrir o sistema, peça ao colaborador para confirmar o e-mail na caixa de entrada.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 bg-slate-50 text-slate-500 rounded-xl font-black uppercase text-[10px] hover:bg-slate-100 tracking-widest">Cancelar</button>
+                <button 
+                  type="submit" 
+                  disabled={isCreating}
+                  className="flex-1 py-4 bg-primary text-white rounded-xl font-black uppercase text-[10px] shadow-lg shadow-primary/20 hover:bg-emerald-600 tracking-widest flex items-center justify-center gap-2"
+                >
+                  {isCreating ? <Loader2 className="animate-spin" size={14} /> : 'Criar Conta'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

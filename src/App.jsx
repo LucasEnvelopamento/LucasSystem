@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import MobileLayout from './components/layout/MobileLayout';
-import { ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, ClipboardList, User, LogOut } from 'lucide-react';
 import { useBrand } from './contexts/BrandContext';
 import { ToastContainer } from './components/ui/ToastContainer';
 import { ConfirmContainer } from './components/ui/ConfirmContainer';
@@ -152,17 +152,20 @@ const OperadorLayoutWrapper = () => {
   const [selectedOS, setSelectedOS] = useState(null);
   const { orders } = useOrders();
 
-  const titles = {
-    tarefas: 'Minhas Tarefas',
-    historico: 'Meu Histórico',
-    perfil: 'Meu Perfil'
-  };
+  const navItems = [
+    { id: 'tarefas', icon: ClipboardList, label: 'Tarefas' },
+    { id: 'historico', icon: CheckCircle2, label: 'Histórico' },
+    { id: 'perfil', icon: User, label: 'Perfil' },
+  ];
 
   return (
     <MobileLayout 
       currentView={selectedOS ? 'execucao' : opView} 
-      setView={setOpView} 
-      title={selectedOS ? 'Executando Serviço' : titles[opView]}
+      setView={(viewId) => {
+        setSelectedOS(null);
+        setOpView(viewId);
+      }} 
+      title={selectedOS ? 'Executando Serviço' : (navItems.find(i => i.id === opView)?.label || 'OsSystem')}
     >
       {selectedOS ? (
         <ExecutorView 
@@ -268,7 +271,7 @@ const AppLayout = ({ children }) => {
 
 function App() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <BrandProvider>
           <DocumentHead />

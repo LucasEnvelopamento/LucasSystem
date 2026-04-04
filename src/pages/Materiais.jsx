@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Package, AlertTriangle, ArrowUpRight, History, Loader2, Edit2, Trash2, X } from 'lucide-react';
-import { useInventory } from '../hooks/useData';
+import { useInventory, createNotification } from '../hooks/useData';
+import { supabase } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
@@ -10,6 +11,35 @@ const MateriaisView = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [repondoItem, setRepondoItem] = useState(null);
+
+  // Sincronização de Notificações de Itens que JÁ estão críticos
+  React.useEffect(() => {
+    if (!loading && inventory.length > 0) {
+      const syncAlerts = async () => {
+        const itensCriticos = inventory.filter(i => Number(i.quantidade) <= Number(i.minimo_alerta));
+        
+        for (const item of itensCriticos) {
+          // Verifica se já existe uma notificação NÃO LIDA para este item
+          const { data: existing } = await supabase
+            .from('notificacoes')
+            .select('id')
+            .eq('item_id', item.id)
+            .eq('lida', false)
+            .maybeSingle();
+
+          if (!existing) {
+            await createNotification({
+              titulo: 'Estoque Crítico (Retroativo)',
+              mensagem: `O material "${item.nome}" já está no nível crítico (${item.quantidade} ${item.unidade}).`,
+              tipo: 'ALERTA',
+              item_id: item.id
+            });
+          }
+        }
+      };
+      syncAlerts();
+    }
+  }, [loading, inventory]);
 
   const filteredInventory = inventory.filter(i => 
     i.nome?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -175,6 +205,17 @@ const MateriaisView = () => {
 
               if (res.success) {
                   toast.success(editingItem ? 'Material atualizado!' : 'Material adicionado ao estoque!');
+                  
+                  // Gerar Notificação se for Crítico
+                  if (Number(data.quantidade) <= Number(data.minimo_alerta)) {
+                    createNotification({
+                      titulo: 'Estoque Crítico',
+                      mensagem: `O material "${data.nome}" está com apenas ${data.quantidade} unidades.`,
+                      tipo: 'ALERTA',
+                      item_id: editingItem?.id
+                    });
+                  }
+
                   setShowAddModal(false);
                   setEditingItem(null);
               } else {
@@ -230,10 +271,10 @@ const MateriaisView = () => {
                if (!isNaN(val) && val > 0) {
                  const newTotal = (parseFloat(repondoItem.quantidade) || 0) + val;
                  const res = await updateItem(repondoItem.id, { quantidade: newTotal });
-                 if (res.success) {
-                   toast.success(`Estoque atualizado: +${val} ${repondoItem.unidade}`);
-                   setRepondoItem(null);
-                 }
+                  if (res.success) {
+                    toast.success(`Estoque atualizado: +${val} ${repondoItem.unidade}`);
+                    setRepondoItem(null);
+                  }
                } else {
                  toast.warning("Insira uma quantidade válida.");
                }

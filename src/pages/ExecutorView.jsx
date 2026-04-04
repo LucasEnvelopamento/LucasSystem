@@ -9,7 +9,9 @@ import {
   Clock,
   Car,
   AlertTriangle,
-  X
+  X,
+  Loader2,
+  Wrench
 } from 'lucide-react';
 
 import { useOrders } from '../hooks/useData';
@@ -17,7 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../utils/toast';
 
 const ExecutorView = ({ os, onBack, onComplete }) => {
-  const { updateOrderProgress } = useOrders();
+  const { updateOrderProgress, uploadOsPhoto, fetchOsPhotos } = useOrders();
   const { profile } = useAuth();
   
   // Novos estados para múltiplos serviços
@@ -39,6 +41,18 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
   const [photos, setPhotos] = useState([]);
   const [isFinishing, setIsFinishing] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Busca fotos iniciais da OS
+  useEffect(() => {
+    const loadPhotos = async () => {
+       const res = await fetchOsPhotos(os.id);
+       if (res.success) {
+          setPhotos(res.data.map(p => p.url));
+       }
+    };
+    loadPhotos();
+  }, [os.id]);
 
   // Simulação de cronômetro
   useEffect(() => {
@@ -137,12 +151,25 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     await updateOrderProgress(os.id, updateData);
   };
 
-  const handlePhotoUpload = (e) => {
-    const files = Array.from(e.target.files);
-    // Aqui no futuro implementaremos o upload real para o Bucket do Supabase
-    const newPhotos = files.map(file => URL.createObjectURL(file));
-    setPhotos(prev => [...prev, ...newPhotos]);
-    toast.info('Fotos carregadas (Upload real em desenvolvimento)');
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const res = await uploadOsPhoto(os.id, file);
+      if (res.success) {
+        setPhotos(prev => [res.url, ...prev]);
+        toast.success('Foto enviada com sucesso!');
+      } else {
+        toast.error('Erro ao enviar foto: ' + (res.error?.message || 'Falha no upload'));
+      }
+    } catch (error) {
+      console.error('Erro no handlePhotoUpload:', error);
+      toast.error('Erro inesperado no upload.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -164,27 +191,22 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
 
       {/* Conteúdo Rolável */}
       <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 custom-scrollbar">
-        {/* Card do Cronômetro */}
-        <div className="bg-slate-900 rounded-[3rem] py-12 px-8 text-center shadow-2xl shadow-slate-900/40 relative group overflow-hidden">
+        {/* Card de Controle Rápido (Simplificado sem Cronômetro) */}
+        <div className="bg-slate-900 rounded-[3rem] py-10 px-8 text-center shadow-2xl shadow-slate-900/40 relative group overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
           
-          <p className="text-primary text-[10px] font-black uppercase tracking-[0.4em] mb-6 relative z-10 opacity-70">
-            Tempo em Atividade
-          </p>
-          
           <div className="flex flex-col items-center gap-6 relative z-10">
-              <span className="text-6xl font-black text-white font-mono tracking-tighter leading-none drop-shadow-2xl">
-                {formatTime(time)}
-              </span>
-              
-              <div className="flex items-center gap-4">
-                  <div className={`px-4 py-2 rounded-xl flex items-center gap-2 border ${isRunning ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
-                      <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest">{isRunning ? 'Executando' : 'Pausado'}</span>
-                  </div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-primary text-[10px] font-black uppercase tracking-[0.4em] opacity-70">
+                  Status da Operação
+                </p>
+                <div className={`mt-2 px-4 py-2 rounded-xl flex items-center gap-2 border ${isRunning ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+                    <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{isRunning ? 'Em Execução' : 'Pausado'}</span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-6 mt-4">
+              <div className="flex items-center gap-6">
                   {!isRunning ? (
                     <button 
                       onClick={handleStart}
@@ -271,12 +293,22 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
           <div className="flex items-center justify-between px-2">
             <h4 className="text-[12px] font-black uppercase text-slate-400 tracking-[0.2em]">Registro Técnico</h4>
             <div className="flex gap-2">
-                <label className="p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-200 transition-all cursor-pointer shadow-sm">
-                   <input type="file" multiple accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                   <Camera size={18} />
+                <label className={`p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-200 transition-all cursor-pointer shadow-sm ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploading} />
+                   {isUploading ? <Loader2 className="animate-spin" size={18} /> : <Camera size={18} />}
                 </label>
             </div>
           </div>
+
+          {photos.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {photos.map((url, i) => (
+                <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm transition-transform hover:scale-105 bg-slate-50">
+                  <img src={url} alt={`Foto ${i}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="bg-slate-50 rounded-[2.5rem] p-8 border-2 border-slate-100 shadow-inner focus-within:bg-white focus-within:border-primary/20 transition-all">
              <textarea 

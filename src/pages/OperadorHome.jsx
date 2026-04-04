@@ -136,11 +136,7 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
     <div className="flex items-center justify-between pt-3 border-t border-slate-50">
       <div className="flex items-center gap-1.5 text-slate-500">
         <Wrench size={12} className="text-primary" />
-        <span className="text-[10px] font-bold truncate max-w-[150px]">{os.servico || 'Serviço'}</span>
-      </div>
-      <div className="flex items-center gap-1.5 text-slate-400">
-        <Clock size={12} />
-        <span className="text-[10px] font-bold">{os.tempo || '2h'}</span>
+        <span className="text-[10px] font-bold truncate max-w-[200px]">{os.servico || 'Serviço'}</span>
       </div>
     </div>
 

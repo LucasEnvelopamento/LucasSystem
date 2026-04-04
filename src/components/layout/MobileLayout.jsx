@@ -1,10 +1,9 @@
 import React from 'react';
 import { 
   ClipboardList, 
-  History, 
+  CheckCircle2, 
   User, 
-  LogOut,
-  Bell
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ const MobileLayout = ({ children, currentView, setView, title }) => {
 
   const navItems = [
     { id: 'tarefas', icon: ClipboardList, label: 'Tarefas' },
-    { id: 'historico', icon: History, label: 'Histórico' },
+    { id: 'historico', icon: CheckCircle2, label: 'Histórico' },
     { id: 'perfil', icon: User, label: 'Perfil' },
   ];
 
@@ -37,10 +36,7 @@ const MobileLayout = ({ children, currentView, setView, title }) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="p-2 text-slate-400 hover:bg-slate-50 rounded-full relative">
-            <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-          </button>
+          {/* Sino oculto por solicitação White Label */}
           <button 
             onClick={handleLogout}
             className="p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 rounded-full"

@@ -266,7 +266,7 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Impressão Cirúrgica:** Refatoração de CSS global para focar apenas no grid de auditoria (A4 optimized).
 - [x] **Ordenação Cronológica:** Exibição crescente por data para auditoria de linha do tempo.
 
-### ⬜ Fase 32: Flexibilidade de Preços nos Orçamentos (Próxima Etapa)
+### ✅ Fase 32: Flexibilidade de Preços nos Orçamentos (Concluída)
 - [x] **Edição de Valor no Orçamento:** Permitir que o gestor altere o valor de um serviço manualmente no momento da criação do orçamento/OS, mesmo que exista um valor pré-definido no catálogo.
 - [x] **Ajuste por Dificuldade:** Campo de entrada numérica que herda o preço padrão mas permite override manual.
 
@@ -277,5 +277,23 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Flexibilidade Total:** Permitir que o serviço siga para execução mesmo sem pagamento inicial, conforme a necessidade do gestor.
 
 ---
-*Última atualização: 03/04/2026 às 23:24 - STATUS: FASE 33 CONCLUÍDA ✅*
+### ✅ Fase 34: Estabilização e Customização White Label (Operador Focus) (Concluída)
+- [x] **Privacidade Operacional**: Ocultação de cronômetro e notificações para o cargo de operador.
+- [x] **Upload Real de Mídia**: Integração do Storage Supabase (bucket `os-photos`) para registro de execução.
+- [x] **Infraestrutura**: Resolução de erros de WebSocket Realtime e limpeza de avisos de console (Router flags).
+- [x] **Segurança de Dados**: Garantia de persistência de tempo decorrido mesmo com UI oculta.
+
+
+---
+### ✅ Fase 35: Segurança de Acesso, Gestão de Usuários e Notificações (Concluída)
+- [x] **Segurança de Acesso**: Link "Esqueceu sua senha? Contate o Administrador" funcional via WhatsApp.
+- [x] **Alteração de Senha**: Módulo de troca de senha (mín. 6 chars) no perfil do Operador e Gestor.
+- [x] **Gestão de Equipe**: Implementação do modal "Novo Usuário" (Signup via ADM sem troca de sessão).
+- [x] **Notificações Inteligentes (Sino)**: 
+    - [x] Lógica de alertas proativos e retroativos para Estoque Baixo (< Mínimo Alerta).
+    - [x] Interface do Sino no Header com filtro de apenas "Não Lidas" e botão "Limpar Tudo".
+    - [x] Estabilização de UX: Painel limpo que some ao marcar como lido.
+
+---
+*Última atualização: 04/04/2026 às 01:25 - STATUS: FASE 35 CONCLUÍDA 🚀*
 ```

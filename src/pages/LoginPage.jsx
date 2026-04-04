@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useBrand } from '../contexts/BrandContext';
 import { Car, Lock, Mail, Loader2, ArrowRight } from 'lucide-react';
 
 const LoginPage = () => {
@@ -10,6 +11,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { signIn, user, profile, loading, isOperador } = useAuth();
+  const { whatsapp, name } = useBrand();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,8 +41,18 @@ const LoginPage = () => {
         }
       }
     } catch (err) {
-      setError('Credenciais inválidas ou erro na conexão.');
-      console.error(err);
+      let msg = 'Credenciais inválidas ou erro na conexão.';
+      
+      if (err.message === 'Email not confirmed') {
+        msg = 'E-mail ainda não confirmado. Verifique sua caixa de entrada.';
+      } else if (err.message === 'Invalid login credentials') {
+        msg = 'E-mail ou senha incorretos.';
+      } else if (err.message?.includes('network')) {
+        msg = 'Erro de conexão. Verifique sua internet.';
+      }
+
+      setError(msg);
+      console.error('Erro de Login:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -134,9 +146,17 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-              Esqueceu sua senha? <span className="text-primary hover:underline cursor-pointer">Contate o Administrador</span>
+          <div className="mt-8 text-center bg-slate-50 py-3 rounded-2xl border border-slate-100/50">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+              Esqueceu sua senha? <br />
+              <a 
+                href={whatsapp ? `https://wa.me/55${whatsapp.replace(/\D/g, '')}?text=Olá, esqueci minha senha no sistema ${name}. Pode me ajudar?` : '#'} 
+                target={whatsapp ? "_blank" : "_self"}
+                rel="noreferrer"
+                className="text-primary font-black cursor-pointer hover:bg-primary/5 px-2 py-0.5 rounded transition-all inline-block mt-1"
+              >
+                Contate o Administrador
+              </a>
             </p>
           </div>
         </div>

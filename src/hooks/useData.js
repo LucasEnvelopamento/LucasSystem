@@ -43,10 +43,21 @@ export const useOrders = () => {
     fetchOrders();
     if (hasRealConnection()) {
         const channel = supabase
-            .channel('os-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'ordens_servico' }, fetchOrders)
-            .subscribe();
-        return () => supabase.removeChannel(channel);
+            .channel('os-changes-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'ordens_servico' }, (payload) => {
+                console.log('Realtime update received:', payload);
+                fetchOrders();
+            })
+            .subscribe((status) => {
+                console.log('Realtime subscription status:', status);
+                if (status === 'CHANNEL_ERROR') {
+                    console.error('Falha na conexão Realtime. Verifique se o Realtime está habilitado no painel do Supabase para a tabela ordens_servico.');
+                }
+            });
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }
   }, []);
 
@@ -214,7 +225,59 @@ export const useOrders = () => {
     return { success: true };
   };
 
-  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment };
+  const uploadOsPhoto = async (osId, file) => {
+    if (hasRealConnection()) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${osId}/${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // 1. Upload para o Bucket 'os-photos'
+        const { error: uploadError, data } = await supabase.storage
+          .from('os-photos')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // 2. Pegar URL Pública
+        const { data: { publicUrl } } = supabase.storage
+          .from('os-photos')
+          .getPublicUrl(filePath);
+
+        // 3. Salvar na Tabela 'os_midia'
+        const { error: dbError } = await supabase
+          .from('os_midia')
+          .insert({
+            os_id: osId,
+            url: publicUrl,
+            tipo: 'execucao'
+          });
+
+        if (dbError) throw dbError;
+
+        return { success: true, url: publicUrl };
+      } catch (error) {
+        console.error('Erro no upload de foto:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true, url: URL.createObjectURL(file) };
+  };
+
+  const fetchOsPhotos = async (osId) => {
+    if (hasRealConnection()) {
+      const { data, error } = await supabase
+        .from('os_midia')
+        .select('*')
+        .eq('os_id', osId)
+        .order('created_at', { ascending: false });
+      
+      return { success: !error, data: data || [], error };
+    }
+    return { success: true, data: [] };
+  };
+
+  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, uploadOsPhoto, fetchOsPhotos };
 };
 
 export const useClients = () => {
@@ -646,4 +709,69 @@ export const useInventory = () => {
   };
 
   return { inventory, loading, fetchInventory, saveItem, updateItem, deleteItem };
+};
+
+export const useNotifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    if (hasRealConnection()) {
+      const { data, error } = await supabase
+        .from('notificacoes')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (!error && data) setNotifications(data);
+    }
+    setLoading(false);
+  };
+
+  const markAsRead = async (id) => {
+    if (hasRealConnection()) {
+      await supabase.from('notificacoes').update({ lida: true }).eq('id', id);
+      fetchNotifications();
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (hasRealConnection()) {
+      await supabase.from('notificacoes').update({ lida: true }).eq('lida', false);
+      fetchNotifications();
+    }
+  };
+
+  const clearNotification = async (id) => {
+    if (hasRealConnection()) {
+      await supabase.from('notificacoes').delete().eq('id', id);
+      fetchNotifications();
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    if (hasRealConnection()) {
+      const channel = supabase
+        .channel('notificacoes-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notificacoes' }, () => {
+          fetchNotifications();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, []);
+
+  return { notifications, loading, markAsRead, markAllAsRead, clearNotification, fetchNotifications };
+};
+
+export const createNotification = async (data) => {
+  if (hasRealConnection()) {
+    const { error } = await supabase.from('notificacoes').insert(data);
+    return { success: !error, error };
+  }
+  return { success: true };
 };
