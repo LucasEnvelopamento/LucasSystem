@@ -1,6 +1,9 @@
 # Estrutura do Banco de Dados - OsSystem (Produção)
 
-Este arquivo contém o script mestre para a criação completa do banco de dados em um novo ambiente Supabase.
+Este arquivo contém o script mestre para a criação completa do banco de dados em um novo ambiente Supabase. 
+
+> [!IMPORTANT]
+> Este script utiliza Funções Security Definer para evitar erros de "Infinite Recursion" nas políticas de segurança (RLS).
 
 ## 🚀 Script SQL Mestre
 Copie e cole o conteúdo abaixo no **SQL Editor** do Supabase.
@@ -138,7 +141,10 @@ CREATE TABLE IF NOT EXISTS public.notificacoes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 3. TRIGGERS
+-- 3. FUNÇÕES E TRIGGERS (CONEXÃO AUTH <-> PUBLIC)
+-- ----------------------------------------------------------------------------
+
+-- A. Gatilho para criar perfil automático
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -152,7 +158,21 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+-- B. Função de Verificação de Cargo (Prevenção de Loop Infinito RLS)
+CREATE OR REPLACE FUNCTION public.check_user_role(required_roles public.user_role[])
+RETURNS boolean AS $$
+BEGIN
+  RETURN (
+    SELECT (cargo = ANY(required_roles))
+    FROM public.profiles
+    WHERE id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 -- 4. SEGURANÇA (RLS)
+-- ----------------------------------------------------------------------------
 ALTER TABLE public.loja_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.veiculos ENABLE ROW LEVEL SECURITY;
@@ -164,17 +184,23 @@ ALTER TABLE public.estoque_materiais ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notificacoes ENABLE ROW LEVEL SECURITY;
 
--- POLÍTICAS
-CREATE POLICY "Gestão total para ADM e GESTOR" ON public.loja_config FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR')));
-CREATE POLICY "Gestão total para ADM e GESTOR" ON public.clientes FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR')));
-CREATE POLICY "Gestão total para ADM e GESTOR" ON public.veiculos FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR')));
-CREATE POLICY "Gestão total para ADM e GESTOR" ON public.ordens_servico FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR')));
-CREATE POLICY "Gestão total para ADM e GESTOR" ON public.notificacoes FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo IN ('ADM', 'GESTOR')));
+-- POLÍTICAS PARA ADM E GESTORES (Usando check_user_role para evitar recursão)
+CREATE POLICY "Profiles: Próprio ou Gestores" ON public.profiles FOR ALL USING (auth.uid() = id OR public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Config: Gestores total" ON public.loja_config FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Clientes: Gestores total" ON public.clientes FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Veiculos: Gestores total" ON public.veiculos FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "OS: Gestores total" ON public.ordens_servico FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Servicos: Gestores total" ON public.servicos FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Estoque: Gestores total" ON public.estoque_materiais FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
+CREATE POLICY "Notificacoes: Gestores total" ON public.notificacoes FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 
+-- POLÍTICAS PARA OPERADORES (Apenas o essencial)
 CREATE POLICY "Leitura essencial para Operador" ON public.servicos FOR SELECT USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo = 'OPERADOR'));
 CREATE POLICY "Gestão de OS para Operador" ON public.ordens_servico FOR ALL USING (auth.uid() IN (SELECT id FROM public.profiles WHERE cargo = 'OPERADOR'));
 
+-- POLÍTICAS PÚBLICAS (MONITOR TV / LINK CLIENTE)
 CREATE POLICY "Monitor TV Config Pública" ON public.loja_config FOR SELECT USING (true);
+CREATE POLICY "Monitor TV Perfis Pública" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Monitor TV OS Pública" ON public.ordens_servico FOR SELECT USING (true);
 
 -- 5. STORAGE
@@ -191,5 +217,5 @@ ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notif
 1. Crie um novo projeto no Supabase.
 2. Rode o script SQL acima no SQL Editor.
 3. Crie o bucket `os-photos` no Storage (Público).
-4. Realize o cadastro inicial do administrador (`cf95.souza@gmail.com`).
+4. Realize o cadastro inicial do administrador.
 5. Rode o comando de promoção SQL (item 6 do script).
