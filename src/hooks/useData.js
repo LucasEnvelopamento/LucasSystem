@@ -10,7 +10,7 @@ export const useOrders = () => {
     if (hasRealConnection()) {
       const { data, error } = await supabase
         .from('ordens_servico')
-        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa, tipo), checklist_avarias(id)')
+        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa, tipo), checklist_avarias(id), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
         .order('id', { ascending: false });
       
       if (!error && data) {
@@ -27,7 +27,11 @@ export const useOrders = () => {
             placa: veiculoObj?.placa,
             valor_total: Number(os.valor_total) || 0,
             desconto: Number(os.desconto) || 0,
-            has_checklist: Array.isArray(os.checklist_avarias) && os.checklist_avarias.length > 0
+            has_checklist: Array.isArray(os.checklist_avarias) && os.checklist_avarias.length > 0,
+            tecnico: os.tecnico_ref?.nome || os.tecnico || 'Nenhum', // Prioriza o nome da tabela profiles
+            valor_pago: Number(os.valor_pago) || 0,
+            saldo_devedor: (Number(os.valor_total) || 0) - (Number(os.valor_pago) || 0),
+            historico_pagamentos: os.historico_pagamentos || []
           };
         }));
       }
@@ -168,7 +172,49 @@ export const useOrders = () => {
     return await updateOrderProgress(id, { status: 'ENTREGUE', progresso: 100 });
   };
 
-  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder };
+  const registerPayment = async (osId, paymentData) => {
+    if (hasRealConnection()) {
+      try {
+        const { data: os, error: fetchError } = await supabase
+          .from('ordens_servico')
+          .select('valor_pago, historico_pagamentos')
+          .eq('id', osId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+
+        const currentPaid = Number(os.valor_pago) || 0;
+        const currentHistory = os.historico_pagamentos || [];
+
+        const newPaid = currentPaid + Number(paymentData.valor);
+        const newHistory = [...currentHistory, {
+          valor: Number(paymentData.valor),
+          metodo: paymentData.metodo,
+          tipo: paymentData.tipo || 'PARCIAL',
+          data: new Date().toISOString()
+        }];
+
+        const { error: updateError } = await supabase
+          .from('ordens_servico')
+          .update({
+            valor_pago: newPaid,
+            historico_pagamentos: newHistory
+          })
+          .eq('id', osId);
+
+        if (updateError) throw updateError;
+        
+        await fetchOrders();
+        return { success: true };
+      } catch (error) {
+        console.error('Erro ao registrar pagamento:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
+  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment };
 };
 
 export const useClients = () => {
@@ -222,7 +268,7 @@ export const useQuotes = () => {
     if (hasRealConnection()) {
       const { data, error } = await supabase
         .from('ordens_servico')
-        .select('*, clientes(nome, telefone), veiculos(modelo, marca)')
+        .select('*, clientes(nome, telefone), veiculos(modelo, marca), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
         .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'])
         .order('created_at', { ascending: false });
       
@@ -237,7 +283,11 @@ export const useQuotes = () => {
             cliente_telefone: clienteObj?.telefone,
             veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''}`.trim() || 'Veículo' : 'Veículo',
             valor: Number(q.valor_total) || 0,
-            desconto: Number(q.desconto) || 0
+            desconto: Number(q.desconto) || 0,
+            tecnico: q.tecnico_ref?.nome || q.tecnico || 'Nenhum', // Prioriza o nome da tabela profiles
+            valor_pago: Number(q.valor_pago) || 0,
+            saldo_devedor: (Number(q.valor_total) || 0) - (Number(q.valor_pago) || 0),
+            historico_pagamentos: q.historico_pagamentos || []
           };
         }));
       }
@@ -274,17 +324,76 @@ export const useQuotes = () => {
 
   const approveQuote = async (appointmentData) => {
     if (hasRealConnection()) {
+      const updates = { 
+        status: 'AGUARDANDO',
+        data_agendamento: appointmentData.data_agendamento,
+        tecnico_id: appointmentData.tecnico_id,
+        valor_total: appointmentData.valor_total, // Permite ajuste de preço na aprovação
+        data_inicio: new Date().toISOString()
+      };
+
+      // Se houver adiantamento
+      if (appointmentData.valor_pago_agora > 0) {
+        updates.valor_pago = Number(appointmentData.valor_pago_agora);
+        updates.historico_pagamentos = [{
+          valor: Number(appointmentData.valor_pago_agora),
+          metodo: appointmentData.metodo_pagamento || 'PIX',
+          data: new Date().toISOString(),
+          tipo: 'ADIANTAMENTO'
+        }];
+      }
+
       const { error } = await supabase
         .from('ordens_servico')
-        .update({ 
-          status: 'AGUARDANDO',
-          data_agendamento: appointmentData.data_agendamento,
-          tecnico_id: appointmentData.tecnico_id,
-          data_inicio: new Date().toISOString()
-        })
+        .update(updates)
         .eq('id', appointmentData.id);
       if (!error) await fetchQuotes();
       return { success: !error, error };
+    }
+    return { success: true };
+  };
+
+  const registerPayment = async (osId, paymentData) => {
+    if (hasRealConnection()) {
+      try {
+        // 1. Busca estado atual
+        const { data: os, error: fetchError } = await supabase
+          .from('ordens_servico')
+          .select('valor_pago, historico_pagamentos')
+          .eq('id', osId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+
+        const currentPaid = Number(os.valor_pago) || 0;
+        const currentHistory = os.historico_pagamentos || [];
+
+        // 2. Adiciona novo pagamento
+        const newPaid = currentPaid + Number(paymentData.valor);
+        const newHistory = [...currentHistory, {
+          valor: Number(paymentData.valor),
+          metodo: paymentData.metodo,
+          tipo: paymentData.tipo || 'PARCIAL',
+          data: new Date().toISOString()
+        }];
+
+        // 3. Persiste
+        const { error: updateError } = await supabase
+          .from('ordens_servico')
+          .update({
+            valor_pago: newPaid,
+            historico_pagamentos: newHistory
+          })
+          .eq('id', osId);
+
+        if (updateError) throw updateError;
+        
+        await fetchQuotes();
+        return { success: true };
+      } catch (error) {
+        console.error('Erro ao registrar pagamento:', error);
+        return { success: false, error };
+      }
     }
     return { success: true };
   };
@@ -318,7 +427,7 @@ export const useQuotes = () => {
     return { success: true };
   };
 
-  return { quotes, loading, saveQuote, approveQuote, deleteQuote, reopenQuote };
+  return { quotes, loading, saveQuote, approveQuote, deleteQuote, reopenQuote, registerPayment };
 };
 
 export const useVehicles = (clienteId) => {

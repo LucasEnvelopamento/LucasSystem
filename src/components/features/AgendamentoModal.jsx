@@ -9,6 +9,9 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
   const [data, setData] = useState('');
   const [hora, setHora] = useState('');
   const [tecnicoId, setTecnicoId] = useState('');
+  const [valorFinal, setValorFinal] = useState(quote.valor || 0); // Permite edição no fechamento
+  const [valorAdiantamento, setValorAdiantamento] = useState(0);
+  const [metodoAdiantamento, setMetodoAdiantamento] = useState('PIX');
   const [isSaving, setIsSaving] = useState(false);
 
   // Filtra ordens agendadas para o dia selecionado
@@ -41,6 +44,9 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
       data_agendamento: dataAgendamento,
       tecnico_id: tecnicoId || null,
       tecnico: tecnicoNome, // Salva o nome amigável
+      valor_total: valorFinal, // Preço definitivo
+      valor_pago_agora: Number(valorAdiantamento),
+      metodo_pagamento: metodoAdiantamento,
       status: 'AGUARDANDO' // Move de ORCAMENTO para AGUARDANDO (Agenda)
     });
     setIsSaving(false);
@@ -116,6 +122,65 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
                 })}
               </select>
             </div>
+          </div>
+
+          <div className="space-y-6 pt-6 border-t border-slate-100">
+            {/* Seção de Valores */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 space-y-3">
+                <div className="flex items-center justify-between px-2">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Valor de Fechamento</p>
+                   <p className="text-[9px] text-slate-300 font-bold uppercase italic">Negociação</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white px-5 py-4 rounded-3xl border border-slate-200 focus-within:border-primary/40 transition-all shadow-sm">
+                  <span className="text-sm font-black text-slate-400 uppercase tracking-widest">R$</span>
+                  <input 
+                    type="number" 
+                    className="bg-transparent border-none outline-none text-xl font-black text-slate-800 w-full text-right"
+                    value={valorFinal}
+                    onChange={(e) => setValorFinal(Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-emerald-50/50 p-6 rounded-[2.5rem] border border-emerald-100/50 space-y-3">
+                <div className="flex items-center justify-between px-2">
+                   <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Adiantamento (Entrada)</p>
+                   <p className="text-[9px] text-emerald-400 font-bold uppercase italic">Opcional</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white px-5 py-4 rounded-3xl border border-emerald-100 focus-within:border-emerald-400/40 transition-all shadow-sm">
+                  <span className="text-sm font-black text-emerald-400 uppercase tracking-widest">R$</span>
+                  <input 
+                    type="number" 
+                    className="bg-transparent border-none outline-none text-xl font-black text-emerald-600 w-full text-right"
+                    value={valorAdiantamento}
+                    onChange={(e) => setValorAdiantamento(Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Forma de Pagamento da Entrada */}
+            {valorAdiantamento > 0 && (
+              <div className="space-y-3 animate-fade-in group">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4">Forma de Pagamento da Entrada</label>
+                <div className="flex flex-wrap gap-2">
+                  {['PIX', 'DINHEIRO', 'CRÉDITO', 'DÉBITO'].map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setMetodoAdiantamento(m)}
+                      className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 ${
+                        metodoAdiantamento === m 
+                          ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200' 
+                          : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Visão de Conflitos */}

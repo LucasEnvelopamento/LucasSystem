@@ -267,9 +267,15 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Ordenação Cronológica:** Exibição crescente por data para auditoria de linha do tempo.
 
 ### ⬜ Fase 32: Flexibilidade de Preços nos Orçamentos (Próxima Etapa)
-- [ ] **Edição de Valor no Orçamento:** Permitir que o gestor altere o valor de um serviço manualmente no momento da criação do orçamento/OS, mesmo que exista um valor pré-definido no catálogo.
-- [ ] **Ajuste por Dificuldade:** Campo de entrada numérica que herda o preço padrão mas permite override manual.
+- [x] **Edição de Valor no Orçamento:** Permitir que o gestor altere o valor de um serviço manualmente no momento da criação do orçamento/OS, mesmo que exista um valor pré-definido no catálogo.
+- [x] **Ajuste por Dificuldade:** Campo de entrada numérica que herda o preço padrão mas permite override manual.
+
+### ✅ Fase 33: Controle Financeiro e Pagamentos (Concluída)
+- [x] **Esquema de Pagamentos:** Adicionar colunas de controle financeiro na tabela `ordens_servico` (valor_pago, historico_pagamentos).
+- [x] **Combo de Pagamento (Pop-up $):** Modal para registro de adiantamentos e saldo restante com seleção de método (PIX, Crédito, etc).
+- [x] **Indicadores Financeiros:** Exibir saldo devedor e total pago nas listas de Vendas e OS.
+- [x] **Flexibilidade Total:** Permitir que o serviço siga para execução mesmo sem pagamento inicial, conforme a necessidade do gestor.
 
 ---
-*Última atualização: 03/04/2026 às 01:05 - STATUS: AGUARDANDO FASE 32 🌙*
+*Última atualização: 03/04/2026 às 23:24 - STATUS: FASE 33 CONCLUÍDA ✅*
 ```

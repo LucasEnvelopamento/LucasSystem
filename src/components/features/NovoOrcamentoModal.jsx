@@ -30,15 +30,14 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
   const { inventory } = useInventory();
 
   useEffect(() => {
-    const total = selectedServices.reduce((acc, sId) => {
-      const service = catalog.find(item => item.id === sId);
-      return acc + (service?.preco_base || 0);
+    const total = selectedServices.reduce((acc, s) => {
+      return acc + (Number(s.preco_custom) || 0);
     }, 0);
     setSubTotal(total);
     // Cálculo do Desconto em Porcentagem
     const valorDesconto = (total * (desconto || 0)) / 100;
     setValorTotal(total - valorDesconto);
-  }, [selectedServices, catalog, desconto]);
+  }, [selectedServices, desconto]);
 
   const filteredClients = clients.filter(c => 
     c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -72,14 +71,28 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
     }
   };
 
-  const handleServiceToggle = (serviceId) => {
+  const handleServiceToggle = (service) => {
     setSelectedServices(prev => {
-      if (prev.includes(serviceId)) {
-        return prev.filter(id => id !== serviceId);
+      const exists = prev.find(s => s.id === service.id);
+      if (exists) {
+        return prev.filter(s => s.id !== service.id);
       } else {
-        return [...prev, serviceId];
+        return [...prev, { 
+          id: service.id, 
+          nome: service.nome, 
+          preco_custom: service.preco_base, 
+          preco_base: service.preco_base,
+          controle_estoque: service.controle_estoque,
+          materiais: service.materiais || []
+        }];
       }
     });
+  };
+
+  const handleUpdateServicePrice = (id, newPrice) => {
+    setSelectedServices(prev => prev.map(s => 
+      s.id === id ? { ...s, preco_custom: Number(newPrice) } : s
+    ));
   };
 
   const handleFinalSave = async () => {
@@ -105,16 +118,15 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
         d.setHours(parseInt(h), parseInt(m), 0, 0);
         return d.toISOString();
       })() : null,
-      servico: selectedServices.map(sId => catalog.find(item => item.id === sId)?.nome).join(', '),
-      servicos_detalhados: selectedServices.map(sId => {
-        const serv = catalog.find(item => item.id === sId);
-        const mats = serv?.materiais || [];
+      servico: selectedServices.map(s => s.nome).join(', '),
+      servicos_detalhados: selectedServices.map(s => {
         return { 
-          nome: serv?.nome || 'Serviço', 
-          preco_base: serv?.preco_base || 0, 
+          nome: s.nome || 'Serviço', 
+          preco_base: s.preco_custom || 0, // Agora enviamos o preço customizado como base da OS
+          preco_original: s.preco_base,
           progresso: 0,
-          controle_estoque: serv?.controle_estoque || false,
-          materiais: mats.map(m => ({
+          controle_estoque: s.controle_estoque || false,
+          materiais: (s.materiais || []).map(m => ({
             material_id: m.material_id || null,
             quantidade_utilizada: m.quantidade || 0
           }))
@@ -383,14 +395,14 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                       .map(service => (
                       <div key={service.id} className="flex flex-col">
                         <button 
-                          onClick={() => handleServiceToggle(service.id)}
+                          onClick={() => handleServiceToggle(service)}
                         className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
-                          selectedServices.includes(service.id) ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 bg-white'
+                          selectedServices.find(s => s.id === service.id) ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 bg-white'
                         }`}
                       >
                         <div className="flex items-center gap-4 text-left">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                            selectedServices.includes(service.id) ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-300'
+                            selectedServices.find(s => s.id === service.id) ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-300'
                           }`}>
                             <Check size={16} strokeWidth={4} />
                           </div>
@@ -429,20 +441,28 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                       </div>
                     </div>
 
-                    <div>
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Serviços Selecionados</span>
-                      <div className="space-y-2">
-                        {selectedServices.map(sId => {
-                          const s = catalog.find(item => item.id === sId);
-                          return (
-                            <div key={sId} className="flex justify-between items-center text-sm font-semibold text-slate-600 bg-white p-3 rounded-xl border border-slate-100 italic">
-                              <span>{s.nome}</span>
-                              <span>R$ {s.preco_base.toLocaleString('pt-BR')}</span>
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-4">Serviços Selecionados (Personalizar Preço)</span>
+                        <div className="space-y-3">
+                          {selectedServices.map(service => (
+                            <div key={service.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all hover:border-primary/20">
+                              <div className="space-y-0.5">
+                                <p className="text-xs font-black text-slate-700 uppercase tracking-tight">{service.nome}</p>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase">Original: R$ {service.preco_base.toLocaleString('pt-BR')}</p>
+                              </div>
+                              <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 group-focus-within:border-primary/30 transition-all">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">R$</span>
+                                <input 
+                                  type="number" 
+                                  className="bg-transparent border-none outline-none text-sm font-black text-slate-800 w-24 text-right"
+                                  value={service.preco_custom}
+                                  onChange={(e) => handleUpdateServicePrice(service.id, e.target.value)}
+                                />
+                              </div>
                             </div>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
                     <div className="space-y-4 pt-6 border-t border-slate-200">
                       <div className="flex justify-between items-center text-slate-400">

@@ -91,7 +91,7 @@ const Relatorios = () => {
     return ['TODOS', ...unique.sort()];
   }, [orders]);
 
-  const statusOptions = ['TODOS', 'PENDENTE', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'];
+  const statusOptions = ['TODOS', 'ORÇAMENTO', 'AGUARDANDO', 'PENDENTE', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'];
 
   const toggleSelection = (item, currentBatch, setBatch) => {
     if (item === 'TODOS') {
@@ -117,13 +117,16 @@ const Relatorios = () => {
       const matchesSearch = 
         os.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         os.placa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        os.servico?.toLowerCase().includes(searchTerm.toLowerCase());
+        os.servico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(os.id || '').includes(searchTerm);
       
       const osService = os.servico || 'Serviços Gerais';
       const matchesService = selectedServices.includes('TODOS') || selectedServices.includes(osService);
       
-      const osStatusNorm = String(os.status || '').trim().toUpperCase();
-      const matchesStatus = selectedStatuses.includes('TODOS') || selectedStatuses.includes(osStatusNorm);
+      const osStatusNorm = String(os.status || '').trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const matchesStatus = selectedStatuses.includes('TODOS') || selectedStatuses.some(s => 
+        s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() === osStatusNorm
+      );
 
       return inInterval && matchesSearch && matchesService && matchesStatus;
     }).sort((a, b) => {
@@ -320,7 +323,7 @@ const Relatorios = () => {
                 <tr className="bg-slate-50/80 border-b border-slate-100 print:bg-slate-200 print:border-b-2 print:border-black">
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Data OS</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Cliente</th>
-                  <th className="px-6 py-6 text-[10px) font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Veículo / Placa</th>
+                  <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Veículo / Placa</th>
                   <th className="px-6 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest print:py-4">Serviço Realizado</th>
                   {!hideValues && <th className="px-8 py-6 text-[10px] font-black text-slate-400 print:text-black print:font-bold uppercase tracking-widest text-right print:py-4">Valor</th>}
                 </tr>

@@ -15,21 +15,25 @@ import {
   Car as CarIcon,
   Zap,
   PackageCheck,
-  UserMinus
+  UserMinus,
+  DollarSign
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
+import PagamentoModal from '../components/features/PagamentoModal';
+import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
 import CertificadoGarantia from '../components/features/CertificadoGarantia';
 import { sendWhatsApp, getServiceFinishedMsg, getVehicleReceivedMsg } from '../utils/whatsappUtils';
-import { getStatusStyle } from '../utils/statusUtils';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const OrdensServico = () => {
-  const { orders, loading, deliverOrder, updateOrderProgress } = useOrders();
+  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [showChecklist, setShowChecklist] = useState(false);
   const [showCertificado, setShowCertificado] = useState(false);
+  const [showPagamento, setShowPagamento] = useState(false);
+  const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [activeOS, setActiveOS] = useState(null);
 
   const filteredOrders = (orders || []).filter(os => 
@@ -48,20 +52,17 @@ const OrdensServico = () => {
           <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase tracking-tighter">Ordens de Serviço</h2>
           <p className="text-sm text-slate-500 font-medium">Fluxo de produção e certificação de garantia.</p>
         </div>
-        <div className="flex items-center gap-3">
-           <div className="relative group">
+        <div className="flex items-center gap-3 w-full md:w-auto">
+           <div className="relative group w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
               <input 
                 type="text" 
-                placeholder="Buscar OS, Cliente..."
-                className="pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none w-64 transition-all shadow-sm"
+                placeholder="Buscar OS, Cliente ou Veículo..."
+                className="pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none w-full md:w-96 transition-all shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
            </div>
-           <button className="bg-primary hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-sm uppercase tracking-wider">
-             <Plus size={18} /> Nova OS
-           </button>
         </div>
       </div>
 
@@ -163,6 +164,13 @@ const OrdensServico = () => {
                         <span className={`inline-block px-3 py-1 rounded-xl text-[9px] font-black border uppercase tracking-widest transition-all ${getStatusStyle(os.status || 'AGUARDANDO')}`}>
                             {os.status || 'AGUARDANDO'}
                         </span>
+                        {os.saldo_devedor > 0 ? (
+                          <p className="text-[10px] font-black text-amber-500 uppercase tracking-tighter mt-1">
+                            Falta {formatCurrency(os.saldo_devedor)}
+                          </p>
+                        ) : (
+                          os.valor_pago > 0 && <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mt-1">Totalmente Pago</p>
+                        )}
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
@@ -198,6 +206,17 @@ const OrdensServico = () => {
                           title={os.has_checklist ? "Ver Checklist Preenchido" : "Preencher Checklist"}
                         >
                           <FileText size={20} />
+                        </button>
+                        <button 
+                          onClick={() => { setActivePaymentOS(os); setShowPagamento(true); }}
+                          className={`p-2.5 rounded-xl transition-all border ${
+                            os.saldo_devedor > 0 
+                              ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100 shadow-sm' 
+                              : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 shadow-sm'
+                          }`}
+                          title="Financeiro / Pagamentos"
+                        >
+                          <DollarSign size={20} />
                         </button>
                         {(os.status && String(os.status).toUpperCase() === 'CONCLUÍDO') && (
                           <>
@@ -303,6 +322,13 @@ const OrdensServico = () => {
 
       {showChecklist && <CarVisualChecklist osData={activeOS} onClose={() => setShowChecklist(false)} />}
       {showCertificado && <CertificadoGarantia os={activeOS} onClose={() => setShowCertificado(false)} />}
+      {showPagamento && activePaymentOS && (
+        <PagamentoModal 
+           os={activePaymentOS}
+           onClose={() => setShowPagamento(false)}
+           onSave={registerPayment}
+        />
+      )}
     </div>
   );
 };

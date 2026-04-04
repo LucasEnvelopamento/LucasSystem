@@ -2,7 +2,7 @@ export const getStatusStyle = (status) => {
   const s = String(status || '').toUpperCase();
   
   if (s.includes('ORCAMENTO') || s.includes('ORÇAMENTO')) {
-    return 'bg-slate-100 text-slate-500 border-slate-200';
+    return 'bg-amber-100 text-amber-600 border-amber-200';
   }
   if (s.includes('APROVADO')) {
     // Aprovado no orçamento vira AGUARDANDO, mas se o status fixo for Aprovado:
@@ -15,7 +15,7 @@ export const getStatusStyle = (status) => {
     return 'bg-rose-50 text-rose-600 border-rose-100';
   }
   if (s.includes('AGUARDA') || s.includes('AGENDADO')) {
-    return 'bg-amber-100 text-amber-600 border-amber-200';
+    return 'bg-slate-100 text-slate-500 border-slate-200';
   }
   if (s.includes('EXECU')) {
     return 'bg-blue-100 text-blue-600 border-blue-200';

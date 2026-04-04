@@ -12,7 +12,8 @@ import {
   TrendingUp,
   ArrowUpRight,
   Zap,
-  X
+  X,
+  DollarSign
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes, useCatalog } from '../hooks/useData';
@@ -22,15 +23,18 @@ import { sendWhatsApp, getBudgetMsg, getAppointmentMsg } from '../utils/whatsapp
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import { confirmDialog } from '../utils/confirm';
 import { toast } from '../utils/toast';
+import PagamentoModal from '../components/features/PagamentoModal';
 
 const Vendas = () => {
   const navigate = useNavigate();
-  const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote } = useQuotes();
+  const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment } = useQuotes();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNovoModal, setShowNovoModal] = useState(false);
   const [showAgendaModal, setShowAgendaModal] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [activeMenuQuote, setActiveMenuQuote] = useState(null);
+  const [showPagamento, setShowPagamento] = useState(false);
+  const [activePaymentOS, setActivePaymentOS] = useState(null);
 
   // Cálculos Reais de Vendas
   const aguardandoFaturamento = (quotes || [])
@@ -267,10 +271,17 @@ const Vendas = () => {
                     </p>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center justify-center gap-1">
                       <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${getStatusStyle(q.status)}`}>
                         {q.status}
                       </span>
+                      {q.saldo_devedor > 0 ? (
+                        <span className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">
+                          Saldo: {formatCurrency(q.saldo_devedor)}
+                        </span>
+                      ) : (
+                        q.valor_pago > 0 && <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">Quitado</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -281,6 +292,17 @@ const Vendas = () => {
                         title="Ver Detalhes"
                       >
                         <ArrowUpRight size={20} />
+                      </button>
+                      <button 
+                        onClick={() => { setActivePaymentOS(q); setShowPagamento(true); }}
+                        className={`p-2.5 rounded-xl transition-all border ${
+                          q.saldo_devedor > 0 
+                            ? 'text-amber-500 hover:bg-amber-50 border-transparent hover:border-amber-200' 
+                            : 'text-emerald-500 hover:bg-emerald-50 border-transparent hover:border-emerald-200'
+                        }`} 
+                        title="Pagamentos"
+                      >
+                        <DollarSign size={20} />
                       </button>
                         <button 
                           onClick={() => {
@@ -491,6 +513,13 @@ const Vendas = () => {
             quote={selectedQuote}
             onClose={() => setShowAgendaModal(false)}
             onConfirm={confirmApproval}
+         />
+       )}
+       {showPagamento && activePaymentOS && (
+         <PagamentoModal 
+            os={activePaymentOS}
+            onClose={() => setShowPagamento(false)}
+            onSave={registerPayment}
          />
        )}
     </div>
