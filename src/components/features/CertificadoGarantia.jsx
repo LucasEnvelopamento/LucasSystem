@@ -41,7 +41,7 @@ const CertificadoGarantia = ({ os, onClose }) => {
           <style>
             @media print {
               body { background: white !important; margin: 0; padding: 0; }
-              @page { size: A4 portrait; margin: 1cm; }
+              @page { size: A4 portrait; margin: 0.8cm; }
               .no-print { display: none !important; }
             }
             body { background: white; }
@@ -106,7 +106,7 @@ const CertificadoGarantia = ({ os, onClose }) => {
           ref={printRef}
           className="certificate-print-area flex-1 overflow-y-auto p-4 md:p-8 bg-white text-slate-900 font-sans print:p-0 custom-scrollbar"
         >
-          <div className="border-[8px] print:border-0 border-slate-50 p-8 print:p-2 relative w-full max-w-[794px] mx-auto min-h-[1050px] print:min-h-0 print:h-[285mm] flex flex-col justify-between overflow-hidden">
+          <div className="border-[8px] print:border-0 border-slate-50 p-8 print:p-2 relative w-full max-w-[794px] mx-auto min-h-[1050px] print:min-h-0 print:h-[270mm] flex flex-col justify-between overflow-hidden">
             
             {/* Background Decor */}
             <div className="absolute -top-32 -right-32 w-96 h-96 bg-slate-50 rounded-full blur-3xl opacity-50 print:hidden" />
