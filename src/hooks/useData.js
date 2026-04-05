@@ -277,7 +277,30 @@ export const useOrders = () => {
     return { success: true, data: [] };
   };
 
-  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, uploadOsPhoto, fetchOsPhotos };
+  const updateOrderServices = async (osId, newServices, newTotal) => {
+    if (hasRealConnection()) {
+      try {
+        const { error } = await supabase
+          .from('ordens_servico')
+          .update({
+            servicos_detalhados: newServices,
+            valor_total: newTotal,
+            servico: newServices.map(s => s.nome).join(', ')
+          })
+          .eq('id', osId);
+
+        if (error) throw error;
+        await fetchOrders();
+        return { success: true };
+      } catch (error) {
+        console.error('Erro ao atualizar serviços da OS:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
+  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, uploadOsPhoto, fetchOsPhotos, updateOrderServices };
 };
 
 export const useClients = () => {
@@ -490,7 +513,30 @@ export const useQuotes = () => {
     return { success: true };
   };
 
-  return { quotes, loading, saveQuote, approveQuote, deleteQuote, reopenQuote, registerPayment };
+  const updateQuoteServices = async (quoteId, newServices, newTotal) => {
+    if (hasRealConnection()) {
+      try {
+        const { error } = await supabase
+          .from('ordens_servico')
+          .update({
+            servicos_detalhados: newServices,
+            valor_total: newTotal,
+            servico: newServices.map(s => s.nome).join(', ')
+          })
+          .eq('id', quoteId);
+
+        if (error) throw error;
+        await fetchQuotes();
+        return { success: true };
+      } catch (error) {
+        console.error('Erro ao atualizar serviços do orçamento:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
+  return { quotes, loading, saveQuote, approveQuote, deleteQuote, reopenQuote, registerPayment, updateQuoteServices };
 };
 
 export const useVehicles = (clienteId) => {

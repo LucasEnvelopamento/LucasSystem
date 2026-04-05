@@ -16,10 +16,13 @@ import {
   Zap,
   PackageCheck,
   UserMinus,
-  DollarSign
+  DollarSign,
+  Edit2
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import PagamentoModal from '../components/features/PagamentoModal';
+import EditOrderServicesModal from '../components/features/EditOrderServicesModal';
+import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
 import CertificadoGarantia from '../components/features/CertificadoGarantia';
@@ -28,11 +31,14 @@ import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const OrdensServico = () => {
-  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment } = useOrders();
+  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment, updateOrderServices } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [showChecklist, setShowChecklist] = useState(false);
   const [showCertificado, setShowCertificado] = useState(false);
   const [showPagamento, setShowPagamento] = useState(false);
+  const [showEditValues, setShowEditValues] = useState(false);
+  const { isAdmin, isGestor } = useAuth();
+  const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [activeOS, setActiveOS] = useState(null);
 
@@ -164,13 +170,24 @@ const OrdensServico = () => {
                         <span className={`inline-block px-3 py-1 rounded-xl text-[9px] font-black border uppercase tracking-widest transition-all ${getStatusStyle(os.status || 'AGUARDANDO')}`}>
                             {os.status || 'AGUARDANDO'}
                         </span>
-                        {os.saldo_devedor > 0 ? (
-                          <p className="text-[10px] font-black text-amber-500 uppercase tracking-tighter mt-1">
-                            Falta {formatCurrency(os.saldo_devedor)}
-                          </p>
-                        ) : (
-                          os.valor_pago > 0 && <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mt-1">Totalmente Pago</p>
-                        )}
+                        <div className="flex items-center gap-2 mt-1">
+                          {os.saldo_devedor > 0 ? (
+                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-tighter">
+                              Falta {formatCurrency(os.saldo_devedor)}
+                            </p>
+                          ) : (
+                            os.valor_pago > 0 && <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Totalmente Pago</p>
+                          )}
+                          {isManagement && (
+                            <button 
+                              onClick={() => { setActiveOS(os); setShowEditValues(true); }}
+                              className="p-1 hover:bg-slate-100 text-slate-400 hover:text-primary rounded-md transition-all"
+                              title="Editar Valores ou Garantia"
+                            >
+                              <Edit2 size={12} />
+                            </button>
+                          )}
+                        </div>
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
@@ -327,6 +344,13 @@ const OrdensServico = () => {
            os={activePaymentOS}
            onClose={() => setShowPagamento(false)}
            onSave={registerPayment}
+        />
+      )}
+      {showEditValues && activeOS && (
+        <EditOrderServicesModal 
+          order={activeOS}
+          onClose={() => setShowEditValues(false)}
+          onSave={updateOrderServices}
         />
       )}
     </div>

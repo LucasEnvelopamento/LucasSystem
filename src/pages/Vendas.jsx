@@ -13,7 +13,8 @@ import {
   ArrowUpRight,
   Zap,
   X,
-  DollarSign
+  DollarSign,
+  Edit2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes, useCatalog } from '../hooks/useData';
@@ -24,10 +25,11 @@ import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import { confirmDialog } from '../utils/confirm';
 import { toast } from '../utils/toast';
 import PagamentoModal from '../components/features/PagamentoModal';
+import EditOrderServicesModal from '../components/features/EditOrderServicesModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Vendas = () => {
   const navigate = useNavigate();
-  const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment } = useQuotes();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNovoModal, setShowNovoModal] = useState(false);
   const [showAgendaModal, setShowAgendaModal] = useState(false);
@@ -35,6 +37,10 @@ const Vendas = () => {
   const [activeMenuQuote, setActiveMenuQuote] = useState(null);
   const [showPagamento, setShowPagamento] = useState(false);
   const [activePaymentOS, setActivePaymentOS] = useState(null);
+  const [showEditServices, setShowEditServices] = useState(false);
+  const { isAdmin, isGestor } = useAuth();
+  const isManagement = isAdmin || isGestor;
+  const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, updateQuoteServices } = useQuotes();
 
   // Cálculos Reais de Vendas
   const aguardandoFaturamento = (quotes || [])
@@ -408,7 +414,18 @@ const Vendas = () => {
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Resumo Financeiro</label>
                 <div className="flex items-center justify-between py-2 border-b border-slate-50">
                   <span className="text-sm font-medium text-slate-500">Valor Estimado:</span>
-                  <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(selectedQuote.valor)}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(selectedQuote.valor)}</span>
+                    {isManagement && (
+                      <button 
+                         onClick={() => setShowEditServices(true)}
+                         className="p-2 hover:bg-primary/10 text-primary rounded-xl transition-all"
+                         title="Editar Valores Individuais ou Garantia"
+                      >
+                         <Edit2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="bg-primary/5 p-4 rounded-2xl italic text-[10px] text-primary/70 font-medium">
                   Este valor é uma estimativa baseada nos serviços pré-selecionados e pode variar após o laudo técnico presencial.
@@ -515,13 +532,27 @@ const Vendas = () => {
             onConfirm={confirmApproval}
          />
        )}
-       {showPagamento && activePaymentOS && (
-         <PagamentoModal 
-            os={activePaymentOS}
-            onClose={() => setShowPagamento(false)}
-            onSave={registerPayment}
-         />
-       )}
+        {showPagamento && activePaymentOS && (
+          <PagamentoModal 
+             os={activePaymentOS}
+             onClose={() => setShowPagamento(false)}
+             onSave={registerPayment}
+          />
+        )}
+        {showEditServices && selectedQuote && (
+          <EditOrderServicesModal 
+             order={selectedQuote}
+             onClose={() => setShowEditServices(false)}
+             onSave={async (id, services, total) => {
+               const res = await updateQuoteServices(id, services, total);
+               if (res.success) {
+                 // Atualiza o objeto selecionado localmente para refletir no modal de detalhes aberto
+                 setSelectedQuote({...selectedQuote, servicos_detalhados: services, valor: total, valor_total: total});
+               }
+               return res;
+             }}
+          />
+        )}
     </div>
   );
 };
