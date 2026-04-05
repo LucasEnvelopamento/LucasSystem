@@ -414,18 +414,7 @@ const Vendas = () => {
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Resumo Financeiro</label>
                 <div className="flex items-center justify-between py-2 border-b border-slate-50">
                   <span className="text-sm font-medium text-slate-500">Valor Estimado:</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(selectedQuote.valor)}</span>
-                    {isManagement && (
-                      <button 
-                         onClick={() => setShowEditServices(true)}
-                         className="p-2 hover:bg-primary/10 text-primary rounded-xl transition-all"
-                         title="Editar Valores Individuais ou Garantia"
-                      >
-                         <Edit2 size={16} />
-                      </button>
-                    )}
-                  </div>
+                  <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(selectedQuote.valor)}</span>
                 </div>
                 <div className="bg-primary/5 p-4 rounded-2xl italic text-[10px] text-primary/70 font-medium">
                   Este valor é uma estimativa baseada nos serviços pré-selecionados e pode variar após o laudo técnico presencial.
@@ -482,13 +471,13 @@ const Vendas = () => {
 
             <div className="space-y-3">
               {activeMenuQuote.status === 'ORCAMENTO' ? (
-                <button 
-                  onClick={() => { handleApprove(activeMenuQuote); setActiveMenuQuote(null); }} 
-                  className="w-full py-4 bg-emerald-50 text-emerald-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <CheckCircle2 size={16} /> Aproveitar Proposta
-                </button>
-              ) : (
+                  <button 
+                    onClick={() => { handleApprove(activeMenuQuote); setActiveMenuQuote(null); }} 
+                    className="w-full py-4 bg-emerald-50 text-emerald-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    <CheckCircle2 size={16} /> Aproveitar Proposta
+                  </button>
+                ) : (
                 <>
                   <button 
                     onClick={() => navigate('/ordens')} 
@@ -503,6 +492,19 @@ const Vendas = () => {
                     <Zap size={12} /> Reabrir e Cancelar OS Atual
                   </button>
                 </>
+              )}
+
+              {isManagement && (
+                <button 
+                  onClick={() => { 
+                    setSelectedQuote(activeMenuQuote);
+                    setShowEditServices(true);
+                    setActiveMenuQuote(null);
+                  }} 
+                  className="w-full py-4 bg-primary/10 text-primary font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Edit2 size={16} /> Editar Valores e Garantia
+                </button>
               )}
               
               <div className="pt-4 mt-4 border-t border-slate-50">

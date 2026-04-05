@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import PagamentoModal from '../components/features/PagamentoModal';
-import EditOrderServicesModal from '../components/features/EditOrderServicesModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -31,12 +30,11 @@ import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const OrdensServico = () => {
-  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment, updateOrderServices } = useOrders();
+  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [showChecklist, setShowChecklist] = useState(false);
   const [showCertificado, setShowCertificado] = useState(false);
   const [showPagamento, setShowPagamento] = useState(false);
-  const [showEditValues, setShowEditValues] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
@@ -177,15 +175,6 @@ const OrdensServico = () => {
                             </p>
                           ) : (
                             os.valor_pago > 0 && <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">Totalmente Pago</p>
-                          )}
-                          {isManagement && (
-                            <button 
-                              onClick={() => { setActiveOS(os); setShowEditValues(true); }}
-                              className="p-1 hover:bg-slate-100 text-slate-400 hover:text-primary rounded-md transition-all"
-                              title="Editar Valores ou Garantia"
-                            >
-                              <Edit2 size={12} />
-                            </button>
                           )}
                         </div>
                     </div>
@@ -344,13 +333,6 @@ const OrdensServico = () => {
            os={activePaymentOS}
            onClose={() => setShowPagamento(false)}
            onSave={registerPayment}
-        />
-      )}
-      {showEditValues && activeOS && (
-        <EditOrderServicesModal 
-          order={activeOS}
-          onClose={() => setShowEditValues(false)}
-          onSave={updateOrderServices}
         />
       )}
     </div>
