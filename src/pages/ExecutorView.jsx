@@ -48,7 +48,11 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     const loadPhotos = async () => {
        const res = await fetchOsPhotos(os.id);
        if (res.success) {
-          setPhotos(res.data.map(p => p.url));
+          // Filtra para mostrar apenas fotos de execução, removendo assinaturas da galeria
+          setPhotos(res.data
+            .filter(p => p.tipo !== 'assinatura')
+            .map(p => p.url)
+          );
        }
     };
     loadPhotos();
