@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap, Clock } from 'lucide-react';
-import { useClients, useVehicles, useCatalog, useInventory } from '../../hooks/useData';
+import { useClients, useVehicles, useCatalog, useInventory, useProfiles } from '../../hooks/useData';
 import { toast } from '../../utils/toast';
 
 const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, defaultDate, existingOrders = [] }) => {
@@ -28,6 +28,8 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
 
   const { vehicles, saveVehicle } = useVehicles(selectedClient);
   const { inventory } = useInventory();
+  const { profiles } = useProfiles();
+  const [selectedTecnicoId, setSelectedTecnicoId] = useState('');
 
   useEffect(() => {
     const total = selectedServices.reduce((acc, s) => {
@@ -120,6 +122,14 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
         return d.toISOString();
       })() : null,
       servico: selectedServices.map(s => s.nome).join(', '),
+      tecnico_id: selectedTecnicoId || null,
+      tecnico: selectedTecnicoId ? (() => {
+        const p = profiles.find(profile => profile.id === selectedTecnicoId);
+        if (!p) return null;
+        return (p.nome && p.nome.includes('@')) || !p.nome 
+          ? p.email.split('@')[0].split(/[._-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+          : p.nome;
+      })() : null,
       servicos_detalhados: selectedServices.map(s => {
         return { 
           nome: s.nome || 'Serviço', 
@@ -510,6 +520,35 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                             onChange={(e) => setSelectedTime(e.target.value)}
                             className="bg-slate-100 border-none rounded-xl px-4 py-2 font-black text-primary outline-none focus:ring-2 focus:ring-primary/20 text-lg"
                           />
+                        </div>
+                      </div>
+
+                      {/* Técnico Responsável */}
+                      <div className="bg-white p-6 rounded-2xl border-2 border-slate-100 shadow-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-slate-100 rounded-lg text-slate-400">
+                             <User size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Técnico Responsável</p>
+                            <p className="text-xs font-bold text-slate-700">Opcional</p>
+                          </div>
+                        </div>
+                        <div className="relative group">
+                          <select 
+                            className="w-full pl-4 pr-10 py-3 bg-slate-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-primary/20 font-bold text-sm appearance-none"
+                            value={selectedTecnicoId}
+                            onChange={(e) => setSelectedTecnicoId(e.target.value)}
+                          >
+                            <option value="">Coleta Livre (Nenhum técnico atribuído)</option>
+                            {profiles.map(p => {
+                              const displayName = (p.nome && p.nome.includes('@')) || !p.nome 
+                                ? p.email.split('@')[0].split(/[._-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+                                : p.nome;
+                              return <option key={p.id} value={p.id}>{displayName}</option>;
+                            })}
+                          </select>
+                          <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none rotate-90" size={16} />
                         </div>
                       </div>
 

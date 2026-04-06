@@ -306,6 +306,11 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **UX Gestão**: Centralização da funcionalidade no menu "Ações" (três pontinhos) da tela de Vendas.
 - [x] **Segurança Financeira**: Bloqueio de edição para Operadores e avisos sobre pagamentos já registrados.
 
+### ✅ Fase 37: Refinamento de Agenda e Atribuição de Técnicos (Concluída)
+- [x] **Agendamento Direto**: Adicionada a opção de escolher o Técnico Responsável diretamente no modal de novo agendamento da Agenda.
+- [x] **Padronização de Fluxo**: O fluxo de criação de agendamentos agora possui a mesma flexibilidade de atribuir operadores que o fluxo de aprovação de vendas.
+- [x] **Desnormalização de Dados**: Garantia de que o nome do técnico seja salvo corretamente na OS para exibição instantânea.
+
 ---
-*Última atualização: 05/04/2026 às 19:40 - STATUS: FASE 36 CONCLUÍDA 🚀*
+*Última atualização: 06/04/2026 às 09:51 - STATUS: FASE 37 CONCLUÍDA 🚀*
 ```
