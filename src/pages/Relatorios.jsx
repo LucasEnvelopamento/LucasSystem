@@ -448,18 +448,34 @@ const Relatorios = () => {
 
 const getStartOfMonth = () => {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}-01`;
 };
 
 const getEndOfMonth = () => {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+  const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
 };
 
 const isDateInInterval = (target, start, end) => {
-  const t = new Date(target).setHours(0,0,0,0);
-  const s = new Date(start).setHours(0,0,0,0);
-  const e = new Date(end).setHours(23,59,59,999);
+  if (!target) return false;
+  
+  // Converte o alvo (ISO de banco) para timestamp local do dia (00:00:00)
+  const tDate = new Date(target);
+  const t = new Date(tDate.getFullYear(), tDate.getMonth(), tDate.getDate()).getTime();
+  
+  // Converte start (YYYY-MM-DD) para timestamp local do dia
+  const [sYear, sMonth, sDay] = start.split('-').map(Number);
+  const s = new Date(sYear, sMonth - 1, sDay).getTime();
+  
+  // Converte end (YYYY-MM-DD) para timestamp local do dia
+  const [eYear, eMonth, eDay] = end.split('-').map(Number);
+  const e = new Date(eYear, eMonth - 1, eDay).getTime();
+  
   return t >= s && t <= e;
 };
 

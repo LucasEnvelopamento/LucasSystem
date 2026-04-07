@@ -335,29 +335,30 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 ---
 *Última atualização: 07/04/2026 às 10:20 - STATUS: FASE 40 CONCLUÍDA LOCALMENTE 🚀*
 
-### 🚀 Fase 41: Ajustes e Estornos Operacionais (Em Execução)
-- [ ] **Estorno de Pagamentos**: Permitir remoção de pagamentos incorretos com recalculo de saldo.
-- [ ] **Remoção de Serviços**: Permitir excluir serviços de uma OS mantendo pelo menos um item.
-- [ ] **Reversão de Estoque**: Devolver materiais ao estoque automaticamente ao remover serviços de OS entregues.
-- [ ] **Refinamento de Gatilho**: Mover a baixa definitiva de estoque apenas para o status `ENTREGUE`.
+### ✅ Fase 41: Ajustes e Estornos Operacionais (Concluída)
+- [x] **Estorno de Pagamentos**: Permitir remoção de pagamentos incorretos com recalculo de saldo.
+- [x] **Remoção de Serviços**: Permitir excluir serviços de uma OS mantendo pelo menos um item.
+- [x] **Reversão de Estoque**: Devolver materiais ao estoque automaticamente ao remover serviços de OS entregues.
+- [x] **Refinamento de Gatilho**: Mover a baixa definitiva de estoque apenas para o status `ENTREGUE`.
 
 ---
 *Última atualização: 07/04/2026 às 14:27 - STATUS: FASE 41 CONCLUÍDA LOCALMENTE 🚀*
 
-### 🚀 Fase 42: Edição Dinâmica de Escopo (Em Execução)
-- [ ] **Integração com Catálogo**: Permitir adicionar novos serviços a orçamentos existentes em Vendas.
-- [ ] **Customização Ad-Hoc**: Trazer valor e garantia padrão do catálogo com possibilidade de ajuste imediato.
-- [ ] **Remoção de Itens**: Permitir excluir serviços de orçamentos ou ordens não entregues.
-- [ ] **Trava de Segurança**: Ocultar edição para veículos já marcados como `ENTREGUE`.
+### ✅ Fase 42: Edição Dinâmica de Escopo (Concluído)
+- [x] **Integração com Catálogo**: Permitir adicionar novos serviços a orçamentos existentes em Vendas.
+- [x] **Customização Ad-Hoc**: Trazer valor e garantia padrão do catálogo com possibilidade de ajuste imediato.
+- [x] **Remoção de Itens**: Permitir excluir serviços de orçamentos ou ordens não entregues.
+- [x] **Trava de Segurança**: Ocultar edição para veículos já marcados como `ENTREGUE`.
 
 ---
 *Última atualização: 07/04/2026 às 14:38 - STATUS: FASE 42 CONCLUÍDA LOCALMENTE 🚀*
 
-### 🚀 Fase 43: Gestão de Cancelamentos (Em Execução)
-- [ ] **Novo Status**: Incluir `CANCELADO` para propostas que não evoluíram.
-- [ ] **Limpeza de KPIs**: Remover valores de itens cancelados do faturamento e aguardando.
-- [ ] **Ações Flexíveis**: Permitir "Cancelar" em propostas ativas e "Reabrir" em propostas canceladas.
-- [ ] **Filtro de Relatórios**: Adicionar o status cancelado para auditoria gerencial.
+### ✅ Fase 43: Gestão de Cancelamentos e UI Premium (Concluído)
+- [x] **Novo Status**: Incluir `CANCELADO` para propostas que não evoluíram.
+- [x] **Limpeza de KPIs**: Remover valores de itens cancelados do faturamento e aguardando.
+- [x] **Ações Flexíveis**: Permitir "Cancelar" em propostas ativas e "Reabrir" em propostas canceladas.
+- [x] **Filtro de Relatórios**: Adicionar o status cancelado para auditoria gerencial.
+- [x] **UI/UX Modernization**: Substituição total de `alert()` e `confirm()` por `confirmDialog` e `toast`.
 
 ---
-*Última atualização: 07/04/2026 às 15:23 - STATUS: FASE 43 EM EXECUÇÃO 🚀*
+*Última atualização: 07/04/2026 às 15:52 - STATUS: FASE 43 CONCLUÍDA E PUSH REALIZADO 🚀*
