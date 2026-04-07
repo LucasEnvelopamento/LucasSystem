@@ -47,7 +47,7 @@ const OrdensServico = () => {
   const currentActivePaymentOS = activePaymentOS ? (orders || []).find(o => o.id === activePaymentOS.id) : null;
 
   const filteredOrders = (orders || []).filter(os => 
-    os && os.status !== 'ORCAMENTO' && (
+    os && os.status !== 'ORCAMENTO' && os.status !== 'CANCELADO' && (
       String(os.cliente_nome || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
       String(os.veiculo_desc || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
       String(os.id || '').toLowerCase().includes(String(searchTerm || '').toLowerCase())

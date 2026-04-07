@@ -491,7 +491,7 @@ export const useQuotes = () => {
       const { data, error } = await supabase
         .from('ordens_servico')
         .select('*, clientes(nome, telefone), veiculos(modelo, marca), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
-        .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'])
+        .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'])
         .order('created_at', { ascending: false });
       
       if (!error && data) {
