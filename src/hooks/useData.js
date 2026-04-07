@@ -632,6 +632,18 @@ export const useQuotes = () => {
     return { success: true };
   };
 
+  const cancelQuote = async (quoteId) => {
+    if (hasRealConnection()) {
+      const { error } = await supabase
+        .from('ordens_servico')
+        .update({ status: 'CANCELADO' })
+        .eq('id', quoteId);
+      if (!error) await fetchQuotes();
+      return { success: !error, error };
+    }
+    return { success: true };
+  };
+
   const deletePayment = async (osId, paymentIndex) => {
     if (hasRealConnection()) {
       try {
@@ -709,7 +721,7 @@ export const useQuotes = () => {
     return { success: true };
   };
 
-  return { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, deletePayment, updateQuoteServices };
+  return { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, cancelQuote, registerPayment, deletePayment, updateQuoteServices };
 };
 
 export const useVehicles = (clienteId) => {

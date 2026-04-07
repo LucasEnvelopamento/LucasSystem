@@ -40,7 +40,7 @@ const Vendas = () => {
   const [showEditServices, setShowEditServices] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
-  const { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, deletePayment, updateQuoteServices } = useQuotes();
+  const { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, cancelQuote, registerPayment, deletePayment, updateQuoteServices } = useQuotes();
 
   // Deriva o OS ativo da lista geral para garantir reatividade após updates (Fase 41/42)
   const currentActiveQuote = activeMenuQuote ? (quotes || []).find(q => q.id === activeMenuQuote.id) : null;
@@ -50,13 +50,13 @@ const Vendas = () => {
   // Cálculos Reais de Vendas
   const aguardandoFaturamento = (quotes || [])
     .filter(q => q && q.status === 'ORCAMENTO')
-    .reduce((acc, q) => acc + (Number(q.valor) || 0), 0);
+    .reduce((acc, q) => acc + (Number(q.valor || q.valor_total) || 0), 0);
 
   const convertidosFaturamento = (quotes || [])
-    .filter(q => q && q.status !== 'ORCAMENTO')
-    .reduce((acc, q) => acc + (Number(q.valor) || 0), 0);
+    .filter(q => q && q.status !== 'ORCAMENTO' && q.status !== 'CANCELADO')
+    .reduce((acc, q) => acc + (Number(q.valor || q.valor_total) || 0), 0);
 
-  const aprovados = (quotes || []).filter(q => q && q.status !== 'ORCAMENTO');
+  const aprovados = (quotes || []).filter(q => q && q.status !== 'ORCAMENTO' && q.status !== 'CANCELADO');
   const ticketMedio = aprovados.length > 0 ? convertidosFaturamento / aprovados.length : 0;
 
   const handleApprove = async (quote) => {
@@ -90,21 +90,26 @@ const Vendas = () => {
     }
   };
 
-  const handleReopen = async (quote) => {
-    const confirm = await confirmDialog(
-      'Reabrir Orçamento',
-      `Deseja reabrir o orçamento #${quote.id}? O agendamento atual será cancelado e ele voltará ao status de proposta.`,
-      'Reabrir Proposta',
-      'Manter como está'
-    );
-
-    if (confirm) {
-      const result = await reopenQuote(quote.id);
-      if (result.success) {
-        toast.success('Orçamento reaberto para ajustes!');
-        setSelectedQuote(null);
+  const handleCancel = async (quote) => {
+    if (confirm(`Deseja realmente CANCELAR a proposta #${quote.id} de ${quote.cliente_nome}? Ela sairá dos indicadores de faturamento.`)) {
+      const res = await cancelQuote(quote.id);
+      if (res.success) {
+        toast.success('Proposta cancelada com sucesso.');
+        setActiveMenuQuote(null);
       } else {
-        toast.error('Erro ao reabrir: ' + result.error.message);
+        toast.error('Erro ao cancelar: ' + res.error?.message);
+      }
+    }
+  };
+
+  const handleReopen = async (quote) => {
+    if (confirm(`Deseja reabrir a OS #${quote.id}? O status voltará para ORCAMENTO.`)) {
+      const res = await reopenQuote(quote.id);
+      if (res.success) {
+        toast.success('OS reaberta como orçamento!');
+        setActiveMenuQuote(null);
+      } else {
+        toast.error('Erro ao reabrir: ' + res.error?.message);
       }
     }
   };
@@ -430,7 +435,7 @@ const Vendas = () => {
             {/* Rodapé Fixo */}
             <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
                <div className="flex gap-4">
-                 {currentSelectedQuote.status === 'ORCAMENTO' ? (
+                 {currentSelectedQuote.status === 'ORCAMENTO' || currentSelectedQuote.status === 'CANCELADO' ? (
                    <button 
                      onClick={() => handleApprove(currentSelectedQuote)}
                      className="flex-1 py-5 bg-emerald-600 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-200 hover:-translate-y-1 active:translate-y-0 transition-all font-bold"
@@ -448,7 +453,7 @@ const Vendas = () => {
                 <button 
                    onClick={() => {
                      const cleanPhone = (currentSelectedQuote.cliente_telefone || '').replace(/\D/g, '');
-                     sendWhatsApp(cleanPhone || '11999999999', getBudgetMsg(currentSelectedQuote.cliente_nome, currentSelectedQuote.veiculo_desc, currentSelectedQuote.valor, currentSelectedQuote.servicos_detalhados, currentSelectedQuote.servico));
+                     sendWhatsApp(cleanPhone || '11999999999', getBudgetMsg(currentSelectedQuote.cliente_nome, currentSelectedQuote.veiculo_desc, currentSelectedQuote.valor || currentSelectedQuote.valor_total, currentSelectedQuote.servicos_detalhados, currentSelectedQuote.servico));
                    }}
                   className="flex-1 py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-200 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-2 font-bold"
                 >
@@ -476,11 +481,26 @@ const Vendas = () => {
 
             <div className="space-y-3">
               {currentActiveQuote.status === 'ORCAMENTO' ? (
+                  <>
+                    <button 
+                      onClick={() => { handleApprove(currentActiveQuote); setActiveMenuQuote(null); }} 
+                      className="w-full py-4 bg-emerald-50 text-emerald-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    >
+                      <CheckCircle2 size={16} /> Aproveitar Proposta
+                    </button>
+                    <button 
+                      onClick={() => handleCancel(currentActiveQuote)} 
+                      className="w-full py-4 bg-rose-50 text-rose-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-rose-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    >
+                      <AlertCircle size={16} /> Cancelar Proposta
+                    </button>
+                  </>
+                ) : currentActiveQuote.status === 'CANCELADO' ? (
                   <button 
-                    onClick={() => { handleApprove(currentActiveQuote); setActiveMenuQuote(null); }} 
-                    className="w-full py-4 bg-emerald-50 text-emerald-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    onClick={() => handleReopen(currentActiveQuote)} 
+                    className="w-full py-4 bg-amber-50 text-amber-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-amber-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
-                    <CheckCircle2 size={16} /> Aproveitar Proposta
+                    <Plus size={16} /> Reabrir Proposta
                   </button>
                 ) : (
                 <>
@@ -499,7 +519,7 @@ const Vendas = () => {
                 </>
               )}
 
-              {isManagement && currentActiveQuote.status !== 'ENTREGUE' && (
+              {isManagement && currentActiveQuote.status !== 'ENTREGUE' && currentActiveQuote.status !== 'CANCELADO' && (
                 <button 
                   onClick={() => { 
                     setSelectedQuote(currentActiveQuote);

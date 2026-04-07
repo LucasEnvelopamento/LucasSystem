@@ -351,4 +351,13 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [ ] **Trava de Segurança**: Ocultar edição para veículos já marcados como `ENTREGUE`.
 
 ---
-*Última atualização: 07/04/2026 às 14:38 - STATUS: FASE 42 EM EXECUÇÃO 🚀*
+*Última atualização: 07/04/2026 às 14:38 - STATUS: FASE 42 CONCLUÍDA LOCALMENTE 🚀*
+
+### 🚀 Fase 43: Gestão de Cancelamentos (Em Execução)
+- [ ] **Novo Status**: Incluir `CANCELADO` para propostas que não evoluíram.
+- [ ] **Limpeza de KPIs**: Remover valores de itens cancelados do faturamento e aguardando.
+- [ ] **Ações Flexíveis**: Permitir "Cancelar" em propostas ativas e "Reabrir" em propostas canceladas.
+- [ ] **Filtro de Relatórios**: Adicionar o status cancelado para auditoria gerencial.
+
+---
+*Última atualização: 07/04/2026 às 15:23 - STATUS: FASE 43 EM EXECUÇÃO 🚀*
