@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2 } from 'lucide-react';
 import { useClients, useQuotes } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
+import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import { toast } from '../utils/toast';
 
 const ClientesView = () => {
@@ -12,6 +13,7 @@ const ClientesView = () => {
   const [editingClient, setEditingClient] = useState(null);
   const [selectedClientProfile, setSelectedClientProfile] = useState(null);
   const [showNovoModal, setShowNovoModal] = useState(false);
+  const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
 
   // Filtragem básica local
   const filteredClients = clients.filter(c => 
@@ -234,7 +236,11 @@ const ClientesView = () => {
                   quotes?.filter(q => q.cliente_id == selectedClientProfile.id || q.cliente_telefone === selectedClientProfile.telefone)
                     .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
                     .map(quote => (
-                    <div key={quote.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-primary/20 transition-all group">
+                    <div 
+                      key={quote.id} 
+                      onClick={() => setSelectedServiceDetails(quote)}
+                      className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:border-primary/40 hover:shadow-md transition-all group cursor-pointer active:scale-[0.98]"
+                    >
                       <div className="flex justify-between items-start mb-2">
                         <span className="text-[9px] font-black px-2 py-1 bg-slate-100 text-slate-500 rounded-md uppercase tracking-wider">#{quote.id}</span>
                         <span className={`text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-widest ${
@@ -250,9 +256,14 @@ const ClientesView = () => {
                         <span className="text-xs font-black text-slate-800 text-mono">
                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(quote.valor || 0)}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                          <Clock size={10} /> {new Date(quote.created_at).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <Clock size={10} /> {new Date(quote.created_at).toLocaleDateString()}
+                          </span>
+                          <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                            <ArrowRight size={12} strokeWidth={3} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -281,6 +292,14 @@ const ClientesView = () => {
            onSave={saveQuote}
            initialClient={selectedClientProfile}
          />
+      )}
+
+      {/* Modal Detalhes do Serviço */}
+      {selectedServiceDetails && (
+        <DetalhesServicoModal 
+          os={selectedServiceDetails}
+          onClose={() => setSelectedServiceDetails(null)}
+        />
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `

@@ -311,6 +311,17 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Padronização de Fluxo**: O fluxo de criação de agendamentos agora possui a mesma flexibilidade de atribuir operadores que o fluxo de aprovação de vendas.
 - [x] **Desnormalização de Dados**: Garantia de que o nome do técnico seja salvo corretamente na OS para exibição instantânea.
 
+### ✅ Fase 38: Central de Ajuda Interna (Concluída Localmente)
+- [x] **Interface Premium**: Criação da página `Ajuda.jsx` com busca e categorias.
+- [x] **Manuais de Treinamento**: FAQs detalhadas sobre Vendas, Agenda, Checklist e Módulo do Operador.
+- [x] **Integração de Apoio**: Links de suporte e espaço para vídeo-aulas integrados ao Sidebar.
+
 ---
-*Última atualização: 06/04/2026 às 09:51 - STATUS: FASE 37 CONCLUÍDA 🚀*
-```
+### ✅ Fase 39: Detalhamento Técnico e Certificação de Placa (Concluído)
+- [x] **Certificado de Garantia**: Incluir a placa do veículo no layout de impressão (A4).
+- [x] **Histórico do Cliente**: Implementar modal de detalhamento de serviço (Popup centralizado).
+- [x] **Visibilidade 360°**: Separação de notas do gestor (`observacoes`) e do operador (`obs_tecnico`).
+- [x] **Galeria Técnica**: Exibição de todas as fotos da execução no modal de detalhes.
+
+---
+*Última atualização: 07/04/2026 às 09:26 - STATUS: FASE 39 CONCLUÍDA LOCALMENTE 🚀*

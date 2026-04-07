@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS public.ordens_servico (
     valor_pago DECIMAL(10,2) DEFAULT 0,
     historico_pagamentos JSONB DEFAULT '[]',
     tracking_token UUID DEFAULT gen_random_uuid(),
+    obs_tecnico TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 

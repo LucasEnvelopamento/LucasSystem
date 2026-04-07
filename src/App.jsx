@@ -29,6 +29,7 @@ const ExecutorView = React.lazy(() => import('./pages/ExecutorView'));
 const ProfilePage = React.lazy(() => import('./pages/Profile'));
 const CustomerStatus = React.lazy(() => import('./pages/CustomerStatus'));
 const Relatorios = React.lazy(() => import('./pages/Relatorios'));
+const Ajuda = React.lazy(() => import('./pages/Ajuda'));
 
 // Componente de Loading Premium para Transições de Rota
 const PageLoading = () => (
@@ -295,6 +296,7 @@ function App() {
             <Route path="/colaboradores" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Colaboradores /></AppLayout></ProtectedRoute>} />
             <Route path="/relatorios" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/ajuda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Ajuda /></AppLayout></ProtectedRoute>} />
 
             {/* Rota do Operador */}
             <Route path="/operador" element={<ProtectedRoute allowedRoles={['OPERADOR', 'ADM', 'GESTOR']}><OperadorLayoutWrapper /></ProtectedRoute>} />

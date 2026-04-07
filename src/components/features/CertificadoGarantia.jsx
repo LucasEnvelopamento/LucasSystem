@@ -195,13 +195,25 @@ const CertificadoGarantia = ({ os, onClose }) => {
                     </div>
                  </div>
                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 font-black text-[10px]">
+                        ABC
+                    </div>
+                    <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Placa do Veículo</p>
+                        <p className="text-sm font-black text-slate-800 font-mono tracking-tighter uppercase">{os.placa || 'Sem Placa'}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
                         <Calendar size={18} />
                     </div>
                     <div>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Data de Execução</p>
-                        <p className="text-sm font-black text-slate-800">{os.data || new Date(os.created_at).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-sm font-black text-slate-800">{os.data || (os.created_at && new Date(os.created_at).toLocaleDateString('pt-BR')) || '--/--/----'}</p>
                     </div>
+                 </div>
+                 <div className="flex items-center gap-4 opacity-0 print:hidden">
+                    {/* Placeholder para equilibrar o grid 3x2 */}
                  </div>
               </div>
 

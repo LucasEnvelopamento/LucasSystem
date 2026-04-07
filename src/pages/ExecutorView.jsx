@@ -37,7 +37,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
   const [progress, setProgress] = useState(os.progresso || 0);
   const [isRunning, setIsRunning] = useState(String(os.status).toUpperCase() === 'EM EXECUÇÃO');
   const [time, setTime] = useState(Number(os.tempo_decorrido) || 0);
-  const [notes, setNotes] = useState(os.observacoes || '');
+  const [notes, setNotes] = useState(os.obs_tecnico || '');
   const [photos, setPhotos] = useState([]);
   const [isFinishing, setIsFinishing] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
@@ -122,7 +122,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     const result = await updateOrderProgress(os.id, { 
       progresso: 100, 
       status: 'CONCLUÍDO',
-      observacoes: notes, 
+      obs_tecnico: notes, 
       data_fim: new Date().toISOString(),
       tempo_decorrido: time,
       servicos_detalhados: servicosDetalhados.map(s => ({ ...s, progresso: 100 }))
@@ -246,6 +246,18 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
               <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Geral Concluído</span>
             </div>
           </div>
+
+          {/* Instruções do Gestor (Read-only para o técnico) */}
+          {os.observacoes && (
+            <div className="bg-amber-50/50 p-6 rounded-3xl border border-amber-100/50">
+              <h5 className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <MessageSquare size={14} /> Instruções do Gestor
+              </h5>
+              <p className="text-xs font-bold text-amber-700/70 italic leading-relaxed">
+                "{os.observacoes}"
+              </p>
+            </div>
+          )}
           
           <div className="divide-y divide-slate-50">
             {servicosDetalhados.map((s, idx) => (
@@ -295,7 +307,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
         {/* Documentação */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
-            <h4 className="text-[12px] font-black uppercase text-slate-400 tracking-[0.2em]">Registro Técnico</h4>
+            <h4 className="text-[12px] font-black uppercase text-slate-400 tracking-[0.2em]">Relatório Técnico</h4>
             <div className="flex gap-2">
                 <label className={`p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-200 transition-all cursor-pointer shadow-sm ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploading} />

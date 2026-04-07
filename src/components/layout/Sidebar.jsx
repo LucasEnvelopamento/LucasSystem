@@ -11,6 +11,7 @@ import {
   LogOut,
   ChevronRight,
   Monitor,
+  LifeBuoy,
   X
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +34,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
     { id: 'colaboradores', label: 'Colaboradores', icon: UserSquare2, roles: ['ADM', 'GESTOR'] },
     { id: 'relatorios', label: 'Relatórios', icon: TrendingUp, roles: ['ADM', 'GESTOR'] },
     { id: 'settings', label: 'Configurações', icon: Settings, roles: ['ADM', 'GESTOR'] },
+    { id: 'ajuda', label: 'Ajuda', icon: LifeBuoy, roles: ['ADM', 'GESTOR'] },
   ];
 
   // Filtra itens permitidos para o cargo
