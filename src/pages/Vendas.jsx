@@ -40,7 +40,12 @@ const Vendas = () => {
   const [showEditServices, setShowEditServices] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
-  const { quotes, loading, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, updateQuoteServices } = useQuotes();
+  const { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, deletePayment, updateQuoteServices } = useQuotes();
+
+  // Deriva o OS ativo da lista geral para garantir reatividade após updates (Fase 41/42)
+  const currentActiveQuote = activeMenuQuote ? (quotes || []).find(q => q.id === activeMenuQuote.id) : null;
+  const currentActivePaymentQuote = activePaymentOS ? (quotes || []).find(q => q.id === activePaymentOS.id) : null;
+  const currentSelectedQuote = selectedQuote ? (quotes || []).find(q => q.id === selectedQuote.id) : null;
 
   // Cálculos Reais de Vendas
   const aguardandoFaturamento = (quotes || [])
@@ -349,7 +354,7 @@ const Vendas = () => {
       </div>
 
       {/* Modal Detalhes do Orçamento */}
-      {selectedQuote && (
+      {currentSelectedQuote && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-2xl flex flex-col shadow-2xl border border-white/20 overflow-hidden max-h-[90vh]">
             {/* Header Fixo */}
@@ -360,7 +365,7 @@ const Vendas = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Detalhes da Proposta</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{selectedQuote.id} • {selectedQuote.status}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{currentSelectedQuote.id} • {currentSelectedQuote.status}</p>
                 </div>
               </div>
               <button 
@@ -372,49 +377,49 @@ const Vendas = () => {
             </div>
 
             {/* Conteúdo Rolável */}
-            <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-6 custom-scrollbar text-left">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cliente</label>
-                  <p className="font-bold text-slate-800">{selectedQuote.cliente_nome}</p>
+                  <p className="font-bold text-slate-800">{currentSelectedQuote.cliente_nome}</p>
                 </div>
                 <div>
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Veículo</label>
-                  <p className="font-bold text-slate-800">{selectedQuote.veiculo_desc}</p>
+                  <p className="font-bold text-slate-800">{currentSelectedQuote.veiculo_desc}</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Serviços Selecionados</label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {(selectedQuote.servico || 'Detalhamento Premium').split(',').map((serv, i) => (
+                    {(currentSelectedQuote.servico || 'Detalhamento Premium').split(',').map((serv, i) => (
                       <span key={i} className="bg-white border border-slate-200 shadow-sm text-slate-600 text-[10px] font-black uppercase px-3 py-1.5 rounded-lg">
                         {serv.trim()}
                       </span>
                     ))}
                   </div>
                 </div>
-                {selectedQuote.data_agendamento && (
+                {currentSelectedQuote.data_agendamento && (
                   <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
                     <label className="text-[9px] font-black text-blue-400 uppercase tracking-widest block mb-1 flex items-center gap-2">
                       <Clock size={12} /> Data do Agendamento
                     </label>
                     <p className="font-black text-blue-800 text-sm">
-                      {new Date(selectedQuote.data_agendamento).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}
+                      {new Date(currentSelectedQuote.data_agendamento).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}
                     </p>
                   </div>
                 )}
-                {selectedQuote.observacoes && (
+                {currentSelectedQuote.observacoes && (
                   <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-200">
                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Observações Privadas</label>
-                    <p className="text-xs text-slate-600 italic font-medium">{selectedQuote.observacoes}</p>
+                    <p className="text-xs text-slate-600 italic font-medium">{currentSelectedQuote.observacoes}</p>
                   </div>
                 )}
               </div>
 
-              <div className="p-6 border-2 border-slate-50 rounded-3xl space-y-4">
+              <div className="p-6 border-2 border-slate-50 rounded-3xl space-y-4 text-left">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Resumo Financeiro</label>
                 <div className="flex items-center justify-between py-2 border-b border-slate-50">
                   <span className="text-sm font-medium text-slate-500">Valor Estimado:</span>
-                  <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(selectedQuote.valor)}</span>
+                  <span className="text-lg font-black text-slate-800 font-mono tracking-tighter">{formatCurrency(currentSelectedQuote.valor || currentSelectedQuote.valor_total)}</span>
                 </div>
                 <div className="bg-primary/5 p-4 rounded-2xl italic text-[10px] text-primary/70 font-medium">
                   Este valor é uma estimativa baseada nos serviços pré-selecionados e pode variar após o laudo técnico presencial.
@@ -425,9 +430,9 @@ const Vendas = () => {
             {/* Rodapé Fixo */}
             <div className="p-8 border-t border-slate-50 shrink-0 bg-white">
                <div className="flex gap-4">
-                 {selectedQuote.status === 'ORCAMENTO' ? (
+                 {currentSelectedQuote.status === 'ORCAMENTO' ? (
                    <button 
-                     onClick={() => handleApprove(selectedQuote)}
+                     onClick={() => handleApprove(currentSelectedQuote)}
                      className="flex-1 py-5 bg-emerald-600 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-200 hover:-translate-y-1 active:translate-y-0 transition-all font-bold"
                    >
                      APROVAR
@@ -442,8 +447,8 @@ const Vendas = () => {
                  )}
                 <button 
                    onClick={() => {
-                     const cleanPhone = (selectedQuote.cliente_telefone || '').replace(/\D/g, '');
-                     sendWhatsApp(cleanPhone || '11999999999', getBudgetMsg(selectedQuote.cliente_nome, selectedQuote.veiculo_desc, selectedQuote.valor, selectedQuote.servicos_detalhados, selectedQuote.servico));
+                     const cleanPhone = (currentSelectedQuote.cliente_telefone || '').replace(/\D/g, '');
+                     sendWhatsApp(cleanPhone || '11999999999', getBudgetMsg(currentSelectedQuote.cliente_nome, currentSelectedQuote.veiculo_desc, currentSelectedQuote.valor, currentSelectedQuote.servicos_detalhados, currentSelectedQuote.servico));
                    }}
                   className="flex-1 py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-200 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-2 font-bold"
                 >
@@ -455,12 +460,12 @@ const Vendas = () => {
         </div>
       )}
 
-      {/* Modal Independente de Ações (Substitui os 3 pontinhos com scroll bug) */}
-      {activeMenuQuote && (
+      {/* Modal Independente de Ações */}
+      {currentActiveQuote && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={() => setActiveMenuQuote(null)}>
           <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-scaleUp border border-white/20" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-black text-slate-800 uppercase text-sm tracking-widest">Ações • OS #{activeMenuQuote.id}</h3>
+              <h3 className="font-black text-slate-800 uppercase text-sm tracking-widest">Ações • OS #{currentActiveQuote.id}</h3>
               <button 
                 onClick={() => setActiveMenuQuote(null)} 
                 className="p-2 hover:bg-slate-50 rounded-full transition-all text-slate-400 hover:text-slate-800"
@@ -470,9 +475,9 @@ const Vendas = () => {
             </div>
 
             <div className="space-y-3">
-              {activeMenuQuote.status === 'ORCAMENTO' ? (
+              {currentActiveQuote.status === 'ORCAMENTO' ? (
                   <button 
-                    onClick={() => { handleApprove(activeMenuQuote); setActiveMenuQuote(null); }} 
+                    onClick={() => { handleApprove(currentActiveQuote); setActiveMenuQuote(null); }} 
                     className="w-full py-4 bg-emerald-50 text-emerald-600 font-black uppercase text-xs tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-emerald-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     <CheckCircle2 size={16} /> Aproveitar Proposta
@@ -486,7 +491,7 @@ const Vendas = () => {
                     <ArrowUpRight size={16} /> Ir para OS
                   </button>
                   <button 
-                    onClick={() => { handleReopen(activeMenuQuote); setActiveMenuQuote(null); }} 
+                    onClick={() => { handleReopen(currentActiveQuote); setActiveMenuQuote(null); }} 
                     className="w-full py-2 text-amber-500 bg-transparent font-bold text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-amber-50 transition-all uppercase"
                   >
                     <Zap size={12} /> Reabrir e Cancelar OS Atual
@@ -494,10 +499,10 @@ const Vendas = () => {
                 </>
               )}
 
-              {isManagement && activeMenuQuote.status !== 'ENTREGUE' && (
+              {isManagement && currentActiveQuote.status !== 'ENTREGUE' && (
                 <button 
                   onClick={() => { 
-                    setSelectedQuote(activeMenuQuote);
+                    setSelectedQuote(currentActiveQuote);
                     setShowEditServices(true);
                     setActiveMenuQuote(null);
                   }} 
@@ -509,7 +514,7 @@ const Vendas = () => {
               
               <div className="pt-4 mt-4 border-t border-slate-50">
                 <button 
-                  onClick={() => handleDelete(activeMenuQuote)} 
+                  onClick={() => handleDelete(currentActiveQuote)} 
                   className="w-full py-4 text-rose-500 font-bold uppercase text-[10px] tracking-widest rounded-2xl flex items-center justify-center gap-2 hover:bg-rose-50 transition-all"
                 >
                   <AlertCircle size={14} /> Excluir Permanentemente
@@ -527,30 +532,27 @@ const Vendas = () => {
          />
        )}
 
-       {showAgendaModal && selectedQuote && (
+       {showAgendaModal && currentSelectedQuote && (
          <AgendamentoModal 
-            quote={selectedQuote}
+            quote={currentSelectedQuote}
             onClose={() => setShowAgendaModal(false)}
             onConfirm={confirmApproval}
          />
        )}
-        {showPagamento && activePaymentOS && (
+        {showPagamento && currentActivePaymentQuote && (
           <PagamentoModal 
-             os={activePaymentOS}
+             os={currentActivePaymentQuote}
              onClose={() => setShowPagamento(false)}
              onSave={registerPayment}
+             onDelete={deletePayment}
           />
         )}
-        {showEditServices && selectedQuote && (
+        {showEditServices && currentSelectedQuote && (
           <EditOrderServicesModal 
-             order={selectedQuote}
+             order={currentSelectedQuote}
              onClose={() => setShowEditServices(false)}
              onSave={async (id, services, total) => {
                const res = await updateQuoteServices(id, services, total);
-               if (res.success) {
-                 // Atualiza o objeto selecionado localmente para refletir no modal de detalhes aberto
-                 setSelectedQuote({...selectedQuote, servicos_detalhados: services, valor: total, valor_total: total});
-               }
                return res;
              }}
           />

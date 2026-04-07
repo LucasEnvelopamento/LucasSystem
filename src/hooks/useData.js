@@ -632,6 +632,43 @@ export const useQuotes = () => {
     return { success: true };
   };
 
+  const deletePayment = async (osId, paymentIndex) => {
+    if (hasRealConnection()) {
+      try {
+        const { data: os, error: fetchError } = await supabase
+          .from('ordens_servico')
+          .select('valor_pago, historico_pagamentos')
+          .eq('id', osId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+
+        const history = os.historico_pagamentos || [];
+        const paymentToRemove = history[paymentIndex];
+
+        if (!paymentToRemove) return { success: false, error: 'Pagamento não encontrado' };
+
+        const newHistory = history.filter((_, idx) => idx !== paymentIndex);
+        const newPaid = Math.max(0, (Number(os.valor_pago) || 0) - (Number(paymentToRemove.valor) || 0));
+
+        const { error: updateError } = await supabase
+          .from('ordens_servico')
+          .update({
+            valor_pago: newPaid,
+            historico_pagamentos: newHistory
+          })
+          .eq('id', osId);
+
+        if (updateError) throw updateError;
+        await fetchQuotes();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
   const reopenQuote = async (quoteId) => {
     if (hasRealConnection()) {
       const { error } = await supabase
@@ -672,7 +709,7 @@ export const useQuotes = () => {
     return { success: true };
   };
 
-  return { quotes, loading, saveQuote, approveQuote, deleteQuote, reopenQuote, registerPayment, updateQuoteServices };
+  return { quotes, loading, fetchQuotes, saveQuote, approveQuote, reopenQuote, deleteQuote, registerPayment, deletePayment, updateQuoteServices };
 };
 
 export const useVehicles = (clienteId) => {
