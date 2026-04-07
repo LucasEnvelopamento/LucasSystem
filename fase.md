@@ -334,3 +334,12 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 
 ---
 *Última atualização: 07/04/2026 às 10:20 - STATUS: FASE 40 CONCLUÍDA LOCALMENTE 🚀*
+
+### 🚀 Fase 41: Ajustes e Estornos Operacionais (Em Execução)
+- [ ] **Estorno de Pagamentos**: Permitir remoção de pagamentos incorretos com recalculo de saldo.
+- [ ] **Remoção de Serviços**: Permitir excluir serviços de uma OS mantendo pelo menos um item.
+- [ ] **Reversão de Estoque**: Devolver materiais ao estoque automaticamente ao remover serviços de OS entregues.
+- [ ] **Refinamento de Gatilho**: Mover a baixa definitiva de estoque apenas para o status `ENTREGUE`.
+
+---
+*Última atualização: 07/04/2026 às 14:27 - STATUS: FASE 41 EM EXECUÇÃO 🚀*

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import PagamentoModal from '../components/features/PagamentoModal';
+import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -30,11 +31,12 @@ import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const OrdensServico = () => {
-  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment } = useOrders();
+  const { orders, loading, deliverOrder, updateOrderProgress, registerPayment, deletePayment, removeServiceFromOrder } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [showChecklist, setShowChecklist] = useState(false);
   const [showCertificado, setShowCertificado] = useState(false);
   const [showPagamento, setShowPagamento] = useState(false);
+  const [showDetalhes, setShowDetalhes] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
@@ -203,6 +205,13 @@ const OrdensServico = () => {
                   <td className="px-6 py-6 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                         <button 
+                          onClick={() => { setActiveOS(os); setShowDetalhes(true); }}
+                          className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-transparent hover:border-primary/20"
+                          title="Visualizar Detalhes do Serviço"
+                        >
+                          <Eye size={20} />
+                        </button>
+                        <button 
                           onClick={() => { setActiveOS(os); setShowChecklist(true); }}
                           className={`p-2.5 rounded-xl transition-all border ${
                             os.has_checklist 
@@ -333,6 +342,16 @@ const OrdensServico = () => {
            os={activePaymentOS}
            onClose={() => setShowPagamento(false)}
            onSave={registerPayment}
+           onDelete={deletePayment}
+        />
+      )}
+      {showDetalhes && activeOS && (
+        <DetalhesServicoModal 
+          os={activeOS} 
+          onClose={() => {
+            setShowDetalhes(false);
+            setActiveOS(null);
+          }} 
         />
       )}
     </div>

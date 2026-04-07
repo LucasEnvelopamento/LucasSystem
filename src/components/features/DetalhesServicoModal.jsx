@@ -12,13 +12,19 @@ import {
   FileText,
   MessageSquare,
   Camera,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { getStatusStyle, formatCurrency } from '../../utils/statusUtils';
 import { useOrders } from '../../hooks/useData';
+import { confirmDialog } from '../../utils/confirm';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from '../../utils/toast';
 
 const DetalhesServicoModal = ({ os, onClose }) => {
-  const { fetchOsPhotos } = useOrders();
+  const { fetchOsPhotos, removeServiceFromOrder } = useOrders();
+  const { isGestor, isAdmin } = useAuth();
+  const isManagement = isGestor || isAdmin;
   const [photos, setPhotos] = useState([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
 
@@ -171,7 +177,30 @@ const DetalhesServicoModal = ({ os, onClose }) => {
                       <div className={`w-2 h-2 rounded-full shrink-0 ${item.progresso === 100 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-amber-500'}`} />
                       <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight truncate">{item.nome}</span>
                     </div>
-                    <span className="text-[10px] font-black text-primary italic shrink-0">{item.progresso || 0}%</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-[10px] font-black text-primary italic">{item.progresso || 0}%</span>
+                      {(isManagement && os.servicos_detalhados.length > 1) && (
+                        <button 
+                          onClick={async () => {
+                            const confirm = await confirmDialog(
+                              'Remover Serviço',
+                              `Deseja remover o serviço "${item.nome}"? O valor total será recalculado e materiais serão devolvidos ao estoque se a OS estiver entregue.`,
+                              'Remover',
+                              'Cancelar'
+                            );
+                            if (confirm) {
+                              const res = await removeServiceFromOrder(os.id, idx);
+                              if (res.success) toast.success('Serviço removido com sucesso!');
+                              else toast.error(res.error || 'Erro ao remover serviço');
+                            }
+                          }}
+                          className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          title="Remover este serviço da OS"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (

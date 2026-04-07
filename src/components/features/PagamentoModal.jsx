@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, DollarSign, Wallet, Calendar, ArrowRight, CheckCircle2, History } from 'lucide-react';
+import { X, DollarSign, Wallet, Calendar, ArrowRight, CheckCircle2, History, Trash2 } from 'lucide-react';
 import { toast } from '../../utils/toast';
+import { confirmDialog } from '../../utils/confirm';
 
-const PagamentoModal = ({ os, onClose, onSave }) => {
+const PagamentoModal = ({ os, onClose, onSave, onDelete }) => {
   const [valor, setValor] = useState(os.saldo_devedor || 0);
   const [metodo, setMetodo] = useState('PIX');
   const [isSaving, setIsSaving] = useState(false);
@@ -129,9 +130,29 @@ const PagamentoModal = ({ os, onClose, onSave }) => {
                             <p className="text-[8px] text-slate-400 font-bold uppercase">{p.metodo} • {new Date(p.data).toLocaleDateString('pt-BR')}</p>
                           </div>
                         </div>
-                        <span className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[7px] font-black uppercase rounded-md border border-slate-100">
-                          {p.tipo}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-400 text-[7px] font-black uppercase rounded-md border border-slate-100">
+                            {p.tipo}
+                          </span>
+                          <button 
+                            onClick={async () => {
+                              const confirm = await confirmDialog(
+                                'Estornar Pagamento',
+                                `Deseja remover este registro de R$ ${p.valor?.toLocaleString('pt-BR')}? O valor pago da OS será reduzido.`,
+                                'Remover',
+                                'Voltar'
+                              );
+                              if (confirm) {
+                                const res = await onDelete(os.id, idx);
+                                if (res.success) toast.success('Pagamento removido!');
+                              }
+                            }}
+                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            title="Remover este lançamento"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     ))
                  ) : (

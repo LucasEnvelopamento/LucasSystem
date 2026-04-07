@@ -116,14 +116,16 @@ export const useOrders = () => {
   const updateOrderProgress = async (id, data) => {
     if (hasRealConnection()) {
       try {
-        // Intercepta conclusão para dar baixa no estoque
-        const isFinalStatus = ['CONCLUÍDO', 'ENTREGUE'].includes(data.status);
-        if (isFinalStatus) {
+        // Intercepta ENTREGA para dar baixa no estoque (Status Final)
+        // O usuário solicitou que o estoque só seja movimentado quando marcado como ENTREGUE
+        const isDelivered = data.status === 'ENTREGUE';
+        if (isDelivered) {
            const { data: currentOs } = await supabase.from('ordens_servico').select('status, servicos_detalhados').eq('id', id).single();
            
-           const wasAlreadyFinished = ['CONCLUÍDO', 'ENTREGUE'].includes(currentOs?.status);
+           // Só abate se não estava Entregue antes (Evita duplicidade)
+           const wasAlreadyDelivered = currentOs?.status === 'ENTREGUE';
 
-           if (currentOs && !wasAlreadyFinished && currentOs.servicos_detalhados) {
+           if (currentOs && !wasAlreadyDelivered && currentOs.servicos_detalhados) {
               for (const serv of currentOs.servicos_detalhados) {
                  if (serv.controle_estoque && Array.isArray(serv.materiais)) {
                     for (const mat of serv.materiais) {
@@ -147,14 +149,11 @@ export const useOrders = () => {
 
         if (error) {
            console.error('Erro ao atualizar OS:', error);
-           // Fallback agressivo se colunas não existirem
            if (error.code === '42703' || error.message?.includes('column')) {
-              console.warn('Fallback ativado: Limpando colunas inexistentes...');
               const minimalData = { 
                 status: data.status, 
                 progresso: data.progresso || 100 
               };
-              // Preserva observações e técnicos se existirem no objeto original
               if (data.observacoes) minimalData.observacoes = data.observacoes;
               if (data.tecnico) minimalData.tecnico = data.tecnico;
               if (data.tecnico_id) minimalData.tecnico_id = data.tecnico_id;
@@ -219,6 +218,96 @@ export const useOrders = () => {
         return { success: true };
       } catch (error) {
         console.error('Erro ao registrar pagamento:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
+  const deletePayment = async (osId, paymentIndex) => {
+    if (hasRealConnection()) {
+      try {
+        const { data: os, error: fetchError } = await supabase
+          .from('ordens_servico')
+          .select('valor_pago, historico_pagamentos')
+          .eq('id', osId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+
+        const history = os.historico_pagamentos || [];
+        const paymentToRemove = history[paymentIndex];
+
+        if (!paymentToRemove) return { success: false, error: 'Pagamento não encontrado' };
+
+        const newHistory = history.filter((_, idx) => idx !== paymentIndex);
+        const newPaid = Math.max(0, (Number(os.valor_pago) || 0) - (Number(paymentToRemove.valor) || 0));
+
+        const { error: updateError } = await supabase
+          .from('ordens_servico')
+          .update({
+            valor_pago: newPaid,
+            historico_pagamentos: newHistory
+          })
+          .eq('id', osId);
+
+        if (updateError) throw updateError;
+        await fetchOrders();
+        return { success: true };
+      } catch (error) {
+        return { success: false, error };
+      }
+    }
+    return { success: true };
+  };
+
+  const removeServiceFromOrder = async (osId, serviceIndex) => {
+    if (hasRealConnection()) {
+      try {
+        const { data: os, error: fetchError } = await supabase
+          .from('ordens_servico')
+          .select('*')
+          .eq('id', osId)
+          .single();
+        
+        if (fetchError) throw fetchError;
+
+        const services = os.servicos_detalhados || [];
+        if (services.length <= 1) return { success: false, error: 'Não é possível remover o único serviço da OS.' };
+
+        const serviceToRemove = services[serviceIndex];
+        const newServices = services.filter((_, idx) => idx !== serviceIndex);
+        
+        // 1. Reverter Estoque se a OS já estiver Entregue
+        if (os.status === 'ENTREGUE' && serviceToRemove.controle_estoque && Array.isArray(serviceToRemove.materiais)) {
+          for (const mat of serviceToRemove.materiais) {
+            if (mat.material_id && mat.quantidade_utilizada > 0) {
+              const { data: matData } = await supabase.from('estoque_materiais').select('quantidade').eq('id', mat.material_id).single();
+              if (matData) {
+                const novoEstoque = matData.quantidade + mat.quantidade_utilizada;
+                await supabase.from('estoque_materiais').update({ quantidade: novoEstoque }).eq('id', mat.material_id);
+              }
+            }
+          }
+        }
+
+        // 2. Recalcular Total e Título
+        const newTotal = newServices.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0);
+        const newServiceTitle = newServices.map(s => s.nome).join(', ');
+
+        const { error: updateError } = await supabase
+          .from('ordens_servico')
+          .update({
+            servicos_detalhados: newServices,
+            valor_total: newTotal,
+            servico: newServiceTitle
+          })
+          .eq('id', osId);
+
+        if (updateError) throw updateError;
+        await fetchOrders();
+        return { success: true };
+      } catch (error) {
         return { success: false, error };
       }
     }
@@ -300,7 +389,7 @@ export const useOrders = () => {
     return { success: true };
   };
 
-  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, uploadOsPhoto, fetchOsPhotos, updateOrderServices };
+  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, deletePayment, removeServiceFromOrder, uploadOsPhoto, fetchOsPhotos, updateOrderServices };
 };
 
 export const useClients = () => {
