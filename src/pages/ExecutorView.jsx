@@ -119,13 +119,20 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     setIsFinishing(true);
     setShowConfirmFinish(false);
     
+    const additionalData = {};
+    if (!os.tecnico_id) {
+      additionalData.tecnico_id = profile?.id;
+      additionalData.tecnico = profile?.nome;
+    }
+
     const result = await updateOrderProgress(os.id, { 
       progresso: 100, 
       status: 'CONCLUÍDO',
       obs_tecnico: notes, 
       data_fim: new Date().toISOString(),
       tempo_decorrido: time,
-      servicos_detalhados: servicosDetalhados.map(s => ({ ...s, progresso: 100 }))
+      servicos_detalhados: servicosDetalhados.map(s => ({ ...s, progresso: 100 })),
+      ...additionalData
     });
     
     if (result.success) {

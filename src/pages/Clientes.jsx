@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2 } from 'lucide-react';
-import { useClients, useQuotes } from '../hooks/useData';
+import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2, Wrench, Save } from 'lucide-react';
+import { useClients, useQuotes, useVehicles } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import { toast } from '../utils/toast';
@@ -14,6 +14,11 @@ const ClientesView = () => {
   const [selectedClientProfile, setSelectedClientProfile] = useState(null);
   const [showNovoModal, setShowNovoModal] = useState(false);
   const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+  const [editingVehicle, setEditingVehicle] = useState(null);
+  const [showEditVehicleModal, setShowEditVehicleModal] = useState(false);
+
+  // Hook de veículos (condicional ao cliente selecionado)
+  const { vehicles, updateVehicle } = useVehicles(selectedClientProfile?.id);
 
   // Filtragem básica local
   const filteredClients = clients.filter(c => 
@@ -219,6 +224,41 @@ const ClientesView = () => {
               </div>
             </div>
 
+            {/* Seção de Veículos */}
+            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+               <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Car size={14} /> Meus Veículos
+                  </h4>
+               </div>
+
+               <div className="space-y-2">
+                  {vehicles && vehicles.length > 0 ? (
+                    vehicles.map(v => (
+                      <div key={v.id} className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between group/v">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
+                             <Car size={16} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">{v.marca} {v.modelo}</p>
+                            <p className="text-[10px] font-mono font-black text-primary uppercase">{v.placa}</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => { setEditingVehicle(v); setShowEditVehicleModal(true); }}
+                          className="p-2 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg opacity-0 group-hover/v:opacity-100 transition-all"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[10px] text-slate-400 font-bold italic py-2">Nenhum veículo cadastrado diretamente.</p>
+                  )}
+               </div>
+            </div>
+
             {/* Conteúdo (Histórico) */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex items-center justify-between">
@@ -304,6 +344,56 @@ const ClientesView = () => {
           os={selectedServiceDetails}
           onClose={() => setSelectedServiceDetails(null)}
         />
+      )}
+
+      {/* Modal Edição de Veículo */}
+      {showEditVehicleModal && editingVehicle && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden animate-scaleUp">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="font-black text-slate-800 uppercase tracking-tighter">Editar Veículo</h3>
+              <button onClick={() => { setShowEditVehicleModal(false); setEditingVehicle(null); }} className="text-slate-400 hover:text-slate-600 font-bold text-xs uppercase pr-2">X</button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const data = {
+                marca: formData.get('marca').toUpperCase(),
+                modelo: formData.get('modelo').toUpperCase(),
+                placa: formData.get('placa').toUpperCase().replace(/\s/g, ''),
+              };
+
+              const res = await updateVehicle(editingVehicle.id, data);
+              if (res.success) {
+                toast.success('Veículo atualizado!');
+                setShowEditVehicleModal(false);
+                setEditingVehicle(null);
+              } else {
+                if (res.error?.message?.includes('placa')) {
+                  toast.warning('Esta placa já está cadastrada em outro veículo!');
+                } else {
+                  toast.error('Erro ao atualizar veículo.');
+                }
+              }
+            }} className="p-8 space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Marca</label>
+                <input name="marca" defaultValue={editingVehicle.marca || ''} required className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Modelo</label>
+                <input name="modelo" defaultValue={editingVehicle.modelo || ''} required className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Placa</label>
+                <input name="placa" defaultValue={editingVehicle.placa || ''} required className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner font-mono uppercase" />
+              </div>
+              <button type="submit" className="w-full btn-primary py-4 rounded-2xl shadow-xl shadow-primary/20 mt-4 flex items-center justify-center gap-2">
+                <Save size={18} /> Salvar Alterações
+              </button>
+            </form>
+          </div>
+        </div>
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `

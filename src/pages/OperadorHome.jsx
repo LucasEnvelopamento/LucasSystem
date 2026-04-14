@@ -8,17 +8,21 @@ const OperadorHome = ({ onSelectOS }) => {
   const { orders, loading } = useOrders();
   const { profile } = useAuth();
 
-  // 1. KPI: Fila Geral (Disponíveis sem técnico)
-  const filaGeral = orders.filter(os => 
-    !os.tecnico_id && 
-    !['CONCLUÍDO', 'CANCELADO', 'ORCAMENTO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
-  );
-
-  // 2. KPI: Atribuídas a Mim (Em progresso ou aguardando)
-  const minhasAtribuidas = orders.filter(os => 
-    os.tecnico_id === profile?.id && 
-    !['CONCLUÍDO', 'CANCELADO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
-  );
+  // 1. KPI: Fila Geral (Disponíveis sem técnico) - Ordenada por Data
+  const filaGeral = orders
+    .filter(os => 
+      !os.tecnico_id && 
+      !['CONCLUÍDO', 'CANCELADO', 'ORCAMENTO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
+    )
+    .sort((a, b) => new Date(a.data_agendamento || a.created_at) - new Date(b.data_agendamento || b.created_at));
+ 
+  // 2. KPI: Atribuídas a Mim (Em progresso ou aguardando) - Ordenada por Data
+  const minhasAtribuidas = orders
+    .filter(os => 
+      os.tecnico_id === profile?.id && 
+      !['CONCLUÍDO', 'CANCELADO', 'ENTREGUE'].includes(String(os.status).toUpperCase())
+    )
+    .sort((a, b) => new Date(a.data_agendamento || a.created_at) - new Date(b.data_agendamento || b.created_at));
 
   // 3. KPI: Finalizadas (Para histórico)
   const minhasFinalizadas = orders.filter(os => 
@@ -136,8 +140,21 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
     <div className="flex items-center justify-between pt-3 border-t border-slate-50">
       <div className="flex items-center gap-1.5 text-slate-500">
         <Wrench size={12} className="text-primary" />
-        <span className="text-[10px] font-bold truncate max-w-[200px]">{os.servico || 'Serviço'}</span>
+        <span className="text-[10px] font-bold truncate max-w-[150px]">{os.servico || 'Serviço'}</span>
       </div>
+      
+      {os.data_agendamento && (
+        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${
+          new Date(os.data_agendamento).toDateString() === new Date().toDateString() 
+            ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+            : 'bg-slate-50 border-slate-100 text-slate-400'
+        }`}>
+          <Clock size={10} />
+          <span className="text-[9px] font-black uppercase whitespace-nowrap">
+            {new Date(os.data_agendamento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} - {new Date(os.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+      )}
     </div>
 
     <button 

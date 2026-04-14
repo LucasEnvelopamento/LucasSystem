@@ -61,6 +61,26 @@ Passando para confirmar seu agendamento no dia *${data}* às *${hora}* para o se
 Podemos confirmar?`;
 };
 
+export const getAppointmentConfirmationMsg = (cliente, veiculo, valorTotal, sinal, data, hora) => {
+  const total = Number(valorTotal) || 0;
+  const pago = Number(sinal) || 0;
+  const saldo = total - pago;
+
+  return `*AGENDAMENTO REALIZADO!*
+
+Olá ${cliente}, seu agendamento para o veículo *${veiculo}* foi confirmado com sucesso!
+
+DATA: ${data}
+HORÁRIO: ${hora}
+
+*RESUMO FINANCEIRO:*
+• Valor Total: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+• Sinal Pago: R$ ${pago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+• *Saldo Restante: R$ ${saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}*
+
+Qualquer dúvida, estamos à disposição!`;
+};
+
 export const getVehicleReceivedMsg = (cliente, veiculo, tokenOrId) => {
   return `Olá ${cliente}! 🚗
 Veículo *${veiculo}* recebido com sucesso na loja e checklist visual assinado!

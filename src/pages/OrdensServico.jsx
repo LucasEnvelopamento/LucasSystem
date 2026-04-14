@@ -22,6 +22,7 @@ import {
 import { useOrders } from '../hooks/useData';
 import PagamentoModal from '../components/features/PagamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
+import AtribuirTecnicoModal from '../components/features/AtribuirTecnicoModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -41,6 +42,7 @@ const OrdensServico = () => {
   const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
   const [activeOS, setActiveOS] = useState(null);
+  const [showAtribuir, setShowAtribuir] = useState(false);
 
   // Deriva o OS ativo da lista geral para garantir reatividade após updates (Fase 41)
   const currentActiveOS = activeOS ? (orders || []).find(o => o.id === activeOS.id) : null;
@@ -186,11 +188,19 @@ const OrdensServico = () => {
                     </div>
                   </td>
                   <td className="px-6 py-6 text-center">
-                    <div className="flex flex-col items-center gap-1.5">
-                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black border transition-all ${os.tecnico ? 'bg-primary/10 text-primary border-primary/20' : 'bg-slate-50 text-slate-300 border-slate-100'}`}>
+                    <div 
+                      onClick={() => {
+                        if (isManagement) {
+                          setActiveOS(os);
+                          setShowAtribuir(true);
+                        }
+                      }}
+                      className={`flex flex-col items-center gap-1.5 ${isManagement ? 'cursor-pointer group/tech hover:opacity-80' : ''}`}
+                    >
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black border transition-all ${os.tecnico ? 'bg-primary/10 text-primary border-primary/20 group-hover/tech:border-primary/40' : 'bg-slate-50 text-slate-300 border-slate-100 group-hover/tech:border-slate-300'}`}>
                           {os.tecnico ? <User size={14} /> : <UserMinus size={14} />}
                        </div>
-                       <span className={`text-[9px] font-bold uppercase tracking-tight ${os.tecnico ? 'text-slate-600' : 'text-slate-300'}`}>
+                       <span className={`text-[9px] font-bold uppercase tracking-tight ${os.tecnico ? 'text-slate-600' : 'text-slate-300'} ${isManagement ? 'group-hover/tech:text-primary' : ''}`}>
                           {os.tecnico || 'Nenhum'}
                        </span>
                     </div>
@@ -356,6 +366,15 @@ const OrdensServico = () => {
             setShowDetalhes(false);
             setActiveOS(null);
           }} 
+        />
+      )}
+      {showAtribuir && currentActiveOS && (
+        <AtribuirTecnicoModal 
+          os={currentActiveOS}
+          onClose={() => {
+            setShowAtribuir(false);
+            setActiveOS(null);
+          }}
         />
       )}
     </div>

@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuotes, useCatalog } from '../hooks/useData';
 import AgendamentoModal from '../components/features/AgendamentoModal';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
-import { sendWhatsApp, getBudgetMsg, getAppointmentMsg } from '../utils/whatsappUtils';
+import { sendWhatsApp, getBudgetMsg, getAppointmentConfirmationMsg } from '../utils/whatsappUtils';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import { confirmDialog } from '../utils/confirm';
 import { toast } from '../utils/toast';
@@ -83,7 +83,18 @@ const Vendas = () => {
             const dataStr = dateObj.toLocaleDateString('pt-BR');
             const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const cleanPhone = (selectedQuote.cliente_telefone || '').replace(/\D/g, '');
-            sendWhatsApp(cleanPhone || '11999999999', getAppointmentMsg(selectedQuote.cliente_nome, dataStr, horaStr, selectedQuote.servico || 'Estética Automotiva'));
+            
+            sendWhatsApp(
+              cleanPhone || '11999999999', 
+              getAppointmentConfirmationMsg(
+                selectedQuote.cliente_nome, 
+                selectedQuote.veiculo_desc,
+                appointmentData.valor_total,
+                appointmentData.valor_pago_agora,
+                dataStr, 
+                horaStr
+              )
+            );
         }
 
         setSelectedQuote(null);

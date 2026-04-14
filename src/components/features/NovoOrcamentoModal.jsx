@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap, Clock } from 'lucide-react';
 import { useClients, useVehicles, useCatalog, useInventory, useProfiles } from '../../hooks/useData';
 import { toast } from '../../utils/toast';
+import { confirmDialog } from '../../utils/confirm';
+import { sendWhatsApp, getAppointmentConfirmationMsg } from '../../utils/whatsappUtils';
 
 const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, defaultDate, existingOrders = [] }) => {
   const { clients, saveClient } = useClients();
@@ -21,6 +23,8 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
   const [observacoes, setObservacoes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [selectedTime, setSelectedTime] = useState('08:00');
+  const [valorAdiantamento, setValorAdiantamento] = useState(0);
+  const [metodoAdiantamento, setMetodoAdiantamento] = useState('PIX');
 
   // Estados para cadastro rápido de veículo
   const [showQuickAddVehicle, setShowQuickAddVehicle] = useState(false);
@@ -149,12 +153,50 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
             quantidade_utilizada: m.quantidade || 0
           }))
         };
-      })
+      }),
+      valor_pago: Number(valorAdiantamento) || 0,
+      historico_pagamentos: Number(valorAdiantamento) > 0 ? [{
+        valor: Number(valorAdiantamento),
+        metodo: metodoAdiantamento,
+        data: new Date().toISOString(),
+        tipo: 'ADIANTAMENTO'
+      }] : []
     };
 
     const result = await onSave(quoteData);
     setIsSaving(false);
-    if (result.success) onClose();
+    
+    if (result.success) {
+      // Gatilho de WhatsApp para agendamentos diretos (Fase 47)
+      if (defaultStatus === 'AGUARDANDO') {
+        const confirmZap = await confirmDialog(
+          'Agendamento Confirmado',
+          'Deseja enviar o comprovante de agendamento por WhatsApp?',
+          'Sim, enviar',
+          'Agora não'
+        );
+
+        if (confirmZap) {
+          const dateObj = new Date(quoteData.data_agendamento);
+          const dataStr = dateObj.toLocaleDateString('pt-BR');
+          const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const cleanPhone = (client.telefone || '').replace(/\D/g, '');
+          
+          sendWhatsApp(
+            cleanPhone || '11999999999', 
+            getAppointmentConfirmationMsg(
+              client.nome, 
+              vehicle ? `${vehicle.marca} ${vehicle.modelo}` : 'Veículo',
+              quoteData.valor_total,
+              quoteData.valor_pago,
+              dataStr, 
+              horaStr
+            )
+          );
+        }
+      }
+      onClose();
+    }
   };
 
   return (
@@ -610,6 +652,49 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                           value={observacoes}
                           onChange={(e) => setObservacoes(e.target.value)}
                       />
+                      {/* Adiantamento / Sinal (Apenas Agendamento) */}
+                      {defaultStatus === 'AGUARDANDO' && (
+                        <div className="bg-primary/5 p-6 rounded-[2.5rem] border border-primary/20 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                              <DollarSign size={14} /> Sinal / Adiantamento
+                            </h5>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Opcional</span>
+                          </div>
+                          <div className="relative group">
+                            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={20} />
+                            <input 
+                              type="number"
+                              placeholder="0,00"
+                              className="w-full pl-12 pr-4 py-4 bg-white border border-primary/10 rounded-2xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-black text-lg text-primary shadow-sm"
+                              value={valorAdiantamento}
+                              onChange={e => setValorAdiantamento(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                             {['PIX', 'DINHEIRO', 'CARTÃO'].map(m => (
+                               <button
+                                 key={m}
+                                 type="button"
+                                 onClick={() => setMetodoAdiantamento(m)}
+                                 className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${
+                                   metodoAdiantamento === m ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                                 }`}
+                               >
+                                 {m}
+                               </button>
+                             ))}
+                          </div>
+
+                          <div className="flex items-center justify-between px-2 pt-2 border-t border-primary/10">
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Saldo Restante</span>
+                             <span className="text-sm font-black text-slate-700">
+                                R$ {Math.max(0, valorTotal - (Number(valorAdiantamento) || 0)).toLocaleString('pt-BR')}
+                             </span>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 </div>
               )}

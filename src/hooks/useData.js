@@ -490,7 +490,7 @@ export const useQuotes = () => {
     if (hasRealConnection()) {
       const { data, error } = await supabase
         .from('ordens_servico')
-        .select('*, clientes(nome, telefone), veiculos(modelo, marca), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
+        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
         .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'])
         .order('created_at', { ascending: false });
       
@@ -504,6 +504,7 @@ export const useQuotes = () => {
             cliente_nome: clienteObj?.nome || 'Cliente',
             cliente_telefone: clienteObj?.telefone,
             veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''}`.trim() || 'Veículo' : 'Veículo',
+            placa: veiculoObj?.placa,
             valor: Number(q.valor_total) || 0,
             desconto: Number(q.desconto) || 0,
             tecnico: q.tecnico_ref?.nome || q.tecnico || 'Nenhum', // Prioriza o nome da tabela profiles
@@ -749,7 +750,25 @@ export const useVehicles = (clienteId) => {
     return { success: true };
   };
 
-  return { vehicles, loading, saveVehicle };
+  const updateVehicle = async (id, vehicleData) => {
+    if (hasRealConnection()) {
+      const { error } = await supabase.from('veiculos').update(vehicleData).eq('id', id);
+      if (!error) await fetchVehicles();
+      return { success: !error, error };
+    }
+    return { success: true };
+  };
+
+  const deleteVehicle = async (id) => {
+    if (hasRealConnection()) {
+      const { error } = await supabase.from('veiculos').delete().eq('id', id);
+      if (!error) await fetchVehicles();
+      return { success: !error, error };
+    }
+    return { success: true };
+  };
+
+  return { vehicles, loading, saveVehicle, updateVehicle, deleteVehicle };
 };
 
 export const useCatalog = () => {
