@@ -410,21 +410,33 @@ const getEndOfMonth = () => {
   return `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
 };
 
-const formatDateBR = (dateString) => {
-  if (!dateString) return '--';
-  // Se for YYYY-MM-DD
-  if (dateString.includes('-')) {
-    const parts = dateString.split('T')[0].split('-');
+const formatDateBR = (val) => {
+  if (!val) return '--';
+  
+  // Se for uma string no formato YYYY-MM-DD (comum em inputs de data e retornos de banco)
+  if (typeof val === 'string' && val.includes('-')) {
+    const datePart = val.split('T')[0].trim();
+    const parts = datePart.split('-');
     if (parts.length === 3) {
       const [year, month, day] = parts;
       return `${day}/${month}/${year}`;
     }
   }
+
+  // Fallback para objetos Date ou outros formatos de string
   try {
-    const d = new Date(dateString);
-    return d.toLocaleDateString('pt-BR');
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return String(val);
+    
+    // Se a string original não tinha informação de hora (length <= 10), 
+    // ou se estamos lidando com um objeto Date puro, usamos métodos UTC para evitar o fuso horário
+    // que "atrasa" um dia em fusos negativos (como o do Brasil).
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
+    return `${day}/${month}/${year}`;
   } catch {
-    return dateString;
+    return String(val);
   }
 };
 
