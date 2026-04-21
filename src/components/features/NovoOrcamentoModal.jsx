@@ -28,7 +28,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
 
   // Estados para cadastro rápido de veículo
   const [showQuickAddVehicle, setShowQuickAddVehicle] = useState(false);
-  const [newVehicleData, setNewVehicleData] = useState({ marca: '', modelo: '', placa: '', cor: '', tipo: 'CARRO' });
+  const [newVehicleData, setNewVehicleData] = useState({ marca: '', modelo: '', placa: '', cor: '', ano: '', tipo: 'CARRO' });
 
   const { vehicles, saveVehicle } = useVehicles(selectedClient);
   const { inventory } = useInventory();
@@ -389,6 +389,16 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                       placeholder="ABC-1234"
                                       value={newVehicleData.placa}
                                       onChange={e => setNewVehicleData({...newVehicleData, placa: e.target.value.toUpperCase()})}
+                                  />
+                              </div>
+                              <div className="space-y-2">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ano</label>
+                                  <input 
+                                      type="text" 
+                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      placeholder="Ex: 2023"
+                                      value={newVehicleData.ano}
+                                      onChange={e => setNewVehicleData({...newVehicleData, ano: e.target.value})}
                                   />
                               </div>
                               <div className="space-y-2">

@@ -241,7 +241,7 @@ const ClientesView = () => {
                              <Car size={16} />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-700">{v.marca} {v.modelo}</p>
+                            <p className="text-xs font-bold text-slate-700">{v.marca} {v.modelo} {v.ano ? `(${v.ano})` : ''}</p>
                             <p className="text-[10px] font-mono font-black text-primary uppercase">{v.placa}</p>
                           </div>
                         </div>
@@ -361,6 +361,7 @@ const ClientesView = () => {
                 marca: formData.get('marca').toUpperCase(),
                 modelo: formData.get('modelo').toUpperCase(),
                 placa: formData.get('placa').toUpperCase().replace(/\s/g, ''),
+                ano: formData.get('ano'),
               };
 
               const res = await updateVehicle(editingVehicle.id, data);
@@ -387,6 +388,10 @@ const ClientesView = () => {
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Placa</label>
                 <input name="placa" defaultValue={editingVehicle.placa || ''} required className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner font-mono uppercase" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Ano</label>
+                <input name="ano" defaultValue={editingVehicle.ano || ''} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner" />
               </div>
               <button type="submit" className="w-full btn-primary py-4 rounded-2xl shadow-xl shadow-primary/20 mt-4 flex items-center justify-center gap-2">
                 <Save size={18} /> Salvar Alterações

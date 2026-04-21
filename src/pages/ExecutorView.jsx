@@ -196,7 +196,9 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
         </button>
         <div className="text-right">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">OS #{os.id}</p>
-          <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">{os.carro}</h2>
+          <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">
+            {os.carro} {os.veiculos?.ano ? `(${os.veiculos.ano})` : ''}
+          </h2>
         </div>
       </div>
 

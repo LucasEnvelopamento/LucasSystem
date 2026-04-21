@@ -421,4 +421,12 @@ Para entregar um produto superior aos concorrentes, implementaremos:
     - [x] Polimento Visual e Micro-animações.
 
 ---
-*Última atualização: 15/04/2026 às 11:30 - STATUS: FASE 49 CONCLUÍDA LOCALMENTE 🚀*
+---
+### ✅ Fase 50: Módulo de Detalhamento Veicular (Ano) (Concluída)
+- [x] **Infraestrutura**: Adição da coluna `ano` na tabela `veiculos` e atualização do hook `useData.js`.
+- [x] **Cadastro ADM**: Inclusão do campo Ano no modal de `Novo Orçamento` e na edição de veículos em `Clientes`.
+- [x] **Visibilidade Operacional**: Exibição do ano nos cards da `OperadorHome` e no cabeçalho da `ExecutorView`.
+- [x] **Certificação**: Inclusão do "Ano do Veículo" no grid do `Certificado de Garantia`.
+
+---
+*Última atualização: 21/04/2026 às 04:05 - STATUS: FASE 50 CONCLUÍDA LOCALMENTE 🚀*

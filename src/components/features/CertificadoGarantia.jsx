@@ -194,15 +194,24 @@ const CertificadoGarantia = ({ os, onClose }) => {
                         <p className="text-sm font-black text-slate-800 uppercase line-clamp-1">{os.veiculo_desc || os.veiculo}</p>
                     </div>
                  </div>
-                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 font-black text-[10px]">
-                        ABC
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Placa do Veículo</p>
-                        <p className="text-sm font-black text-slate-800 font-mono tracking-tighter uppercase">{os.placa || 'Sem Placa'}</p>
-                    </div>
-                 </div>
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 font-black text-[10px]">
+                         ABC
+                     </div>
+                     <div>
+                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Placa do Veículo</p>
+                         <p className="text-sm font-black text-slate-800 font-mono tracking-tighter uppercase">{os.placa || 'Sem Placa'}</p>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400 font-black text-[10px]">
+                         ANO
+                     </div>
+                     <div>
+                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ano do Veículo</p>
+                         <p className="text-sm font-black text-slate-800 uppercase line-clamp-1">{os.veiculos?.ano || 'Não Inf.'}</p>
+                     </div>
+                  </div>
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-400">
                         <Calendar size={18} />

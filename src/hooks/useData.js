@@ -10,7 +10,7 @@ export const useOrders = () => {
     if (hasRealConnection()) {
       const { data, error } = await supabase
         .from('ordens_servico')
-        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa, tipo), checklist_avarias(id), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
+        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa, tipo, ano), checklist_avarias(id), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
         .order('id', { ascending: false });
       
       if (!error && data) {
@@ -22,7 +22,7 @@ export const useOrders = () => {
             ...os,
             cliente_nome: clienteObj?.nome || 'Cliente',
             cliente_telefone: clienteObj?.telefone,
-            veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''}`.trim() || 'Veículo' : 'Veículo',
+            veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''} ${veiculoObj.ano ? '(' + veiculoObj.ano + ')' : ''}`.trim() || 'Veículo' : 'Veículo',
             veiculo_tipo: veiculoObj?.tipo || 'CARRO',
             placa: veiculoObj?.placa,
             valor_total: Number(os.valor_total) || 0,
@@ -490,7 +490,7 @@ export const useQuotes = () => {
     if (hasRealConnection()) {
       const { data, error } = await supabase
         .from('ordens_servico')
-        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
+        .select('*, clientes(nome, telefone), veiculos(modelo, marca, placa, ano), tecnico_ref:profiles!ordens_servico_tecnico_id_fkey(nome)')
         .in('status', ['ORCAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'])
         .order('created_at', { ascending: false });
       
@@ -503,7 +503,7 @@ export const useQuotes = () => {
             ...q,
             cliente_nome: clienteObj?.nome || 'Cliente',
             cliente_telefone: clienteObj?.telefone,
-            veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''}`.trim() || 'Veículo' : 'Veículo',
+            veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''} ${veiculoObj.ano ? '(' + veiculoObj.ano + ')' : ''}`.trim() || 'Veículo' : 'Veículo',
             placa: veiculoObj?.placa,
             valor: Number(q.valor_total) || 0,
             desconto: Number(q.desconto) || 0,
