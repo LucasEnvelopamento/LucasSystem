@@ -133,7 +133,7 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
       </div>
       <div>
         <h4 className="text-sm font-black text-slate-800 leading-tight tracking-tight uppercase">
-          {os.carro} {os.veiculos?.ano ? `(${os.veiculos.ano})` : ''}
+          {os.carro}
         </h4>
         <p className="text-[10px] font-bold text-slate-400 leading-none mt-1">{os.cliente}</p>
       </div>
