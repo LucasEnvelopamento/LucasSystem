@@ -318,70 +318,77 @@ const Relatorios = () => {
          {/* Estilo Unificado de Impressão */}
          <style dangerouslySetInnerHTML={{ __html: `
            @media print {
-             /* 1. Reset Global - Apenas o Fluxo Principal Visível */
-             * { 
-               background: transparent !important; 
-               box-shadow: none !important; 
-               text-shadow: none !important;
-               letter-spacing: normal !important; /* Corrige o texto espaçado */
-             }
+              /* 1. Reset Global - Apenas o Fluxo Principal Visível */
+              * { 
+                background: transparent !important; 
+                box-shadow: none !important; 
+                text-shadow: none !important;
+                letter-spacing: normal !important;
+              }
 
-             body { 
-               background: white !important; 
-               color: black !important; 
-               margin: 0 !important; 
-               padding: 0 !important;
-               font-family: Arial, sans-serif !important;
-             }
+              html, body { 
+                background: white !important; 
+                color: black !important; 
+                margin: 0 !important; 
+                padding: 0 !important;
+                font-family: Arial, sans-serif !important;
+                height: auto !important;
+                overflow: visible !important;
+              }
 
-             /* 2. Ocultar menus e interfaces auxiliares */
-             aside, header, nav, .no-print, .kpi-section, button, .relative.no-print { 
-               display: none !important; 
-               height: 0 !important;
-               width: 0 !important;
-               visibility: hidden !important;
-             }
-             
-             /* 3. Garantir Expansão do Grid Principal */
-             #root, main, .app-layout-container, .content-wrapper, .card-premium { 
-               display: block !important; 
-               visibility: visible !important;
-               height: auto !important; 
-               min-height: 0 !important;
-               max-height: none !important; 
-               overflow: visible !important; 
-               position: static !important;
-               width: 100% !important;
-               border: none !important;
-               margin: 0 !important;
-               padding: 0 !important;
-             }
-             
-             /* 4. Estilo da Tabela de Auditoria */
-             #audit-report {
-               display: block !important;
-               width: 100% !important;
-               margin: 0 !important;
-               padding: 0 !important;
-             }
+              /* 2. Ocultar menus e interfaces auxiliares */
+              aside, header, nav, .no-print, .kpi-section, button, .relative.no-print { 
+                display: none !important; 
+                height: 0 !important;
+                width: 0 !important;
+                visibility: hidden !important;
+              }
+              
+              /* 3. Garantir Expansão do Grid Principal - Removendo Flexbox que quebra páginas */
+              #root, main, .app-layout-container, .content-wrapper, .card-premium { 
+                display: block !important; 
+                visibility: visible !important;
+                height: auto !important; 
+                min-height: 0 !important;
+                max-height: none !important; 
+                overflow: visible !important; 
+                position: static !important;
+                width: 100% !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                float: none !important;
+              }
+              
+              /* 4. Estilo da Tabela de Auditoria */
+              #audit-report {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+              }
 
-             table { 
-               border-collapse: collapse !important; 
-               width: 100% !important; 
-               margin: 0 !important;
-               page-break-inside: auto !important; 
-             }
-             thead { display: table-header-group !important; }
-             tr { page-break-inside: avoid !important; page-break-after: auto !important; border-bottom: 1pt solid #000 !important; }
-             th, td { padding: 8px !important; border: 1pt solid #000 !important; font-size: 8.5pt !important; color: #000 !important; text-align: left !important; }
-             th { font-weight: bold !important; background-color: #f2f2f2 !important; }
-             tfoot { display: table-footer-group !important; border-top: 2pt solid #000 !important; }
+              table { 
+                border-collapse: collapse !important; 
+                width: 100% !important; 
+                margin: 0 !important;
+                page-break-inside: auto !important; 
+                table-layout: auto !important;
+              }
+              thead { display: table-header-group !important; }
+              tr { page-break-inside: avoid !important; page-break-after: auto !important; border-bottom: 1pt solid #000 !important; }
+              th, td { padding: 8px !important; border: 1pt solid #000 !important; font-size: 8.5pt !important; color: #000 !important; text-align: left !important; }
+              th { font-weight: bold !important; background-color: #f2f2f2 !important; }
+              
+              /* tfoot como table-row-group garante que apareça apenas no fim da tabela, sem repetir */
+              tfoot { display: table-row-group !important; border-top: 2pt solid #000 !important; }
 
-             /* Limpeza final de textos e espaçamentos */
-             .p-8, .p-6, .p-4 { padding: 0 !important; margin: 0 !important; }
-             .tracking-widest, .tracking-[0.2em], .tracking-[0.3em], .tracking-tighter { letter-spacing: 0 !important; }
-             h3, p, span, td, th { color: black !important; }
-           }
+              /* Limpeza final de textos e espaçamentos */
+              .p-8, .p-6, .p-4 { padding: 0 !important; margin: 0 !important; }
+              .tracking-widest, .tracking-[0.2em], .tracking-[0.3em], .tracking-tighter { letter-spacing: 0 !important; }
+              h3, p, span, td, th { color: black !important; }
+            }
          `}} />
       </div>
     </div>
