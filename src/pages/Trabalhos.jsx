@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { 
   Image as ImageIcon, 
   Plus, 
@@ -10,8 +10,55 @@ import {
   Search, 
   Calendar,
   Tag,
-  Maximize2
+  Maximize2,
+  ImageOff
 } from 'lucide-react';
+
+// Componente de Imagem com Fallback para URLs quebradas do Storage
+const ImageWithFallback = ({ src, alt, className, onClick }) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleError = useCallback(() => {
+    setHasError(true);
+    setIsLoading(false);
+  }, []);
+
+  const handleLoad = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  if (hasError) {
+    return (
+      <div 
+        className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300 gap-2 cursor-pointer"
+        onClick={onClick}
+      >
+        <ImageOff size={32} />
+        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 text-center px-4">Imagem indisponível</span>
+        <span className="text-[8px] font-bold text-slate-300 truncate max-w-[90%] px-2">{alt}</span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-10">
+          <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+      )}
+      <img 
+        src={src} 
+        alt={alt} 
+        className={className}
+        onError={handleError}
+        onLoad={handleLoad}
+        onClick={onClick}
+      />
+    </>
+  );
+};
 import { useWorks } from '../hooks/useData';
 import { toast } from '../utils/toast';
 
@@ -167,7 +214,7 @@ const Trabalhos = () => {
             <div key={work.id} className="group relative bg-white rounded-3xl border border-slate-100 p-3 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-2">
               {/* Image Container */}
               <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50 cursor-pointer" onClick={() => setShowPreview(work)}>
-                <img 
+                <ImageWithFallback 
                   src={work.url} 
                   alt={work.titulo} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -320,7 +367,7 @@ const Trabalhos = () => {
           </button>
           
           <div className="max-w-4xl w-full h-[70vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
-            <img 
+            <ImageWithFallback 
                src={showPreview.url} 
                alt={showPreview.titulo} 
                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"

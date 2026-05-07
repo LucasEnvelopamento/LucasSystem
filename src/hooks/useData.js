@@ -1073,29 +1073,35 @@ export const useWorks = () => {
   const uploadWork = async (file, titulo, categoria) => {
     if (hasRealConnection()) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
+        // Sanitiza a extensão do arquivo (força minúsculo e remove query strings)
+        const rawExt = (file.name.split('.').pop() || 'jpg').toLowerCase().split('?')[0];
+        const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic'].includes(rawExt) ? rawExt : 'jpg';
+        
+        // Nome único e seguro (sem espaços, acentos ou caracteres especiais)
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${safeExt}`;
 
-        // 1. Upload para o Bucket 'trabalhos-recentes'
+        // 1. Upload para o Bucket 'trabalhos-recentes' com content-type explícito
         const { error: uploadError } = await supabase.storage
           .from('trabalhos-recentes')
-          .upload(filePath, file);
+          .upload(fileName, file, {
+            contentType: file.type || `image/${safeExt}`,
+            upsert: false
+          });
 
         if (uploadError) throw uploadError;
 
         // 2. Pegar URL Pública
         const { data: { publicUrl } } = supabase.storage
           .from('trabalhos-recentes')
-          .getPublicUrl(filePath);
+          .getPublicUrl(fileName);
 
         // 3. Salvar na Tabela 'trabalhos_recentes'
         const { error: dbError } = await supabase
           .from('trabalhos_recentes')
           .insert({
-            titulo: titulo || file.name,
+            titulo: titulo || file.name.split('.')[0],
             url: publicUrl,
-            storage_path: filePath,
+            storage_path: fileName,
             categoria: categoria || 'Geral'
           });
 
