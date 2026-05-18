@@ -461,11 +461,15 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Banner Informativo**: Adicionado banner de alerta amigável na tela de execução instruindo o operador caso o veículo ainda não tenha checklist de entrada preenchido.
 - [x] **Progresso Médio Inteligente**: Exibição da porcentagem de progresso real e uma barra de carregamento no card do operador. Caso a O.S. tenha múltiplos serviços, o sistema calcula dinamicamente a média matemática de todos os sub-serviços para refletir o status real.
 
-### ✅ Fase 55: Layout Responsivo e Sem Rolagem no Checklist Digital (Concluída)
-- [x] **Tab Switcher Segmentado**: Substituição do contêiner de rolagem vertical por um controle de abas segmentado elegante no topo do painel de laudo.
-- [x] **Otimização de Espaço**: Cada visualização do veículo (Superior, Frente, Traseira, Lat. Direita, Lat. Esquerda) é renderizada em tela cheia e de forma individual, ocupando o máximo de área útil sem requerer barras de rolagem verticais.
-- [x] **Indicadores de Avarias por Aba**: Cada aba exibe um contador dinâmico com o número de avarias marcadas naquela seção (ex: `Frente (2)`), facilitando o controle do técnico sem precisar navegar entre todas as abas.
-- [x] **Suporte Premium para Tablets**: A interface de inspeção agora se adapta perfeitamente a tablets em modo retrato ou paisagem (iPad/Android) e smartphones de ponta.
+### ✅ Fase 55: Grid Simétrico Simultâneo Sem Rolagem no Checklist Digital (Concluída)
+- [x] **Modal Expandido Otimizado**: Aumento da largura e altura máxima da janela de inspeção (`max-w-[96vw]` e `max-h-[96vh]`) para maximizar o aproveitamento de área útil em tablets e monitores.
+- [x] **Layout Sincrônico de 3 Colunas (Carro)**: Todas as 5 visões do veículo são dispostas simultaneamente de forma simétrica:
+  - Esquerda: Vista Frontal e Lateral Esquerda (empilhados)
+  - Centro: Visão Superior (tamanho de destaque)
+  - Direita: Vista Traseira e Lateral Direita (empilhados)
+- [x] **Layout Sincrônico de 2 Colunas (Moto)**: As 4 visões são dispostas de forma equilibrada em duas colunas (Esquerda: Superior e Frontal | Direita: Perfil Esq. e Perfil Dir.).
+- [x] **Remoção Completa de Rolagem**: O uso inteligente do flexbox e remoção de min-heights rígidos força todos os cards a se dimensionarem perfeitamente no espaço do modal sem causar nenhuma rolagem vertical nas imagens.
+- [x] **Marcação Concomitante**: O técnico consegue visualizar e apontar danos em todo o contorno do veículo na mesma tela, sem cliques intermediários para trocar de abas ou rolagem.
 
 ---
-*Última atualização: 18/05/2026 às 19:10 - STATUS: CHECKLIST TABLET OTIMIZADO CONCLUÍDO 🚀*
+*Última atualização: 18/05/2026 às 19:20 - STATUS: CHECKLIST SIMÉTRICO SEM ROLAGEM CONCLUÍDO 🚀*

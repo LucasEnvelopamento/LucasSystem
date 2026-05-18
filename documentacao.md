@@ -64,13 +64,15 @@ Para desobstruir o fluxo de trabalho do operador técnico e otimizar a usabilida
 - **Aviso Informativo**: Se o checklist de entrada ainda não foi assinado, um banner em vermelho no topo da tela do operador o instrui a solicitar o preenchimento pelo gestor.
 - **Progresso Médio Inteligente**: O cartão de serviço na fila de tarefas do operador agora exibe uma barra de progresso horizontal e um indicador percentual em tempo real. Se a Ordem de Serviço incluir mais de um sub-serviço detalhado, o sistema calcula dinamicamente a média aritmética de todos eles para apresentar o percentual exato do progresso geral.
 
-## 📈 Fase Concluída: Fase 55 - Layout Responsivo e Sem Rolagem no Checklist Digital 🚀
+## 📈 Fase Concluída: Fase 55 - Grid Simétrico Simultâneo Sem Rolagem no Checklist Digital 🚀
 
 Para otimizar e aprimorar a usabilidade do técnico ao utilizar tablets (iPad ou Android) na vistoria do veículo, implementamos a **Fase 55**:
-- **Aba de Navegação Premium**: Substituição da rolagem vertical que empilhava as 5 imagens por um menu segmentado elegante (`superior`, `frontal`, `traseira`, `lateral_esquerda` e `lateral_direita`).
-- **Eliminação Absoluta de Rolagem**: O veículo é exibido individualmente por visão selecionada, ocupando 100% da área útil disponível e removendo barras de rolagem cansativas no tablet.
-- **Contador Dinâmico por Vista**: Cada aba do seletor exibe ativamente a quantidade de avarias marcadas naquela seção em tempo real (ex: `Frente (2)`), facilitando o controle do técnico.
-- **Marcação Suave de Pontos**: Os pontos de avarias continuam 100% interativos, clicáveis e com remoção de toque super intuitiva, com escala adaptada ao novo layout fluído.
+- **Janela de Vistoria Ampliada**: O modal do checklist digital foi expandido (`max-w-[96vw]` e `max-h-[96vh]`), aproveitando toda a largura e altura útil da tela do tablet para exibir os diagramas.
+- **Exibição Simultânea de Todas as Visões**:
+  - Para carros: Grid tríplice simétrico de 3 colunas (Frente/Lat. Esquerda, Superior no centro em destaque, e Traseira/Lat. Direita).
+  - Para motos: Grid balanceado de 2 colunas (Superior/Frente à esquerda, e Perfil Esq./Perfil Dir. à direita).
+- **Sem Barra de Rolagem**: Todas as 5 visões do veículo aparecem juntas e se dimensionam dinamicamente por flexbox, eliminando por completo a rolagem vertical.
+- **Marcação Suave e Integrada**: O técnico pode tocar em qualquer lugar de qualquer uma das imagens para marcar avarias instantaneamente, sem precisar mudar de aba.
 
 ---
-*Última revisão da documentação: 18/05/2026 às 19:10.*
+*Última revisão da documentação: 18/05/2026 às 19:20.*
