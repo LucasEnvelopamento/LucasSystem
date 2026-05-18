@@ -111,6 +111,7 @@ const SignaturePad = ({ onSave, onCancel }) => {
 const CarVisualChecklist = ({ onClose, osData }) => {
   const { name } = useBrand();
   const [points, setPoints] = useState([]);
+  const [activeView, setActiveView] = useState('superior');
   const [generalNotes, setGeneralNotes] = useState('');
   const [km, setKm] = useState('');
   const [showSignature, setShowSignature] = useState(false);
@@ -126,6 +127,28 @@ const CarVisualChecklist = ({ onClose, osData }) => {
     if (type === 'moto') return 'moto';
     return 'car';
   }, [osData]);
+
+  const views = useMemo(() => {
+    if (vehicleType === 'moto') {
+      return [
+        { id: 'superior', label: 'Superior' },
+        { id: 'frontal', label: 'Frontal' },
+        { id: 'perfil_esq', label: 'Lateral Esq.' },
+        { id: 'perfil_dir', label: 'Lateral Dir.' },
+      ];
+    }
+    return [
+      { id: 'superior', label: 'Superior' },
+      { id: 'frontal', label: 'Frente' },
+      { id: 'traseira', label: 'Traseira' },
+      { id: 'lateral_esquerda', label: 'Lat. Esquerda' },
+      { id: 'lateral_direita', label: 'Lat. Direita' },
+    ];
+  }, [vehicleType]);
+
+  const getPointsCountForView = (viewId) => {
+    return points.filter(p => p.view === viewId).length;
+  };
 
   React.useEffect(() => {
     const loadSavedChecklist = async () => {
@@ -271,37 +294,38 @@ const CarVisualChecklist = ({ onClose, osData }) => {
           </div>
         ) : (
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50/10">
-            {/* Visualização de Imagens Rolável */}
-            <div className="flex-1 p-4 md:p-8 xl:p-10 overflow-y-auto custom-scrollbar">
-              <div className="w-full h-full flex flex-col">
-                <div className="flex flex-col lg:flex-row gap-4 md:gap-6 h-full lg:min-h-0">
-                  {/* Visão Superior - Em Tablets(Landscape)/Desktop ocupa a altura toda à esquerda */}
-                  <ImageView 
-                    title="Visão Superior" 
-                    viewId="superior" 
-                    className="w-full lg:w-[40%] flex-shrink-0 lg:h-full"
-                    containerClassName="min-h-[290px] md:min-h-[380px] lg:min-h-[330px] max-h-[380px] lg:max-h-full"
-                  />
-                  
-                  {/* Outras Visões */}
-                  <div className="w-full lg:w-[60%] flex flex-col gap-4 md:gap-6 lg:h-full">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 flex-1 lg:h-1/2">
-                      <ImageView 
-                        title="Vista Frontal" 
-                        viewId="frontal" 
-                        className={`h-full ${vehicleType === 'moto' ? 'sm:col-span-2' : ''}`}
-                        containerClassName={vehicleType === 'moto' ? "min-h-[320px] md:min-h-[390px] max-h-[390px] lg:max-h-full lg:min-h-[440px]" : "min-h-[200px] md:min-h-[250px]"}
-                      />
-                      {vehicleType !== 'moto' && (
-                        <ImageView title="Vista Traseira" viewId="traseira" className="h-full" />
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 flex-1 lg:h-1/2">
-                      <ImageView title="Lateral Esquerda" viewId={vehicleType === 'moto' ? 'perfil_esq' : 'lateral_esquerda'} className="h-full" />
-                      <ImageView title="Lateral Direita" viewId={vehicleType === 'moto' ? 'perfil_dir' : 'lateral_direita'} className="h-full" />
-                    </div>
-                  </div>
-                </div>
+            {/* Visualização de Imagens Sem Barra de Rolagem */}
+            <div className="flex-1 p-4 md:p-6 flex flex-col overflow-hidden">
+              {/* Seletor de Visão Premium */}
+              <div className="flex gap-1.5 p-1 bg-slate-100/80 rounded-2xl mb-4 w-full max-w-3xl mx-auto shrink-0 shadow-sm border border-slate-200/30">
+                {views.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => setActiveView(v.id)}
+                    className={`flex-1 py-2 md:py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                      activeView === v.id 
+                        ? 'bg-slate-900 text-white shadow-md' 
+                        : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
+                    }`}
+                  >
+                    <span>{v.label}</span>
+                    {getPointsCountForView(v.id) > 0 && (
+                      <span className="px-1.5 py-0.5 bg-rose-500 text-white rounded-full text-[8px] font-black leading-none shrink-0 min-w-[16px] text-center">
+                        {getPointsCountForView(v.id)}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Área do Card Ativo */}
+              <div className="flex-1 flex items-center justify-center min-h-0 w-full max-w-4xl mx-auto">
+                <ImageView 
+                  title={views.find(v => v.id === activeView)?.label || 'Visão'} 
+                  viewId={activeView} 
+                  className="w-full h-full min-h-[300px]"
+                  containerClassName="h-full flex-1"
+                />
               </div>
             </div>
 
