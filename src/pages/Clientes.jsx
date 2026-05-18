@@ -2,13 +2,21 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2, Wrench, Save, Trash2 } from 'lucide-react';
 import { useClients, useQuotes, useVehicles } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
+import Pagination from '../components/ui/Pagination';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const ClientesView = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const { clients, loading, saveClient, updateClient, deleteClient } = useClients();
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
   const { quotes, saveQuote } = useQuotes();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
@@ -90,7 +98,7 @@ const ClientesView = () => {
             placeholder="Buscar por nome, telefone ou placa..." 
             className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-medium"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
         <button className="flex items-center gap-2 px-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all w-full md:w-auto">
@@ -112,7 +120,7 @@ const ClientesView = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/50">
-              {filteredClients.slice(0, 50).map((c) => (
+              {filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((c) => (
                 <tr key={c.id} onClick={() => setSelectedClientProfile(c)} className="hover:bg-slate-50/80 transition-all group cursor-pointer">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
@@ -181,6 +189,13 @@ const ClientesView = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredClients.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {/* Modal Simplicado para Novo Cliente / Edição */}

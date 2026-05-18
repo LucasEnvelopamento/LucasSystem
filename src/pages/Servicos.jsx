@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { Plus, Search, Wrench, ShieldCheck, MoreHorizontal, DollarSign, Loader2, Type, Car, Trash2, X, Zap, AlertCircle } from 'lucide-react';
 import { useCatalog, useInventory } from '../hooks/useData';
+import Pagination from '../components/ui/Pagination';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const ServicosView = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -106,12 +114,12 @@ const ServicosView = () => {
           placeholder="Buscar no catálogo..." 
           className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all text-sm font-bold shadow-sm"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredServices.map((s) => (
+        {filteredServices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((s) => (
           <div key={s.id} className="bg-white p-8 flex flex-col justify-between border border-slate-100 rounded-[2rem] shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 group">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-5">
@@ -203,6 +211,14 @@ const ServicosView = () => {
           </div>
         )}
       </div>
+      <Pagination 
+        currentPage={currentPage}
+        totalItems={filteredServices.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
+        className="rounded-[2rem] border border-slate-100 mt-4 shadow-sm"
+      />
 
       {/* Modal - Novo Serviço / Edição */}
       {showAddModal && (

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useOrders, useProfiles } from '../hooks/useData';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
+import Pagination from '../components/ui/Pagination';
 
 
 const Relatorios = () => {
@@ -22,7 +23,13 @@ const Relatorios = () => {
   const [startDate, setStartDate] = useState(getStartOfMonth());
   const [endDate, setEndDate] = useState(getEndOfMonth());
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedServices, setSelectedServices] = useState(['TODOS']);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [startDate, endDate, searchTerm, selectedServices, selectedStatuses]);
   const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
   const [hideValues, setHideValues] = useState(false);
 
@@ -253,7 +260,10 @@ const Relatorios = () => {
                  type="text" 
                  placeholder="BUSCAR CLIENTE OU PLACA..."
                  value={searchTerm}
-                 onChange={(e) => setSearchTerm(e.target.value)}
+                 onChange={(e) => {
+                   setSearchTerm(e.target.value);
+                   setCurrentPage(1);
+                 }}
                  className="w-full bg-white border border-slate-200 rounded-[1.2rem] py-3 pl-10 pr-4 text-[10px] font-black uppercase tracking-widest outline-none shadow-sm"
                />
             </div>
@@ -271,7 +281,7 @@ const Relatorios = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 print:divide-slate-300">
-                {filteredData.map((os) => (
+                {filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((os) => (
                   <tr key={os.id} className="hover:bg-slate-50/30 transition-colors print:page-break-inside-avoid">
                     <td className="px-8 py-5 print:py-3">
                        <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-[0.8rem] uppercase print:bg-transparent print:p-0 print:text-black">
@@ -314,6 +324,13 @@ const Relatorios = () => {
               )}
             </table>
          </div>
+          <Pagination 
+            currentPage={currentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
 
          {/* Estilo Unificado de Impressão */}
          <style dangerouslySetInnerHTML={{ __html: `

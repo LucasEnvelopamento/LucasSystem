@@ -24,18 +24,11 @@ const CustomerStatus = () => {
     }
 
     try {
-      // Busca a OS específica pelo tracking_token (UUID) ou ID numérico (compatibilidade)
-      const query = supabase
+      // SEGURANÇA: Aceita APENAS o tracking_token (UUID) para evitar IDOR via ID numérico previsível
+      const { data: ordens, error: osError } = await supabase
         .from('ordens_servico')
-        .select('*, veiculos(marca, modelo)');
-
-      if (id.length > 10) { // Provável UUID
-        query.eq('tracking_token', id);
-      } else {
-        query.eq('id', id);
-      }
-
-      const { data: ordens, error: osError } = await query;
+        .select('*, veiculos(marca, modelo)')
+        .eq('tracking_token', id);
 
       if (osError) throw osError;
 

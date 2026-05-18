@@ -20,6 +20,7 @@ import {
   Edit2
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
+import Pagination from '../components/ui/Pagination';
 import PagamentoModal from '../components/features/PagamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import AtribuirTecnicoModal from '../components/features/AtribuirTecnicoModal';
@@ -35,6 +36,13 @@ import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 const OrdensServico = () => {
   const { orders, loading, deliverOrder, updateOrderProgress, registerPayment, deletePayment, removeServiceFromOrder } = useOrders();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
   const [showChecklist, setShowChecklist] = useState(false);
   const [showCertificado, setShowCertificado] = useState(false);
   const [showPagamento, setShowPagamento] = useState(false);
@@ -49,6 +57,7 @@ const OrdensServico = () => {
   const statusOptions = ['TODOS', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE'];
 
   const toggleSelection = (item) => {
+    setCurrentPage(1);
     if (item === 'TODOS') {
       setSelectedStatuses(['TODOS']);
       return;
@@ -105,7 +114,7 @@ const OrdensServico = () => {
                     placeholder="Buscar OS, Cliente ou Veículo..."
                     className="pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none w-full md:w-96 transition-all shadow-sm"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                   />
                </div>
             </div>
@@ -193,7 +202,7 @@ const OrdensServico = () => {
                     </div>
                   </td>
                 </tr>
-              ) : filteredOrders.map((os) => os && (
+              ) : filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((os) => os && (
                 <tr key={os.id} className="hover:bg-slate-50/50 transition-all group cursor-default">
                   <td className="px-6 py-6">
                     <p className="text-xs font-black text-slate-800 tracking-tighter italic">#{os.id}</p>
@@ -391,6 +400,13 @@ const OrdensServico = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredOrders.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {showChecklist && <CarVisualChecklist osData={currentActiveOS} onClose={() => setShowChecklist(false)} />}

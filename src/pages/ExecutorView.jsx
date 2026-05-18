@@ -71,6 +71,32 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     };
   }, [isRunning]);
 
+  // Auto-início quando entra na OS com checklist preenchido
+  useEffect(() => {
+    const autoStart = async () => {
+      if (os.has_checklist && String(os.status).toUpperCase() !== 'EM EXECUÇÃO') {
+        const additionalData = {};
+        if (!os.tecnico_id) {
+          additionalData.tecnico_id = profile?.id;
+          additionalData.tecnico = profile?.nome;
+        }
+
+        const result = await updateOrderProgress(os.id, { 
+          progresso: progress, 
+          status: 'EM EXECUÇÃO', 
+          servicos_detalhados: servicosDetalhados,
+          ...additionalData 
+        });
+        if (result.success) {
+          setIsRunning(true);
+          toast.success('Atividade iniciada automaticamente!');
+        }
+      }
+    };
+    
+    autoStart();
+  }, [os.id, os.has_checklist, os.status]);
+
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -204,44 +230,17 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
 
       {/* Conteúdo Rolável */}
       <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 custom-scrollbar">
-        {/* Card de Controle Rápido (Simplificado sem Cronômetro) */}
-        <div className="bg-slate-900 rounded-[3rem] py-10 px-8 text-center shadow-2xl shadow-slate-900/40 relative group overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-          
-          <div className="flex flex-col items-center gap-6 relative z-10">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-primary text-[10px] font-black uppercase tracking-[0.4em] opacity-70">
-                  Status da Operação
-                </p>
-                <div className={`mt-2 px-4 py-2 rounded-xl flex items-center gap-2 border ${isRunning ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
-                    <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest">{isRunning ? 'Em Execução' : 'Pausado'}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6">
-                  {!isRunning ? (
-                    <button 
-                      onClick={handleStart}
-                      className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-2xl active:scale-95 transition-all ${
-                          os.has_checklist 
-                          ? 'bg-primary text-white shadow-primary/30 hover:scale-105' 
-                          : 'bg-slate-800 text-slate-600 opacity-40 cursor-not-allowed'
-                      }`}
-                    >
-                      <Play size={32} fill="currentColor" />
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={handlePause}
-                      className="w-20 h-20 bg-amber-500 text-white rounded-[2rem] flex items-center justify-center shadow-2xl shadow-amber-500/30 active:scale-95 transition-all hover:scale-105"
-                    >
-                      <Pause size={32} fill="currentColor" />
-                    </button>
-                  )}
-              </div>
+        {!os.has_checklist && (
+          <div className="bg-rose-50 border border-rose-100 rounded-[2.5rem] p-6 text-center shadow-sm">
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-[1.25rem] flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle size={24} />
+            </div>
+            <h4 className="text-xs font-black uppercase text-rose-700 tracking-wider mb-1">Sem Checklist Preenchido</h4>
+            <p className="text-[10px] font-bold text-rose-600 leading-normal">
+              O checklist de entrada deste veículo ainda não foi assinado. Peça ao gestor para preenchê-lo antes de iniciar o serviço.
+            </p>
           </div>
-        </div>
+        )}
 
         {/* Lista de Serviços */}
         <div className="bg-white rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10">

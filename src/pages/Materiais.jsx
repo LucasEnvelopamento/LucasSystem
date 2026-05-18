@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Plus, Search, Package, AlertTriangle, ArrowUpRight, History, Loader2, Edit2, Trash2, X } from 'lucide-react';
 import { useInventory, createNotification } from '../hooks/useData';
+import Pagination from '../components/ui/Pagination';
 import { supabase } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { confirmDialog } from '../utils/confirm';
 
 const MateriaisView = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const { inventory, loading, saveItem, updateItem, deleteItem } = useInventory();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -107,7 +110,7 @@ const MateriaisView = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredInventory.map((m) => {
+              {filteredInventory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((m) => {
                 const isCritico = Number(m.quantidade) <= Number(m.minimo_alerta);
                 return (
                   <tr key={m.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -180,6 +183,13 @@ const MateriaisView = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredInventory.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {showAddModal && (

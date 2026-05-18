@@ -593,41 +593,17 @@ export const useQuotes = () => {
     return { success: true };
   };
 
-  const registerPayment = async (osId, paymentData) => {
+  const registerPayment = async (osId, valor, metodo) => {
     if (hasRealConnection()) {
       try {
-        // 1. Busca estado atual
-        const { data: os, error: fetchError } = await supabase
-          .from('ordens_servico')
-          .select('valor_pago, historico_pagamentos')
-          .eq('id', osId)
-          .single();
-        
-        if (fetchError) throw fetchError;
+        const { error } = await supabase.rpc('registrar_pagamento_atomico', {
+          p_os_id: osId,
+          p_valor_recebido: Number(valor),
+          p_metodo: metodo
+        });
 
-        const currentPaid = Number(os.valor_pago) || 0;
-        const currentHistory = os.historico_pagamentos || [];
+        if (error) throw error;
 
-        // 2. Adiciona novo pagamento
-        const newPaid = currentPaid + Number(paymentData.valor);
-        const newHistory = [...currentHistory, {
-          valor: Number(paymentData.valor),
-          metodo: paymentData.metodo,
-          tipo: paymentData.tipo || 'PARCIAL',
-          data: new Date().toISOString()
-        }];
-
-        // 3. Persiste
-        const { error: updateError } = await supabase
-          .from('ordens_servico')
-          .update({
-            valor_pago: newPaid,
-            historico_pagamentos: newHistory
-          })
-          .eq('id', osId);
-
-        if (updateError) throw updateError;
-        
         await fetchQuotes();
         return { success: true };
       } catch (error) {

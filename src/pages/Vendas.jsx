@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes, useCatalog } from '../hooks/useData';
+import Pagination from '../components/ui/Pagination';
 import AgendamentoModal from '../components/features/AgendamentoModal';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import { sendWhatsApp, getBudgetMsg, getAppointmentConfirmationMsg } from '../utils/whatsappUtils';
@@ -32,7 +33,14 @@ import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 const Vendas = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showNovoModal, setShowNovoModal] = useState(false);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
   const [showAgendaModal, setShowAgendaModal] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [activeMenuQuote, setActiveMenuQuote] = useState(null);
@@ -44,6 +52,7 @@ const Vendas = () => {
   const statusOptions = ['TODOS', 'ORÇAMENTO', 'AGUARDANDO', 'EM EXECUÇÃO', 'CONCLUÍDO', 'ENTREGUE', 'CANCELADO'];
 
   const toggleSelection = (item) => {
+    setCurrentPage(1);
     if (item === 'TODOS') {
       setSelectedStatuses(['TODOS']);
       return;
@@ -104,17 +113,21 @@ const Vendas = () => {
             const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const cleanPhone = (selectedQuote.cliente_telefone || '').replace(/\D/g, '');
             
-            sendWhatsApp(
-              cleanPhone || '11999999999', 
-              getAppointmentConfirmationMsg(
-                selectedQuote.cliente_nome, 
-                selectedQuote.veiculo_desc,
-                appointmentData.valor_total,
-                appointmentData.valor_pago_agora,
-                dataStr, 
-                horaStr
-              )
-            );
+            if (cleanPhone) {
+              sendWhatsApp(
+                cleanPhone, 
+                getAppointmentConfirmationMsg(
+                  selectedQuote.cliente_nome, 
+                  selectedQuote.veiculo_desc,
+                  appointmentData.valor_total,
+                  appointmentData.valor_pago_agora,
+                  dataStr, 
+                  horaStr
+                )
+              );
+            } else {
+              toast.warning('Cliente sem telefone cadastrado. Mensagem não enviada.');
+            }
         }
 
         setSelectedQuote(null);
@@ -284,7 +297,7 @@ const Vendas = () => {
             placeholder="Buscar por cliente, veículo ou código..." 
             className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-sm font-bold shadow-sm"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
         <MultiSelectDropdown 
@@ -320,7 +333,7 @@ const Vendas = () => {
                     </div>
                   </td>
                 </tr>
-              ) : filteredQuotes.map((q) => (
+              ) : filteredQuotes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((q) => (
                 <tr key={q.id} className="hover:bg-slate-50/30 transition-all group">
                   <td className="px-6 py-4">
                     <p className="text-xs font-black text-slate-800 tracking-tighter italic">#{q.id}</p>
@@ -386,7 +399,11 @@ const Vendas = () => {
                         <button 
                           onClick={() => {
                             const cleanPhone = (q.cliente_telefone || '').replace(/\D/g, '');
-                            sendWhatsApp(cleanPhone || '11999999999', getBudgetMsg(q.cliente_nome, q.veiculo_desc, q.valor, q.servicos_detalhados, q.servico));
+                            if (cleanPhone) {
+                              sendWhatsApp(cleanPhone, getBudgetMsg(q.cliente_nome, q.veiculo_desc, q.valor, q.servicos_detalhados, q.servico));
+                            } else {
+                              toast.warning('Cliente sem telefone cadastrado.');
+                            }
                           }}
                           className="p-2.5 hover:bg-emerald-50 rounded-xl text-emerald-400 hover:text-emerald-600 transition-all font-bold"
                           title="Enviar por WhatsApp"
@@ -419,6 +436,13 @@ const Vendas = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={filteredQuotes.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {/* Modal Detalhes do Orçamento */}

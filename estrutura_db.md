@@ -227,6 +227,81 @@ CREATE POLICY "Trabalhos: Leitura Pública" ON public.trabalhos_recentes FOR SEL
 
 -- 7. REALTIME
 ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notificacoes, estoque_materiais, trabalhos_recentes;
+
+
+
+
+
+
+-- 9. FUNÇÕES ATÔMICAS DE NEGÓCIO (PREVENÇÃO DE RACE CONDITIONS)
+
+-- Registrar pagamento de forma atômica
+CREATE OR REPLACE FUNCTION registrar_pagamento_atomico(
+  p_os_id BIGINT,
+  p_valor_recebido NUMERIC,
+  p_metodo TEXT
+) RETURNS VOID AS $$
+DECLARE
+  v_historico JSONB;
+  v_novo_pagamento JSONB;
+BEGIN
+  -- Seleciona o histórico atual com lock de linha para evitar concorrência
+  SELECT historico_pagamentos INTO v_historico
+  FROM public.ordens_servico
+  WHERE id = p_os_id
+  FOR UPDATE;
+
+  -- Cria o novo registro de pagamento
+  v_novo_pagamento := jsonb_build_object(
+    'id', (EXTRACT(EPOCH FROM now()) * 1000)::BIGINT,
+    'valor', p_valor_recebido,
+    'metodo', p_metodo,
+    'data', now()::TEXT
+  );
+
+  -- Atualiza a OS incrementando o valor e anexando ao histórico
+  UPDATE public.ordens_servico
+  SET 
+    valor_pago = COALESCE(valor_pago, 0) + p_valor_recebido,
+    historico_pagamentos = COALESCE(historico_pagamentos, '[]'::jsonb) || v_novo_pagamento
+  WHERE id = p_os_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Baixar estoque de forma atômica (Idempotente)
+CREATE OR REPLACE FUNCTION baixar_estoque_atomico(p_os_id BIGINT) 
+RETURNS TABLE (success BOOLEAN, message TEXT) AS $$
+DECLARE
+  v_item RECORD;
+  v_servico_item JSONB;
+  v_estoque_baixado BOOLEAN;
+BEGIN
+  -- Verifica se já foi baixado
+  SELECT estoque_baixado INTO v_estoque_baixado FROM public.ordens_servico WHERE id = p_os_id FOR UPDATE;
+  
+  IF v_estoque_baixado THEN
+    RETURN QUERY SELECT FALSE, 'Estoque já foi baixado anteriormente.';
+    RETURN;
+  END IF;
+
+  -- Percorre os serviços da OS para baixar materiais
+  -- Nota: Esta lógica assume que os serviços e seus materiais estão salvos no JSONB da OS
+  FOR v_servico_item IN SELECT jsonb_array_elements(servicos_detalhados) FROM public.ordens_servico WHERE id = p_os_id
+  LOOP
+    FOR v_item IN SELECT * FROM jsonb_to_recordset(v_servico_item->'produtos') AS x(id BIGINT, quantidade NUMERIC)
+    LOOP
+      UPDATE public.estoque_materiais
+      SET quantidade_atual = quantidade_atual - v_item.quantidade
+      WHERE id = v_item.id;
+    END LOOP;
+  END LOOP;
+
+  -- Marca como baixado
+  UPDATE public.ordens_servico SET estoque_baixado = TRUE WHERE id = p_os_id;
+  
+  RETURN QUERY SELECT TRUE, 'Estoque baixado com sucesso.';
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
 ## 📋 Passo a Passo de Deploy
@@ -235,3 +310,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notif
 3. Crie o bucket `os-photos` no Storage (Público).
 4. Realize o cadastro inicial do administrador.
 5. Rode o comando de promoção SQL (item 6 do script).
+
+---
+### 📝 Histórico de Migrações
+- **Fase 53 (18/05/2026)**: Paginação de dados no lado do cliente. Não houve necessidade de alterações nas tabelas, esquemas ou procedimentos SQL do banco de dados, visto que o fatiamento e paginação foram orquestrados inteiramente na interface React para manter a reatividade Supabase Realtime intacta.
+- **Fase 54 (18/05/2026)**: Otimização da fila do operador e auto-início. Não houve alterações no banco de dados, visto que o auto-início e as validações de checklist foram integrados diretamente no fluxo de navegação do frontend React.

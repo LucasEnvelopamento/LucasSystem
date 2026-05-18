@@ -108,6 +108,15 @@ const OperadorHome = ({ onSelectOS }) => {
 
 // Componente Interno para o Card
 const ServiceCard = ({ os, onSelect, isMine }) => {
+  const getOSProgress = () => {
+    if (os.servicos_detalhados && Array.isArray(os.servicos_detalhados) && os.servicos_detalhados.length > 0) {
+      const sum = os.servicos_detalhados.reduce((acc, curr) => acc + (Number(curr.progresso) || 0), 0);
+      return Math.round(sum / os.servicos_detalhados.length);
+    }
+    return Number(os.progresso) || 0;
+  };
+
+  const progress = getOSProgress();
   
   return (
   <div 
@@ -122,9 +131,18 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
         }`} />
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{os.id}</span>
       </div>
-      <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${getStatusStyle(os.status)}`}>
-        {os.status}
-      </span>
+      <div className="flex items-center gap-1.5">
+        <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${
+          os.checklist_concluido 
+            ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+            : 'bg-rose-50 border-rose-100 text-rose-600 animate-pulse'
+        }`}>
+          {os.checklist_concluido ? 'CHECKLIST OK' : 'SEM CHECKLIST'}
+        </span>
+        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${getStatusStyle(os.status)}`}>
+          {os.status}
+        </span>
+      </div>
     </div>
 
     <div className="flex items-center gap-3 mb-4">
@@ -159,13 +177,24 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
       )}
     </div>
 
+    {/* Barra de Progresso Inteligente */}
+    <div className="mt-3 pt-3 border-t border-slate-50">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Progresso OS</span>
+        <span className="text-[10px] font-black text-primary italic">{progress}%</span>
+      </div>
+      <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+        <div 
+          className={`h-full transition-all duration-500 rounded-full ${progress === 100 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-primary'}`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+
     <button 
-      disabled={String(os.status).toUpperCase() !== 'EM EXECUÇÃO' && !os.checklist_concluido}
       className={`w-full mt-4 py-3 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 transition-all group ${
         String(os.status).toUpperCase() === 'EM EXECUÇÃO' 
           ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-          : !os.checklist_concluido 
-          ? 'bg-slate-100 text-slate-300 cursor-not-allowed filter grayscale'
           : 'bg-slate-900 text-white hover:bg-slate-800'
       }`}
     >
