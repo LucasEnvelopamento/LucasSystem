@@ -238,17 +238,17 @@ const CarVisualChecklist = ({ onClose, osData }) => {
     }
   };
 
-  const ImageView = ({ title, viewId, className, imageClassName = "object-contain", containerClassName = "flex-1 min-h-0" }) => {
+  const ImageView = ({ title, viewId, className, imageClassName = "object-contain", containerClassName = "h-[200px] md:h-[240px]" }) => {
     const [imgError, setImgError] = useState(false);
     return (
-      <div className={`relative flex flex-col gap-2 p-2.5 bg-white rounded-[2rem] border-2 border-slate-100/50 shadow-sm hover:border-primary/30 transition-all overflow-hidden group ${className}`}>
+      <div className={`relative flex flex-col gap-3 p-4 bg-white rounded-[2rem] border-2 border-slate-100/50 shadow-sm hover:border-primary/30 transition-all overflow-hidden group ${className}`}>
         <div className="flex items-center justify-between w-full px-2 z-10 shrink-0">
-            <span className="text-[9px] md:text-[10px] font-black uppercase text-slate-500 tracking-[0.15em]">{title}</span>
-            <Camera size={14} className="text-slate-200 group-hover:text-primary transition-colors" />
+            <span className="text-[10px] md:text-xs font-black uppercase text-slate-500 tracking-[0.15em]">{title}</span>
+            <Camera size={16} className="text-slate-200 group-hover:text-primary transition-colors" />
         </div>
-        <div className={`relative w-full flex-1 cursor-crosshair rounded-2xl overflow-hidden bg-slate-50/50 flex items-center justify-center border border-slate-50/80 ${containerClassName}`} onClick={(e) => handleContainerClick(e, viewId)}>
+        <div className={`relative w-full cursor-crosshair rounded-2xl overflow-hidden bg-slate-50/50 flex items-center justify-center border border-slate-50/80 ${containerClassName}`} onClick={(e) => handleContainerClick(e, viewId)}>
           {!imgError ? (
-            <img src={`/assets/checklist/${vehicleType}/${viewId}.png`} alt={title} className={`w-full h-full p-2.5 mix-blend-multiply opacity-90 drop-shadow-xl select-none transition-transform duration-500 group-hover:scale-105 ${imageClassName}`} onError={() => setImgError(true)} />
+            <img src={`/assets/checklist/${vehicleType}/${viewId}.png`} alt={title} className={`w-full h-full p-4 mix-blend-multiply opacity-90 drop-shadow-xl select-none transition-transform duration-500 group-hover:scale-105 ${imageClassName}`} onError={() => setImgError(true)} />
           ) : (
              <div className="text-[10px] font-black text-slate-300 uppercase">Falta: {viewId}.png</div>
           )}
@@ -266,8 +266,8 @@ const CarVisualChecklist = ({ onClose, osData }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[200] flex items-center justify-center p-2 md:p-4 overflow-hidden font-sans">
-      <div className="bg-white rounded-[3rem] w-full max-w-[96vw] xl:max-w-[92vw] h-full flex flex-col overflow-hidden shadow-2xl border border-white/20 max-h-[96vh]">
+    <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[200] flex items-center justify-center p-2 md:p-6 overflow-hidden font-sans">
+      <div className="bg-white rounded-[3rem] w-full max-w-7xl h-full flex flex-col overflow-hidden shadow-2xl border border-white/20 max-h-[95vh]">
         
         {/* Header Fixo */}
         <div className="p-6 md:p-8 bg-white flex items-center justify-between border-b border-slate-50 shrink-0">
@@ -293,101 +293,125 @@ const CarVisualChecklist = ({ onClose, osData }) => {
              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Carregando dados da inspeção...</p>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50/10">
-            {/* Visualização de Imagens Sem Barra de Rolagem */}
-            <div className="flex-1 p-3 md:p-4 flex flex-col overflow-hidden">
-              {vehicleType === 'moto' ? (
-                // Layout Simétrico de 2 Colunas para Moto
-                <div className="flex-1 flex gap-3 min-h-0 h-full w-full overflow-hidden">
-                  <div className="w-1/2 flex flex-col gap-3 h-full min-h-0">
-                    <ImageView title="Visão Superior" viewId="superior" className="flex-1 min-h-0" />
-                    <ImageView title="Vista Frontal" viewId="frontal" className="flex-1 min-h-0" />
-                  </div>
-                  <div className="w-1/2 flex flex-col gap-3 h-full min-h-0">
-                    <ImageView title="Lateral Esquerda" viewId="perfil_esq" className="flex-1 min-h-0" />
-                    <ImageView title="Lateral Direita" viewId="perfil_dir" className="flex-1 min-h-0" />
-                  </div>
-                </div>
-              ) : (
-                // Layout Simétrico Tríplice para Carro (Cabe tudo perfeitamente sem rolagem!)
-                <div className="flex-1 flex flex-col md:flex-row gap-3 min-h-0 h-full w-full overflow-hidden">
-                  {/* Coluna 1: Frente e Lateral Esquerda */}
-                  <div className="w-full md:w-[28%] flex flex-col gap-3 h-full min-h-0">
-                    <ImageView title="Vista Frontal" viewId="frontal" className="flex-1 min-h-0" />
-                    <ImageView title="Lateral Esquerda" viewId="lateral_esquerda" className="flex-1 min-h-0" />
-                  </div>
-
-                  {/* Coluna 2: Superior (Centro de Destaque) */}
-                  <div className="w-full md:w-[44%] h-full min-h-0 flex flex-col">
-                    <ImageView title="Visão Superior" viewId="superior" className="flex-1 min-h-0 w-full" />
-                  </div>
-
-                  {/* Coluna 3: Traseira e Lateral Direita */}
-                  <div className="w-full md:w-[28%] flex flex-col gap-3 h-full min-h-0">
-                    <ImageView title="Vista Traseira" viewId="traseira" className="flex-1 min-h-0" />
-                    <ImageView title="Lateral Direita" viewId="lateral_direita" className="flex-1 min-h-0" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Painel Lateral com Rodapé Fixo Próprio */}
-            <div className="w-full lg:w-80 xl:w-96 bg-white border-t lg:border-t-0 lg:border-l border-slate-100 flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.02)] shrink-0 lg:shrink lg:flex-1 max-h-[50vh] lg:max-h-full">
-              <div className="p-5 md:p-6 border-b border-slate-50 flex items-center justify-between shrink-0">
-                  <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Resumo do Laudo</h4>
-                  <div className="px-3 py-1 bg-rose-500 text-white rounded-full text-[9px] font-black">{points.length} Avarias</div>
-              </div>
-
-              <div className="flex-1 p-5 md:p-6 flex flex-col overflow-y-auto custom-scrollbar">
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-3 block">Relato Técnico Geral</label>
-                  <textarea 
-                      className="w-full min-h-[100px] p-5 border-2 border-slate-50 rounded-[2rem] text-sm bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all font-bold placeholder:text-slate-200 resize-none shadow-inner"
-                      value={generalNotes}
-                      onChange={(e) => setGeneralNotes(e.target.value)}
-                  />
+          /* ROLAGEM ÚNICA DE TODO O CONTEÚDO (Evita dois scrolls separados) */
+          <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+            <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 items-start">
+              
+              {/* Seção Principal de Imagens */}
+              <div className="flex-1 w-full min-w-0">
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 p-5 md:p-6 shadow-sm">
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 px-1 flex items-center gap-2">
+                    <MousePointer2 size={12} className="text-primary animate-pulse" />
+                    Danos no Veículo (Toque na imagem correspondente para registrar)
+                  </h4>
                   
-                  <div className="mt-4 space-y-2">
-                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest block ml-1">Quilometragem (KM)</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        className="w-full p-4 border-2 border-slate-50 rounded-2xl text-sm font-black bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all placeholder:text-slate-200 shadow-inner"
-                        placeholder="Ex: 45.000"
-                        value={km}
-                        onChange={(e) => setKm(e.target.value)}
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">KM</span>
+                  {vehicleType === 'moto' ? (
+                    // Layout Simétrico de Moto (Laterais em destaque total)
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                      <ImageView title="Visão Superior" viewId="superior" className="md:col-span-2" containerClassName="h-[260px] md:h-[340px] lg:h-[380px]" />
+                      <ImageView title="Vista Frontal" viewId="frontal" containerClassName="h-[220px] md:h-[280px] lg:h-[300px]" />
+                      <ImageView title="Lateral Esquerda" viewId="perfil_esq" className="md:col-span-2" containerClassName="h-[260px] md:h-[340px] lg:h-[380px]" />
+                      <ImageView title="Lateral Direita" viewId="perfil_dir" className="md:col-span-2" containerClassName="h-[260px] md:h-[340px] lg:h-[380px]" />
                     </div>
-                  </div>
-                  
-                  {signature && (
-                    <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                      <p className="text-[8px] font-black uppercase text-slate-400 mb-2">Assinatura:</p>
-                      <img src={signature} alt="Signature" className="h-10 object-contain mix-blend-multiply opacity-60" />
+                  ) : (
+                    // Layout Simétrico com Destaque Superior e Laterais Amplas (Carro)
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                      {/* Vista Superior com Destaque Expandido */}
+                      <ImageView 
+                        title="Visão Superior" 
+                        viewId="superior" 
+                        className="md:col-span-2" 
+                        containerClassName="h-[340px] md:h-[460px] lg:h-[500px]" 
+                      />
+                      
+                      {/* Vista Frontal e Vista Traseira Lado a Lado */}
+                      <ImageView title="Vista Frontal" viewId="frontal" containerClassName="h-[220px] md:h-[280px] lg:h-[300px]" />
+                      <ImageView title="Vista Traseira" viewId="traseira" containerClassName="h-[220px] md:h-[280px] lg:h-[300px]" />
+                      
+                      {/* Lateral Esquerda Expandida (Destaque de Detalhes) */}
+                      <ImageView 
+                        title="Lateral Esquerda" 
+                        viewId="lateral_esquerda" 
+                        className="md:col-span-2" 
+                        containerClassName="h-[340px] md:h-[460px] lg:h-[500px]" 
+                      />
+                      
+                      {/* Lateral Direita Expandida (Destaque de Detalhes) */}
+                      <ImageView 
+                        title="Lateral Direita" 
+                        viewId="lateral_direita" 
+                        className="md:col-span-2" 
+                        containerClassName="h-[340px] md:h-[460px] lg:h-[500px]" 
+                      />
                     </div>
                   )}
+                </div>
               </div>
 
-              <div className="p-5 md:p-6 border-t border-slate-100 bg-slate-50/50 shrink-0">
-                  <button 
-                    onClick={() => setShowSignature(true)}
-                    disabled={isSaving}
-                    className={`w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                      {isSaving ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          Salvando...
+              {/* Seção Lateral do Formulário (Fica sticky no desktop enquanto rola a página) */}
+              <div className="w-full lg:w-80 xl:w-96 shrink-0 lg:sticky lg:top-6 lg:self-start">
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 flex flex-col gap-6 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-slate-50 pb-4">
+                      <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Resumo do Laudo</h4>
+                      <div className="px-3 py-1 bg-rose-500 text-white rounded-full text-[9px] font-black">{points.length} Avarias</div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                      <div>
+                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Relato Técnico Geral</label>
+                        <textarea 
+                            className="w-full min-h-[120px] p-4 border-2 border-slate-100 rounded-2xl text-sm bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all font-bold placeholder:text-slate-200 resize-none shadow-inner"
+                            value={generalNotes}
+                            placeholder="Escreva observações gerais do veículo..."
+                            onChange={(e) => setGeneralNotes(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest block mb-2">Quilometragem (KM)</label>
+                        <div className="relative">
+                          <input 
+                            type="text" 
+                            className="w-full p-4 border-2 border-slate-100 rounded-2xl text-sm font-black bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all placeholder:text-slate-200 shadow-inner"
+                            placeholder="Ex: 45.000"
+                            value={km}
+                            onChange={(e) => setKm(e.target.value)}
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">KM</span>
                         </div>
-                      ) : (
-                        <><Save size={14} /> Finalizar e Assinar</>
+                      </div>
+                      
+                      {signature && (
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                          <p className="text-[8px] font-black uppercase text-slate-400 mb-2">Assinatura:</p>
+                          <img src={signature} alt="Signature" className="h-10 object-contain mix-blend-multiply opacity-60" />
+                        </div>
                       )}
-                  </button>
-                  <button onClick={onClose} className="w-full mt-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-all">Cancelar</button>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-6">
+                      <button 
+                        onClick={() => setShowSignature(true)}
+                        disabled={isSaving}
+                        className={`w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                          {isSaving ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              Salvando...
+                            </div>
+                          ) : (
+                            <><Save size={14} /> Finalizar e Assinar</>
+                          )}
+                      </button>
+                      <button onClick={onClose} className="w-full mt-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-all">Cancelar</button>
+                  </div>
+                </div>
               </div>
+
             </div>
           </div>
-        )}
+        )}}
 
       </div>
 

@@ -461,15 +461,12 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Banner Informativo**: Adicionado banner de alerta amigável na tela de execução instruindo o operador caso o veículo ainda não tenha checklist de entrada preenchido.
 - [x] **Progresso Médio Inteligente**: Exibição da porcentagem de progresso real e uma barra de carregamento no card do operador. Caso a O.S. tenha múltiplos serviços, o sistema calcula dinamicamente a média matemática de todos os sub-serviços para refletir o status real.
 
-### ✅ Fase 55: Grid Simétrico Simultâneo Sem Rolagem no Checklist Digital (Concluída)
-- [x] **Modal Expandido Otimizado**: Aumento da largura e altura máxima da janela de inspeção (`max-w-[96vw]` e `max-h-[96vh]`) para maximizar o aproveitamento de área útil em tablets e monitores.
-- [x] **Layout Sincrônico de 3 Colunas (Carro)**: Todas as 5 visões do veículo são dispostas simultaneamente de forma simétrica:
-  - Esquerda: Vista Frontal e Lateral Esquerda (empilhados)
-  - Centro: Visão Superior (tamanho de destaque)
-  - Direita: Vista Traseira e Lateral Direita (empilhados)
-- [x] **Layout Sincrônico de 2 Colunas (Moto)**: As 4 visões são dispostas de forma equilibrada em duas colunas (Esquerda: Superior e Frontal | Direita: Perfil Esq. e Perfil Dir.).
-- [x] **Remoção Completa de Rolagem**: O uso inteligente do flexbox e remoção de min-heights rígidos força todos os cards a se dimensionarem perfeitamente no espaço do modal sem causar nenhuma rolagem vertical nas imagens.
-- [x] **Marcação Concomitante**: O técnico consegue visualizar e apontar danos em todo o contorno do veículo na mesma tela, sem cliques intermediários para trocar de abas ou rolagem.
+### ✅ Fase 55: Checklist Digital Ampliado com Rolagem Unificada e Laterais Gigantes (Concluída)
+- [x] **Rolagem Unificada do Formulário**: O laudo visual agora se move como uma página contínua sob uma única barra de rolagem. As imagens do veículo e o formulário lateral (relato técnico/KM/assinatura) rolam juntos de forma natural e sem scrolls independentes.
+- [x] **Laterais Iguais à Superior (Destaque Máximo)**: A Lateral Esquerda e a Lateral Direita do veículo foram ampliadas para ter **exatamente a mesma dimensão massiva da Visão Superior**: altura fixa de `500px` no desktop/tablet e `340px` no mobile, com largura total (`md:col-span-2`). Isso garante proporções uniformes perfeitas e altíssima riqueza de detalhes para registrar riscos e amassados nos perfis.
+- [x] **Visão Superior em Destaque**: A Visão Superior conta com altura máxima de `500px` no desktop (`340px` no mobile) de largura total (`md:col-span-2`).
+- [x] **Vista Frontal e Vista Traseira Ampliadas**: Dispostas lado a lado com altura aumentada para `300px` no desktop (`220px` no mobile) para perfeita simetria.
+- [x] **Design Responsivo Avançado**: No celular ou tablet vertical, o formulário de resumo se posiciona perfeitamente abaixo das imagens, e no desktop/tablet horizontal, fica fixado na lateral de forma inteligente (sticky).
 
 ---
-*Última atualização: 18/05/2026 às 19:20 - STATUS: CHECKLIST SIMÉTRICO SEM ROLAGEM CONCLUÍDO 🚀*
+*Última atualização: 18/05/2026 às 19:35 - STATUS: CHECKLIST LAUDO AMPLIADO CONCLUÍDO 🚀*

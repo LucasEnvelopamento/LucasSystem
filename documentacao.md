@@ -64,15 +64,14 @@ Para desobstruir o fluxo de trabalho do operador técnico e otimizar a usabilida
 - **Aviso Informativo**: Se o checklist de entrada ainda não foi assinado, um banner em vermelho no topo da tela do operador o instrui a solicitar o preenchimento pelo gestor.
 - **Progresso Médio Inteligente**: O cartão de serviço na fila de tarefas do operador agora exibe uma barra de progresso horizontal e um indicador percentual em tempo real. Se a Ordem de Serviço incluir mais de um sub-serviço detalhado, o sistema calcula dinamicamente a média aritmética de todos eles para apresentar o percentual exato do progresso geral.
 
-## 📈 Fase Concluída: Fase 55 - Grid Simétrico Simultâneo Sem Rolagem no Checklist Digital 🚀
+## 📈 Fase Concluída: Fase 55 - Checklist Digital Ampliado com Rolagem Unificada e Laterais Gigantes 🚀
 
 Para otimizar e aprimorar a usabilidade do técnico ao utilizar tablets (iPad ou Android) na vistoria do veículo, implementamos a **Fase 55**:
-- **Janela de Vistoria Ampliada**: O modal do checklist digital foi expandido (`max-w-[96vw]` e `max-h-[96vh]`), aproveitando toda a largura e altura útil da tela do tablet para exibir os diagramas.
-- **Exibição Simultânea de Todas as Visões**:
-  - Para carros: Grid tríplice simétrico de 3 colunas (Frente/Lat. Esquerda, Superior no centro em destaque, e Traseira/Lat. Direita).
-  - Para motos: Grid balanceado de 2 colunas (Superior/Frente à esquerda, e Perfil Esq./Perfil Dir. à direita).
-- **Sem Barra de Rolagem**: Todas as 5 visões do veículo aparecem juntas e se dimensionam dinamicamente por flexbox, eliminando por completo a rolagem vertical.
-- **Marcação Suave e Integrada**: O técnico pode tocar em qualquer lugar de qualquer uma das imagens para marcar avarias instantaneamente, sem precisar mudar de aba.
+- **Rolagem Unificada do Formulário**: O laudo visual e o formulário (relato técnico, KM e assinatura) agora rolam juntos de forma fluida em um único fluxo contínuo sob uma mesma barra de rolagem.
+- **Visões Laterais Equivalentes à Superior**: A Lateral Esquerda e a Lateral Direita agora ocupam toda a largura da coluna (`md:col-span-2`), com uma altura massiva de `500px` no desktop/tablet e `340px` no mobile, igualando-se exatamente à Visão Superior. Isso fornece aos técnicos a maior área possível e escala uniforme para apontar danos nos perfis do veículo.
+- **Visão Superior Expandida**: A Visão Superior continua com destaque total (`md:col-span-2`) e altura máxima ampliada para `500px` no desktop e `340px` no mobile.
+- **Vista Frontal e Vista Traseira Ampliadas**: Lado a lado com altura de `300px` no desktop e `220px` no mobile.
+- **Design Responsivo e Sticky Lateral**: O card de resumo lateral acompanha a rolagem como um painel flutuante (sticky) no desktop, e se empilha de forma totalmente responsiva no final da página em telas menores.
 
 ---
-*Última revisão da documentação: 18/05/2026 às 19:20.*
+*Última revisão da documentação: 18/05/2026 às 19:35.*
