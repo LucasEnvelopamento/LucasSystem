@@ -26,12 +26,12 @@ const Relatorios = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedServices, setSelectedServices] = useState(['TODOS']);
+  const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
+  const [hideValues, setHideValues] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [startDate, endDate, searchTerm, selectedServices, selectedStatuses]);
-  const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
-  const [hideValues, setHideValues] = useState(false);
 
   const serviceOptions = useMemo(() => {
     if (!orders) return [];
