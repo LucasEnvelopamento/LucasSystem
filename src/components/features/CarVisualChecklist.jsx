@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { X, Save, AlertCircle, Info, MousePointer2, Trash2, ShieldCheck, ChevronRight, Camera } from 'lucide-react';
+import { X, Save, AlertCircle, Info, MousePointer2, Trash2, ShieldCheck, ChevronRight, Camera, QrCode } from 'lucide-react';
 import { useBrand } from '../../contexts/BrandContext';
 import { useOrders } from '../../hooks/useData';
 import { sendWhatsApp, getVehicleReceivedMsg } from '../../utils/whatsappUtils';
 import { toast } from '../../utils/toast';
+import QRCodeModal from './QRCodeModal';
 
 const SignaturePad = ({ onSave, onCancel }) => {
   const canvasRef = React.useRef(null);
@@ -116,6 +117,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
   const [km, setKm] = useState('');
   const [showSignature, setShowSignature] = useState(false);
   const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [signature, setSignature] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -241,22 +243,26 @@ const CarVisualChecklist = ({ onClose, osData }) => {
   const ImageView = ({ title, viewId, className, imageClassName = "object-contain", containerClassName = "h-[200px] md:h-[240px]" }) => {
     const [imgError, setImgError] = useState(false);
     return (
-      <div className={`relative flex flex-col gap-3 p-4 bg-white rounded-[2rem] border-2 border-slate-100/50 shadow-sm hover:border-primary/30 transition-all overflow-hidden group ${className}`}>
+      <div className={`relative flex flex-col gap-3 p-4 bg-white dark:bg-slate-900 rounded-[2rem] border-2 border-slate-100/50 dark:border-slate-800 shadow-sm hover:border-primary/30 transition-all overflow-hidden group ${className}`}>
         <div className="flex items-center justify-between w-full px-2 z-10 shrink-0">
-            <span className="text-[10px] md:text-xs font-black uppercase text-slate-500 tracking-[0.15em]">{title}</span>
-            <Camera size={16} className="text-slate-200 group-hover:text-primary transition-colors" />
+            <span className="text-[10px] md:text-xs font-black uppercase text-slate-500 dark:text-slate-300 tracking-[0.15em]">{title}</span>
+            <Camera size={16} className="text-slate-200 dark:text-slate-600 group-hover:text-primary transition-colors" />
         </div>
-        <div className={`relative w-full cursor-crosshair rounded-2xl overflow-hidden bg-slate-50/50 flex items-center justify-center border border-slate-50/80 ${containerClassName}`} onClick={(e) => handleContainerClick(e, viewId)}>
+        <div 
+          style={{ backgroundColor: '#ffffff' }}
+          className={`relative w-full cursor-crosshair rounded-2xl overflow-hidden flex items-center justify-center border border-slate-200 shadow-inner ${containerClassName}`} 
+          onClick={(e) => handleContainerClick(e, viewId)}
+        >
           {!imgError ? (
             <img src={`/assets/checklist/${vehicleType}/${viewId}.png`} alt={title} className={`w-full h-full p-4 mix-blend-multiply opacity-90 drop-shadow-xl select-none transition-transform duration-500 group-hover:scale-105 ${imageClassName}`} onError={() => setImgError(true)} />
           ) : (
-             <div className="text-[10px] font-black text-slate-300 uppercase">Falta: {viewId}.png</div>
+             <div className="text-[10px] font-black text-slate-400 uppercase">Falta: {viewId}.png</div>
           )}
           <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md">
             {points.filter(p => p.view === viewId).map(p => (
               <g key={p.id} onClick={(e) => { e.stopPropagation(); removePoint(p.id); }} className="pointer-events-auto cursor-pointer transition-transform hover:scale-125 hover:drop-shadow-2xl">
                 <circle cx={`${p.x}%`} cy={`${p.y}%`} r="14" className="fill-rose-500/20 stroke-rose-500 stroke-[3]" />
-                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="5" className="fill-rose-600 shadow-xl" />
+                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="4" className="fill-rose-600" />
               </g>
             ))}
           </svg>
@@ -267,40 +273,40 @@ const CarVisualChecklist = ({ onClose, osData }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[200] flex items-center justify-center p-2 md:p-6 overflow-hidden font-sans">
-      <div className="bg-white rounded-[3rem] w-full max-w-7xl h-full flex flex-col overflow-hidden shadow-2xl border border-white/20 max-h-[95vh]">
+      <div className="bg-white dark:bg-[#111827] rounded-[3rem] w-full max-w-7xl h-full flex flex-col overflow-hidden shadow-2xl border border-white/20 dark:border-slate-800 max-h-[95vh]">
         
         {/* Header Fixo */}
-        <div className="p-6 md:p-8 bg-white flex items-center justify-between border-b border-slate-50 shrink-0">
+        <div className="p-6 md:p-8 bg-white dark:bg-slate-900 flex items-center justify-between border-b border-slate-50 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-6">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-slate-900 dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-xl">
                 <ShieldCheck size={28} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-xl md:text-2xl font-black tracking-tight text-slate-800 uppercase">Laudo de Inspeção Digital</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+              <h3 className="text-xl md:text-2xl font-black tracking-tight text-slate-800 dark:text-white uppercase">Laudo de Inspeção Digital</h3>
+              <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase tracking-widest mt-1">
                  {osData?.cliente || 'Cliente'} <span className="mx-2 opacity-30">|</span> {osData?.veiculo || 'Veículo'}
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-4 hover:bg-slate-50 rounded-full transition-all group">
-            <X size={28} className="text-slate-200 group-hover:text-slate-900" />
+          <button onClick={onClose} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-all group">
+            <X size={28} className="text-slate-200 dark:text-slate-500 group-hover:text-slate-900 dark:group-hover:text-white" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/10">
+          <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/10 dark:bg-slate-900/10">
              <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Carregando dados da inspeção...</p>
+             <p className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest animate-pulse">Carregando dados da inspeção...</p>
           </div>
         ) : (
           /* ROLAGEM ÚNICA DE TODO O CONTEÚDO (Evita dois scrolls separados) */
-          <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+          <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-slate-950/50">
             <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 items-start">
               
               {/* Seção Principal de Imagens */}
               <div className="flex-1 w-full min-w-0">
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 p-5 md:p-6 shadow-sm">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-6 px-1 flex items-center gap-2">
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-5 md:p-6 shadow-sm">
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-300 tracking-widest mb-6 px-1 flex items-center gap-2">
                     <MousePointer2 size={12} className="text-primary animate-pulse" />
                     Danos no Veículo (Toque na imagem correspondente para registrar)
                   </h4>
@@ -350,17 +356,17 @@ const CarVisualChecklist = ({ onClose, osData }) => {
 
               {/* Seção Lateral do Formulário (Fica sticky no desktop enquanto rola a página) */}
               <div className="w-full lg:w-80 xl:w-96 shrink-0 lg:sticky lg:top-6 lg:self-start">
-                <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 flex flex-col gap-6 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-slate-50 pb-4">
-                      <h4 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Resumo do Laudo</h4>
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-6 flex flex-col gap-6 shadow-sm">
+                  <div className="flex items-center justify-between border-b border-slate-50 dark:border-slate-800 pb-4">
+                      <h4 className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest">Resumo do Laudo</h4>
                       <div className="px-3 py-1 bg-rose-500 text-white rounded-full text-[9px] font-black">{points.length} Avarias</div>
                   </div>
 
                   <div className="flex flex-col gap-4">
                       <div>
-                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Relato Técnico Geral</label>
+                        <label className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-300 tracking-widest mb-2 block">Relato Técnico Geral</label>
                         <textarea 
-                            className="w-full min-h-[120px] p-4 border-2 border-slate-100 rounded-2xl text-sm bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all font-bold placeholder:text-slate-200 resize-none shadow-inner"
+                            className="w-full min-h-[120px] p-4 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-sm bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white focus:border-primary/20 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all font-bold placeholder:text-slate-300 resize-none shadow-inner"
                             value={generalNotes}
                             placeholder="Escreva observações gerais do veículo..."
                             onChange={(e) => setGeneralNotes(e.target.value)}
@@ -368,32 +374,32 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                       </div>
                       
                       <div>
-                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest block mb-2">Quilometragem (KM)</label>
+                        <label className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-300 tracking-widest block mb-2">Quilometragem (KM)</label>
                         <div className="relative">
                           <input 
                             type="text" 
-                            className="w-full p-4 border-2 border-slate-100 rounded-2xl text-sm font-black bg-slate-50 focus:border-primary/20 focus:bg-white outline-none transition-all placeholder:text-slate-200 shadow-inner"
+                            className="w-full p-4 border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-black bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white focus:border-primary/20 focus:bg-white dark:focus:bg-slate-900 outline-none transition-all placeholder:text-slate-300 shadow-inner"
                             placeholder="Ex: 45.000"
                             value={km}
                             onChange={(e) => setKm(e.target.value)}
                           />
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">KM</span>
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 dark:text-slate-500 uppercase">KM</span>
                         </div>
                       </div>
                       
                       {signature && (
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                          <p className="text-[8px] font-black uppercase text-slate-400 mb-2">Assinatura:</p>
-                          <img src={signature} alt="Signature" className="h-10 object-contain mix-blend-multiply opacity-60" />
+                        <div className="p-4 bg-white rounded-2xl border border-slate-200" style={{ backgroundColor: '#ffffff' }}>
+                          <p className="text-[8px] font-black uppercase text-slate-600 mb-2">Assinatura:</p>
+                          <img src={signature} alt="Signature" className="h-10 object-contain opacity-90" />
                         </div>
                       )}
                   </div>
 
-                  <div className="border-t border-slate-100 pt-6">
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                       <button 
                         onClick={() => setShowSignature(true)}
                         disabled={isSaving}
-                        className={`w-full py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-full py-4 bg-slate-900 dark:bg-primary hover:bg-black dark:hover:bg-primary-light text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                           {isSaving ? (
                             <div className="flex items-center gap-2">
@@ -404,29 +410,29 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                             <><Save size={14} /> Finalizar e Assinar</>
                           )}
                       </button>
-                      <button onClick={onClose} className="w-full mt-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-all">Cancelar</button>
+                      <button onClick={onClose} className="w-full mt-3 py-2 text-[9px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest hover:text-slate-900 dark:hover:text-white transition-all">Cancelar</button>
                   </div>
                 </div>
               </div>
 
             </div>
           </div>
-        )}}
+        )}
 
       </div>
 
       {/* Modal de Assinatura Digital */}
       {showSignature && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[300] flex items-center justify-center p-4 md:p-6 animate-fadeIn">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            <div className="p-6 md:p-10 bg-white border-b border-slate-50 flex items-center justify-between shrink-0">
+          <div className="bg-white dark:bg-[#111827] rounded-[3rem] w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden border border-white/20 dark:border-slate-800 max-h-[90vh]">
+            <div className="p-6 md:p-10 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between shrink-0">
               <div>
-                <h4 className="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-tight">Assinatura do Cliente</h4>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Confirmação do laudo visual de entrada.</p>
+                <h4 className="text-xl md:text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Assinatura do Cliente</h4>
+                <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase tracking-widest mt-1">Confirmação do laudo visual de entrada.</p>
               </div>
               <button 
                 onClick={() => setShowSignature(false)} 
-                className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 hover:text-slate-800 transition-all"
+                className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-200 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all"
               >
                 <X size={24} />
               </button>
@@ -438,7 +444,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                 onCancel={() => setShowSignature(false)} 
               />
 
-              <div className="mt-8 flex items-center gap-4 p-6 bg-amber-50 rounded-3xl border border-amber-100 italic text-[10px] text-amber-700 font-bold">
+              <div className="mt-8 flex items-center gap-4 p-6 bg-amber-50 dark:bg-amber-950/30 rounded-3xl border border-amber-100 dark:border-amber-900/50 italic text-[10px] text-amber-700 dark:text-amber-300 font-bold">
                 <Info size={16} /> "Este laudo garante a integridade do veículo durante a permanência na loja."
               </div>
             </div>
@@ -449,16 +455,25 @@ const CarVisualChecklist = ({ onClose, osData }) => {
       {/* Modal de Envio de WhatsApp */}
       {showWhatsAppPrompt && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[400] flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-white rounded-[3rem] p-6 md:p-8 max-w-md w-full shadow-2xl text-center border border-white/20">
-            <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-2xl border border-emerald-100 flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <div className="bg-white dark:bg-[#111827] rounded-[3rem] p-6 md:p-8 max-w-md w-full shadow-2xl text-center border border-white/20 dark:border-slate-800">
+            <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 rounded-2xl border border-emerald-100 dark:border-emerald-800/50 flex items-center justify-center mx-auto mb-6 shadow-inner">
               <ShieldCheck size={40} />
             </div>
-            <h4 className="text-2xl font-black text-slate-800 uppercase mb-2 tracking-tight">Checklist Salvo!</h4>
-            <p className="text-xs text-slate-500 font-bold mb-8 px-4 leading-relaxed">
+            <h4 className="text-2xl font-black text-slate-800 dark:text-white uppercase mb-2 tracking-tight">Checklist Salvo!</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-300 font-bold mb-8 px-4 leading-relaxed">
               Laudo assinado eletronicamente e veículo confirmado na loja. Deseja enviar o link do painel de produção ao cliente?
             </p>
             
             <div className="space-y-3">
+              <button 
+                onClick={() => {
+                  setShowWhatsAppPrompt(false);
+                  setShowQRModal(true);
+                }}
+                className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-purple-600/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              >
+                <QrCode size={16} /> Exibir QR Code na Recepção
+              </button>
               <button 
                 onClick={() => {
                   const cleanPhone = (osData.cliente_telefone || '').replace(/\D/g, '');
@@ -466,7 +481,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                   setShowWhatsAppPrompt(false);
                   onClose();
                 }}
-                className="w-full py-5 bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all"
+                className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 Enviar Link por WhatsApp
               </button>
@@ -475,13 +490,23 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                   setShowWhatsAppPrompt(false);
                   onClose();
                 }}
-                className="w-full py-5 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-100 hover:text-slate-700 transition-all border border-slate-100"
+                className="w-full py-4 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-all border border-slate-100 dark:border-slate-800"
               >
                 Não Enviar Desta Vez
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {showQRModal && (
+        <QRCodeModal 
+          os={osData} 
+          onClose={() => {
+            setShowQRModal(false);
+            onClose();
+          }} 
+        />
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `

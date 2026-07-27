@@ -25,7 +25,10 @@ const ServicosView = () => {
     tipo_veiculo: 'AMBOS',
     garantia: '12 meses',
     controle_estoque: false,
-    materiais: []
+    materiais: [],
+    precos_por_classe: {},
+    is_combo: false,
+    itens_combo: []
   });
 
   const { inventory } = useInventory();
@@ -42,7 +45,10 @@ const ServicosView = () => {
       tipo_veiculo: service.tipo_veiculo || 'AMBOS',
       garantia: service.garantia || '12 meses',
       controle_estoque: service.controle_estoque || false,
-      materiais: service.materiais || []
+      materiais: service.materiais || [],
+      precos_por_classe: service.precos_por_classe || {},
+      is_combo: service.is_combo || false,
+      itens_combo: service.itens_combo || []
     });
     setShowAddModal(true);
   };
@@ -51,9 +57,22 @@ const ServicosView = () => {
     e.preventDefault();
     setIsSaving(true);
     
+    const cleanedPrecos = {};
+    if (formService.precos_por_classe) {
+      Object.entries(formService.precos_por_classe).forEach(([key, val]) => {
+        const num = parseFloat(val);
+        if (num && num > 0) {
+          cleanedPrecos[key] = num;
+        }
+      });
+    }
+
     const serviceData = {
       ...formService,
-      preco_base: parseFloat(formService.preco_base) || 0
+      preco_base: parseFloat(formService.preco_base) || 0,
+      precos_por_classe: cleanedPrecos,
+      is_combo: formService.is_combo || false,
+      itens_combo: formService.is_combo ? (formService.itens_combo || []) : []
     };
 
     let res;
@@ -68,13 +87,13 @@ const ServicosView = () => {
       toast.success(editingService ? 'Serviço atualizado com sucesso!' : 'Novo serviço adicionado ao catálogo!');
       setShowAddModal(false);
       setEditingService(null);
-      setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [] });
+      setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [], precos_por_classe: {}, is_combo: false, itens_combo: [] });
     }
   };
 
   const handleOpenAdd = () => {
      setEditingService(null);
-     setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [] });
+     setFormService({ nome: '', descricao: '', preco_base: '', categoria: 'Geral', tipo_veiculo: 'AMBOS', garantia: '12 meses', controle_estoque: false, materiais: [], precos_por_classe: {}, is_combo: false, itens_combo: [] });
      setShowAddModal(true);
   };
 
@@ -128,7 +147,7 @@ const ServicosView = () => {
                 </div>
                 <div>
                   <h4 className="font-black text-slate-800 text-lg leading-tight uppercase tracking-tight">{s.nome}</h4>
-                  <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary bg-primary/5 px-2 py-0.5 rounded-md">{s.categoria || 'Geral'}</span>
                     <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${
                       s.tipo_veiculo === 'MOTO' ? 'bg-orange-50 text-orange-600 border-orange-100' : 
@@ -137,6 +156,11 @@ const ServicosView = () => {
                     }`}>
                       {s.tipo_veiculo === 'MOTO' ? 'Moto' : s.tipo_veiculo === 'CARRO' ? 'Carro' : 'Ambos'}
                     </span>
+                    {s.is_combo && (
+                      <span className="text-[8px] font-black uppercase tracking-[0.1em] text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded-md flex items-center gap-1 shadow-sm">
+                        🎁 Combo ({s.itens_combo?.length || 0} itens)
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -190,9 +214,32 @@ const ServicosView = () => {
                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1 items-center flex gap-1">
                     <DollarSign size={10} className="text-primary" /> Investimento
                   </span>
-                  <span className="text-lg font-black text-slate-800 tracking-tighter">
-                    {s.preco_base ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(s.preco_base) : '---'}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-lg font-black text-slate-800 tracking-tighter">
+                      {s.preco_base ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(s.preco_base) : '---'}
+                    </span>
+                    {s.precos_por_classe && Object.keys(s.precos_por_classe).length > 0 && (
+                      <span className="text-[8px] font-black uppercase text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded shadow-sm" title="Preços dinâmicos ativos por porte de veículo">
+                        ⚡ {Object.keys(s.precos_por_classe).length} {Object.keys(s.precos_por_classe).length === 1 ? 'Porte' : 'Portes'}
+                      </span>
+                    )}
+                    {(() => {
+                      if (!s.is_combo || !s.itens_combo?.length) return null;
+                      const somaAvulso = s.itens_combo.reduce((acc, id) => {
+                        const srv = services.find(x => x.id === id);
+                        return acc + (Number(srv?.preco_base) || 0);
+                      }, 0);
+                      if (somaAvulso > s.preco_base && s.preco_base > 0) {
+                        const perc = Math.round(((somaAvulso - s.preco_base) / somaAvulso) * 100);
+                        return (
+                          <span className="text-[8px] font-black uppercase text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded shadow-sm" title={`Valor avulso: R$ ${somaAvulso.toLocaleString('pt-BR')}`}>
+                            🔥 {perc}% OFF
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
                 </div>
               </div>
               <button 
@@ -330,6 +377,147 @@ const ServicosView = () => {
                 ></textarea>
               </div>
 
+              {/* Seção de Preço Dinâmico por Porte (Fase 57) */}
+              <div className="flex flex-col gap-4 bg-amber-50/50 p-6 rounded-[2rem] border border-amber-200/80 transition-all shadow-sm">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
+                    <Zap size={16} className="text-amber-500 fill-amber-500" /> Preço Dinâmico por Porte do Veículo (Opcional)
+                  </label>
+                  <span className="text-[9px] font-black text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Fase 57</span>
+                </div>
+                <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                  Defina valores diferenciados de acordo com o porte do automóvel. Se deixado em branco ou zero, o sistema utilizará o <strong>Preço Base</strong> automaticamente na abertura de orçamento/OS.
+                </p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
+                  {['Hatch', 'Sedan', 'SUV', 'Pickup', 'Esportivo', 'Moto'].map((porte) => (
+                    <div key={porte} className="space-y-1.5">
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">{porte}</label>
+                      <div className="relative group">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs group-focus-within:text-amber-600 transition-colors">R$</span>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          className="w-full pl-9 pr-3 py-3 bg-white border border-amber-200/80 rounded-xl outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 font-bold text-xs transition-all shadow-sm"
+                          placeholder="Base"
+                          value={formService.precos_por_classe?.[porte] ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormService({
+                              ...formService,
+                              precos_por_classe: {
+                                ...(formService.precos_por_classe || {}),
+                                [porte]: val
+                              }
+                            });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Seção de Pacotes e Combos de Serviços (Fase 57.2) */}
+              <div className="flex flex-col gap-4 bg-purple-50/50 p-6 rounded-[2rem] border border-purple-200/80 transition-all shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="checkbox" 
+                      id="is_combo" 
+                      className="w-6 h-6 rounded-lg text-purple-600 border-purple-300 focus:ring-purple-500/20 transition-all cursor-pointer"
+                      checked={formService.is_combo || false}
+                      onChange={(e) => setFormService({...formService, is_combo: e.target.checked, itens_combo: e.target.checked ? (formService.itens_combo || []) : []})}
+                    />
+                    <label htmlFor="is_combo" className="cursor-pointer select-none">
+                      <span className="block text-sm font-black text-purple-900 tracking-tight flex items-center gap-1.5">
+                        🎁 Este Serviço é um Pacote / Combo Promocional?
+                      </span>
+                      <span className="block text-[10px] font-bold text-purple-700 mt-0.5 uppercase tracking-widest">
+                        Agrupa múltiplos serviços do catálogo com desconto promocional.
+                      </span>
+                    </label>
+                  </div>
+                  <span className="text-[9px] font-black text-purple-700 bg-purple-100 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">Fase 57</span>
+                </div>
+
+                {formService.is_combo && (
+                  <div className="pt-4 border-t border-purple-200/60 flex flex-col gap-3 animate-in fade-in slide-in-from-top-3">
+                    <label className="text-[10px] font-black text-purple-800 uppercase tracking-widest">
+                      Selecione os Serviços Inclusos neste Combo:
+                    </label>
+                    <div className="max-h-48 overflow-y-auto space-y-2 pr-2 border border-purple-100 bg-white/80 p-3 rounded-2xl">
+                      {services.filter(s => s.id !== editingService?.id && !s.is_combo).length === 0 ? (
+                        <p className="text-xs text-slate-400 font-medium py-2 text-center">Nenhum serviço avulso cadastrado para agrupar.</p>
+                      ) : (
+                        services.filter(s => s.id !== editingService?.id && !s.is_combo).map(srv => {
+                          const isSelected = (formService.itens_combo || []).includes(srv.id);
+                          return (
+                            <div 
+                              key={srv.id} 
+                              onClick={() => {
+                                const current = formService.itens_combo || [];
+                                const next = isSelected ? current.filter(id => id !== srv.id) : [...current, srv.id];
+                                setFormService({ ...formService, itens_combo: next });
+                              }}
+                              className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                isSelected ? 'bg-purple-100/60 border-purple-300 text-purple-900 font-bold shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <input 
+                                  type="checkbox" 
+                                  checked={isSelected} 
+                                  onChange={() => {}} 
+                                  className="w-4 h-4 rounded text-purple-600 border-slate-300 pointer-events-none" 
+                                />
+                                <div>
+                                  <p className="text-xs">{srv.nome}</p>
+                                  <p className="text-[9px] text-slate-400 font-black uppercase">{srv.categoria}</p>
+                                </div>
+                              </div>
+                              <span className="text-xs font-black text-slate-800">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(srv.preco_base || 0)}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Cálculo Automático da Economia / Resumo */}
+                    {(() => {
+                      const somaAvulso = (formService.itens_combo || []).reduce((acc, id) => {
+                        const srv = services.find(x => x.id === id);
+                        return acc + (Number(srv?.preco_base) || 0);
+                      }, 0);
+                      const precoCombo = Number(formService.preco_base) || 0;
+                      const economia = somaAvulso - precoCombo;
+                      const percOff = somaAvulso > 0 ? Math.round((economia / somaAvulso) * 100) : 0;
+
+                      return (
+                        <div className="bg-purple-900 text-white p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-md mt-1">
+                          <div>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-purple-300 block">Valor Avulso (Soma dos Itens)</span>
+                            <span className="text-sm font-bold line-through text-purple-200">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(somaAvulso)}
+                            </span>
+                          </div>
+                          <div className="sm:text-right">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block">
+                              {economia > 0 ? `🔥 Economia para o Cliente (${percOff}% OFF)` : 'Defina o Preço Base (Promocional)'}
+                            </span>
+                            <span className="text-lg font-black text-emerald-300">
+                              {economia > 0 ? `Economize ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(economia)}` : '---'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col gap-4 bg-blue-50/50 p-6 rounded-2xl border border-blue-100 transition-all">
                 <div className="flex items-center gap-4">
                   <input 
@@ -347,10 +535,40 @@ const ServicosView = () => {
 
                 {formService.controle_estoque && (
                   <div className="pt-4 border-t border-blue-100 flex flex-col mt-2 mb-2 animate-in fade-in slide-in-from-top-4">
-                     <div className="flex items-center justify-between mb-4 px-1">
+                     <div className="flex items-center justify-between mb-4 px-1 flex-wrap gap-2">
                          <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1">
                              <Zap size={12} className="text-blue-500" /> Insumos Padrão do Serviço
                          </label>
+                         {formService.is_combo && (
+                           <button
+                             type="button"
+                             onClick={() => {
+                               const combosMats = [];
+                               (formService.itens_combo || []).forEach(srvId => {
+                                 const srv = services.find(x => x.id === srvId);
+                                 if (srv?.controle_estoque && srv.materiais?.length) {
+                                   srv.materiais.forEach(m => {
+                                     const existingIdx = combosMats.findIndex(x => x.material_id === m.material_id);
+                                     if (existingIdx >= 0) {
+                                       combosMats[existingIdx].quantidade = (Number(combosMats[existingIdx].quantidade) || 0) + (Number(m.quantidade) || 0);
+                                     } else {
+                                       combosMats.push({ ...m });
+                                     }
+                                   });
+                                 }
+                               });
+                               if (combosMats.length > 0) {
+                                 setFormService({ ...formService, materiais: combosMats });
+                                 toast.success(`${combosMats.length} insumos importados dos serviços do combo!`);
+                               } else {
+                                 toast.info('Os serviços selecionados neste combo não exigem materiais controlados.');
+                               }
+                             }}
+                             className="text-[9px] font-black text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-xl uppercase tracking-wider transition-all shadow-sm flex items-center gap-1"
+                           >
+                             ⚡ Importar Insumos do Combo
+                           </button>
+                         )}
                      </div>
 
                      {(formService.materiais || []).map((mat, matIdx) => (

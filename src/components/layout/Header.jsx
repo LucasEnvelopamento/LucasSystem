@@ -1,11 +1,13 @@
 import React from 'react';
-import { Bell, Search, User, LogOut, Menu } from 'lucide-react';
+import { Bell, Search, User, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useData';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const Header = ({ activePage, onMenuClick }) => {
   const { profile, signOut } = useAuth();
   const { notifications, markAsRead, markAllAsRead, clearNotification } = useNotifications();
+  const { theme, toggleTheme, isDark } = useTheme();
   const [showNotifications, setShowNotifications] = React.useState(false);
 
   const unreadCount = notifications.filter(n => !n.lida).length;
@@ -13,7 +15,7 @@ const Header = ({ activePage, onMenuClick }) => {
   const formattedPageName = activePage.charAt(0).toUpperCase() + activePage.slice(1);
 
   return (
-    <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+    <header className="h-16 md:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 transition-colors">
       <div className="flex items-center gap-3 md:gap-4">
         <button 
           onClick={onMenuClick}
@@ -21,7 +23,7 @@ const Header = ({ activePage, onMenuClick }) => {
         >
           <Menu size={24} />
         </button>
-        <h2 className="text-base md:text-lg font-black text-slate-800 tracking-tight uppercase tracking-tighter italic whitespace-nowrap overflow-hidden text-ellipsis">
+        <h2 className="text-base md:text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight uppercase tracking-tighter italic whitespace-nowrap overflow-hidden text-ellipsis">
           {formattedPageName === 'Dashboard' ? 'Painel de Controle' : formattedPageName}
         </h2>
       </div>
@@ -33,12 +35,19 @@ const Header = ({ activePage, onMenuClick }) => {
           <input 
             type="text" 
             placeholder="Pesquisar..." 
-            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm w-64 focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+            className="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 rounded-xl text-sm w-64 focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium text-slate-700 dark:text-slate-200"
           />
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
+          <button 
+            onClick={toggleTheme}
+            className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 rounded-xl transition-all shadow-sm border border-slate-100 dark:border-slate-700/60"
+            title={isDark ? "Ativar Modo Claro" : "Ativar Modo Escuro (Alto Contraste)"}
+          >
+            {isDark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} />}
+          </button>
           {profile?.cargo !== 'OPERADOR' && (
             <div className="relative">
               <button 

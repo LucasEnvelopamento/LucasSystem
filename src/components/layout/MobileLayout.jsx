@@ -23,7 +23,7 @@ const MobileLayout = ({ children, currentView, setView, title }) => {
   const handleLogout = signOut;
 
   return (
-    <div className="h-screen bg-slate-50 flex flex-col overflow-hidden font-sans">
+    <div className="h-screen bg-transparent flex flex-col overflow-hidden font-sans">
       {/* Header Mobile */}
       <header className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm flex-shrink-0 z-30">
         <div className="flex items-center gap-3">

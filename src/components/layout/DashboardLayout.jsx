@@ -4,7 +4,7 @@ import Header from './Header';
 
 const DashboardLayout = ({ children, currentView, setView, title }) => {
   return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
+    <div className="flex h-screen bg-transparent overflow-hidden">
       {/* Sidebar Fixa */}
       <Sidebar currentView={currentView} setView={setView} />
 

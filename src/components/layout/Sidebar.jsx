@@ -46,18 +46,18 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
   );
 
   return (
-    <aside className={`w-72 bg-white border-r border-slate-100 flex flex-col h-screen fixed lg:sticky top-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 shadow-2xl lg:shadow-none' : '-translate-x-full lg:translate-x-0'}`}>
+    <aside className={`w-72 bg-white dark:bg-[#111827] border-r border-slate-100 dark:border-slate-800/80 flex flex-col h-screen fixed lg:sticky top-0 left-0 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0 shadow-2xl lg:shadow-none' : '-translate-x-full lg:translate-x-0'}`}>
       {/* Brand Logo */}
       <div className="p-8 relative">
         <button 
           onClick={() => setIsOpen(false)}
-          className="lg:hidden absolute top-6 right-6 p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+          className="lg:hidden absolute top-6 right-6 p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all"
         >
           <X size={20} />
         </button>
         <div className="flex flex-col items-center justify-center text-center gap-2">
           {logoUrl ? (
-             <div className="w-16 h-16 mb-2 rounded-2xl shadow-xl overflow-hidden border border-slate-100 flex-shrink-0">
+             <div className="w-16 h-16 mb-2 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-800 flex-shrink-0">
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
              </div>
           ) : (
@@ -66,7 +66,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
             </div>
           )}
           <div className="w-full">
-            <h1 className="text-lg font-black text-slate-800 tracking-tighter uppercase italic leading-tight break-words" title={lojaName}>{lojaName || 'OsSystem'}</h1>
+            <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tighter uppercase italic leading-tight break-words" title={lojaName}>{lojaName || 'OsSystem'}</h1>
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 leading-none">Management v2.5</p>
           </div>
         </div>
@@ -83,7 +83,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
             className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
               activePage === item.id 
                 ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02]' 
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-800 dark:hover:text-slate-100'
             }`}
           >
             <div className="flex items-center gap-3">
@@ -94,12 +94,12 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
           </button>
         ))}
 
-        <div className="pt-8 mb-4 border-t border-slate-50 mt-8 mx-4">
+        <div className="pt-8 mb-4 border-t border-slate-50 dark:border-slate-800/60 mt-8 mx-4">
            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Monitoramento</p>
            <a 
              href="/tv" 
              target="_blank" 
-             className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-all group"
+             className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-800 dark:hover:text-slate-100 rounded-2xl transition-all group"
            >
              <Monitor size={20} className="text-slate-400 group-hover:text-emerald-500 transition-colors" />
              <span className="text-sm font-bold tracking-tight">Monitor TV</span>
@@ -108,22 +108,24 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen }) => {
       </nav>
 
       {/* User Footer */}
-      <div className="p-4 mt-auto">
-        <div className="bg-slate-50 rounded-3xl p-4 border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-primary font-black shadow-sm uppercase shrink-0">
-              {profile?.nome?.charAt(0) || 'U'}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 flex items-center justify-center text-primary font-black text-sm shrink-0">
+              {profile?.nome ? profile.nome.charAt(0).toUpperCase() : 'U'}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-slate-800 truncate leading-none mb-1">{profile?.nome || 'Usuário'}</p>
-              <span className="text-[9px] font-black text-primary uppercase tracking-widest">{profile?.cargo || 'Membro'}</span>
+            <div className="min-w-0">
+              <p className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">{profile?.nome || 'Usuário'}</p>
+              <p className="text-[9px] font-black uppercase text-primary tracking-widest">{profile?.cargo || 'Colaborador'}</p>
             </div>
           </div>
+          
           <button 
             onClick={signOut}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-100 hover:border-red-100"
+            className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all shrink-0"
+            title="Sair do sistema"
           >
-            <LogOut size={14} /> Sair
+            <LogOut size={18} />
           </button>
         </div>
       </div>

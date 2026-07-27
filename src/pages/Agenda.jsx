@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User, Car, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User, Car, Loader2, MessageSquare } from 'lucide-react';
 import { useOrders, useQuotes } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import AgendamentoModal from '../components/features/AgendamentoModal';
 import { getStatusStyle } from '../utils/statusUtils';
+import { sendWhatsApp, getAppointmentConfirmationMsg } from '../utils/whatsappUtils';
+import { toast } from '../utils/toast';
 
 const AgendaView = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -178,10 +180,40 @@ const AgendaView = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 mt-4 md:mt-0">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 md:mt-0">
                 <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${getStatusStyle(item.status)}`}>
                   {item.status}
                 </span>
+                <button 
+                  onClick={() => {
+                    const dateObj = new Date(item.data_agendamento);
+                    const dataStr = dateObj.toLocaleDateString('pt-BR');
+                    const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const cleanPhone = (item.cliente_telefone || '').replace(/\D/g, '');
+                    
+                    if (!cleanPhone) {
+                      toast.warning('Cliente sem telefone cadastrado nesta OS/Orçamento.');
+                      return;
+                    }
+
+                    sendWhatsApp(
+                      cleanPhone,
+                      getAppointmentConfirmationMsg(
+                        item.cliente_nome || 'Cliente',
+                        item.veiculo_desc || 'Veículo',
+                        item.valor_total || 0,
+                        item.valor_pago_agora || item.valor_pago || 0,
+                        dataStr,
+                        horaStr
+                      )
+                    );
+                  }}
+                  className="px-4 py-2.5 bg-emerald-50 border border-emerald-200/80 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm flex items-center gap-1.5 group/btn"
+                  title="Reenviar confirmação de agendamento por WhatsApp"
+                >
+                  <MessageSquare size={14} className="text-emerald-600 group-hover/btn:text-white transition-colors" />
+                  Reenviar Agendamento
+                </button>
                 <button 
                   onClick={() => { setSelectedOS(item); setShowAgendaModal(true); }}
                   className="px-5 py-2.5 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm"

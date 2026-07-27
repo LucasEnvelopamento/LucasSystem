@@ -17,13 +17,15 @@ import {
   PackageCheck,
   UserMinus,
   DollarSign,
-  Edit2
+  Edit2,
+  QrCode
 } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import Pagination from '../components/ui/Pagination';
 import PagamentoModal from '../components/features/PagamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import AtribuirTecnicoModal from '../components/features/AtribuirTecnicoModal';
+import QRCodeModal from '../components/features/QRCodeModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -47,6 +49,7 @@ const OrdensServico = () => {
   const [showCertificado, setShowCertificado] = useState(false);
   const [showPagamento, setShowPagamento] = useState(false);
   const [showDetalhes, setShowDetalhes] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
@@ -279,6 +282,13 @@ const OrdensServico = () => {
                           <Eye size={20} />
                         </button>
                         <button 
+                          onClick={() => { setActiveOS(os); setShowQRCode(true); }}
+                          className="p-2.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all border border-transparent hover:border-purple-200"
+                          title="QR Code Instantâneo da Recepção (Rastreamento pelo Cliente)"
+                        >
+                          <QrCode size={20} />
+                        </button>
+                        <button 
                           onClick={() => { setActiveOS(os); setShowChecklist(true); }}
                           className={`p-2.5 rounded-xl transition-all border ${
                             os.has_checklist 
@@ -433,6 +443,15 @@ const OrdensServico = () => {
           os={currentActiveOS}
           onClose={() => {
             setShowAtribuir(false);
+            setActiveOS(null);
+          }}
+        />
+      )}
+      {showQRCode && currentActiveOS && (
+        <QRCodeModal 
+          os={currentActiveOS}
+          onClose={() => {
+            setShowQRCode(false);
             setActiveOS(null);
           }}
         />

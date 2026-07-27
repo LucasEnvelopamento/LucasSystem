@@ -141,16 +141,16 @@ const Dashboard = () => {
               <div 
                 key={os.id} 
                 onClick={() => setSelectedOrder(os)}
-                className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-all px-4 rounded-2xl -mx-2 group gap-3 cursor-pointer"
+                className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-slate-50 dark:border-slate-800/60 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all px-4 rounded-2xl -mx-2 group gap-3 cursor-pointer"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px] group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all shadow-sm">
+                  <div className="w-10 h-10 shrink-0 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-300 font-black text-[10px] group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all shadow-sm">
                     OS#{os.id}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-black text-slate-800 leading-none mb-1 truncate">{os.cliente_nome}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate">
-                      {os.veiculo_desc} • <span className="text-slate-300">{os.servico || 'Não especificado'}</span>
+                    <p className="text-sm font-black text-slate-800 dark:text-white leading-none mb-1 truncate">{os.cliente_nome}</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase tracking-widest truncate">
+                      {os.veiculo_desc} • <span className="text-slate-300 dark:text-slate-400">{os.servico || 'Não especificado'}</span>
                     </p>
                   </div>
                 </div>

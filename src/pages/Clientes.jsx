@@ -310,7 +310,7 @@ const ClientesView = () => {
                              <Car size={16} />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-700">{v.marca} {v.modelo} {v.ano ? `(${v.ano})` : ''}</p>
+                            <p className="text-xs font-bold text-slate-700">{v.marca} {v.modelo} {v.ano ? `(${v.ano})` : ''} <span className="ml-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded text-[9px] uppercase font-black">⚡ {v.porte || 'Hatch'}</span></p>
                             <p className="text-[10px] font-mono font-black text-primary uppercase">{v.placa}</p>
                           </div>
                         </div>
@@ -431,6 +431,7 @@ const ClientesView = () => {
                 modelo: formData.get('modelo').toUpperCase(),
                 placa: formData.get('placa').toUpperCase().replace(/\s/g, ''),
                 ano: formData.get('ano'),
+                porte: formData.get('porte') || 'Hatch',
               };
 
               const res = await updateVehicle(editingVehicle.id, data);
@@ -461,6 +462,14 @@ const ClientesView = () => {
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Ano</label>
                 <input name="ano" defaultValue={editingVehicle.ano || ''} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Porte do Veículo</label>
+                <select name="porte" defaultValue={editingVehicle.porte || 'Hatch'} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold shadow-inner">
+                  {['Hatch', 'Sedan', 'SUV', 'Pickup', 'Esportivo', 'Moto'].map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
               </div>
               <button type="submit" className="w-full btn-primary py-4 rounded-2xl shadow-xl shadow-primary/20 mt-4 flex items-center justify-center gap-2">
                 <Save size={18} /> Salvar Alterações

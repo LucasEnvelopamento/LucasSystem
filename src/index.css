@@ -12,15 +12,19 @@
 
 @layer base {
   body {
-    @apply bg-[#f8fafc] text-slate-700 font-sans antialiased;
+    @apply bg-[#f8fafc] text-slate-700 font-sans antialiased transition-colors duration-300;
     margin: 0;
+  }
+  
+  .dark body {
+    @apply bg-[#0b0f19] text-slate-100;
   }
 }
 
 @layer components {
   /* Card profissional conforme skill dashboard-layout */
   .card-premium {
-    @apply bg-white border border-slate-200 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300;
+    @apply bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700;
   }
 
   .btn-primary {
@@ -41,14 +45,103 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 rounded-full hover:bg-slate-400;
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600;
   }
+}
+
+/* Regras globais limpas para elementos corporativos comuns no modo escuro */
+.dark .bg-white,
+.dark [class*="bg-white/"] {
+  background-color: #111827 !important;
+  color: #f1f5f9;
+}
+
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark [class*="bg-slate-50/"],
+.dark [class*="bg-gray-50/"] {
+  background-color: #172033 !important;
+  color: #e2e8f0;
+}
+
+.dark .bg-slate-100,
+.dark .bg-gray-100,
+.dark [class*="bg-slate-100/"],
+.dark [class*="bg-gray-100/"] {
+  background-color: #1e293b !important;
+  color: #e2e8f0;
+}
+
+.dark .bg-slate-200,
+.dark .bg-gray-200 {
+  background-color: #334155 !important;
+  color: #f1f5f9;
+}
+
+/* Redução suave de sombras no modo escuro para evitar visual estourado (halo branco) */
+.dark [class*="shadow-"] {
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .card-premium {
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.45), 0 2px 6px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Grids e Tabelas no Modo Escuro - Alto Contraste e Legibilidade de Colunas */
+.dark table,
+.dark thead,
+.dark thead tr,
+.dark [class*="table-header"] {
+  background-color: #0f172a !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark th {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.1em;
+}
+
+.dark tbody tr {
+  border-color: rgba(51, 65, 85, 0.4) !important;
+}
+
+.dark tbody tr:hover,
+.dark [class*="hover:bg-slate-50"]:hover,
+.dark [class*="hover:bg-slate-100"]:hover,
+.dark [class*="hover:bg-white"]:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important;
+  color: #f8fafc !important;
+}
+
+.dark tfoot tr,
+.dark tfoot td {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark [class*="border-slate-"] {
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #cbd5e1 !important;
 }
 
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
-
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

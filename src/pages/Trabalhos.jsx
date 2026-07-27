@@ -97,7 +97,7 @@ const Trabalhos = () => {
     if (res.success) {
       toast.success('Trabalho adicionado com sucesso!');
     } else {
-      toast.error('Erro ao subir imagem. Tente novamente.');
+      toast.error(res.error?.message || 'Erro ao subir imagem. Tente novamente.');
     }
     
     // Reseta o input para permitir subir o mesmo arquivo se necessário

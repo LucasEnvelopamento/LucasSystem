@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { BrandProvider } from './contexts/BrandContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import MobileLayout from './components/layout/MobileLayout';
@@ -243,7 +244,7 @@ const AppLayout = ({ children }) => {
   };
 
   return (
-    <div className="flex bg-[#F8FAFC] min-h-screen font-sans selection:bg-primary/10 selection:text-primary relative overflow-hidden">
+    <div className="flex bg-transparent min-h-screen font-sans selection:bg-primary/10 selection:text-primary relative overflow-hidden">
       
       {isSidebarOpen && (
         <div 
@@ -275,38 +276,40 @@ function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-        <BrandProvider>
-          <DocumentHead />
-          <ToastContainer />
-          <ConfirmContainer />
-          <ReloadPrompt />
-          <React.Suspense fallback={<PageLoading />}>
-            <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/tv" element={<MonitorTV />} />
-            <Route path="/status/:id" element={<CustomerStatus />} />
+        <ThemeProvider>
+          <BrandProvider>
+            <DocumentHead />
+            <ToastContainer />
+            <ConfirmContainer />
+            <ReloadPrompt />
+            <React.Suspense fallback={<PageLoading />}>
+              <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/tv" element={<MonitorTV />} />
+              <Route path="/status/:id" element={<CustomerStatus />} />
 
-            {/* Rotas Administrativas */}
-            <Route path="/" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-            <Route path="/clientes" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Clientes /></AppLayout></ProtectedRoute>} />
-            <Route path="/vendas" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Vendas /></AppLayout></ProtectedRoute>} />
-            <Route path="/ordens" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR', 'OPERADOR']}><AppLayout><OrdensServico /></AppLayout></ProtectedRoute>} />
-            <Route path="/agenda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Agenda /></AppLayout></ProtectedRoute>} />
-            <Route path="/trabalhos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Trabalhos /></AppLayout></ProtectedRoute>} />
-            <Route path="/servicos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Servicos /></AppLayout></ProtectedRoute>} />
-            <Route path="/estoque" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Estoque /></AppLayout></ProtectedRoute>} />
-            <Route path="/colaboradores" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Colaboradores /></AppLayout></ProtectedRoute>} />
-            <Route path="/relatorios" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-            <Route path="/ajuda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Ajuda /></AppLayout></ProtectedRoute>} />
+              {/* Rotas Administrativas */}
+              <Route path="/" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+              <Route path="/clientes" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Clientes /></AppLayout></ProtectedRoute>} />
+              <Route path="/vendas" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Vendas /></AppLayout></ProtectedRoute>} />
+              <Route path="/ordens" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR', 'OPERADOR']}><AppLayout><OrdensServico /></AppLayout></ProtectedRoute>} />
+              <Route path="/agenda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Agenda /></AppLayout></ProtectedRoute>} />
+              <Route path="/trabalhos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Trabalhos /></AppLayout></ProtectedRoute>} />
+              <Route path="/servicos" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Servicos /></AppLayout></ProtectedRoute>} />
+              <Route path="/estoque" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Estoque /></AppLayout></ProtectedRoute>} />
+              <Route path="/colaboradores" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Colaboradores /></AppLayout></ProtectedRoute>} />
+              <Route path="/relatorios" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Relatorios /></AppLayout></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+              <Route path="/ajuda" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Ajuda /></AppLayout></ProtectedRoute>} />
 
-            {/* Rota do Operador */}
-            <Route path="/operador" element={<ProtectedRoute allowedRoles={['OPERADOR', 'ADM', 'GESTOR']}><OperadorLayoutWrapper /></ProtectedRoute>} />
+              {/* Rota do Operador */}
+              <Route path="/operador" element={<ProtectedRoute allowedRoles={['OPERADOR', 'ADM', 'GESTOR']}><OperadorLayoutWrapper /></ProtectedRoute>} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </React.Suspense>
-        </BrandProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </React.Suspense>
+          </BrandProvider>
+        </ThemeProvider>
       </AuthProvider>
     </Router>
   );

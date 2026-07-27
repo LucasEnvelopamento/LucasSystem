@@ -28,7 +28,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
 
   // Estados para cadastro rápido de veículo
   const [showQuickAddVehicle, setShowQuickAddVehicle] = useState(false);
-  const [newVehicleData, setNewVehicleData] = useState({ marca: '', modelo: '', placa: '', cor: '', ano: '', tipo: 'CARRO' });
+  const [newVehicleData, setNewVehicleData] = useState({ marca: '', modelo: '', placa: '', cor: '', ano: '', tipo: 'CARRO', porte: 'Hatch' });
 
   const { vehicles, saveVehicle } = useVehicles(selectedClient);
   const { inventory } = useInventory();
@@ -83,17 +83,22 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
     }
   };
 
-  const handleServiceToggle = (service) => {
+  const handleServiceToggle = (service, suggestedPrice, appliedPorte) => {
     setSelectedServices(prev => {
       const exists = prev.find(s => s.id === service.id);
       if (exists) {
         return prev.filter(s => s.id !== service.id);
       } else {
+        const finalPrice = (suggestedPrice !== undefined && suggestedPrice !== null) ? suggestedPrice : service.preco_base;
         return [...prev, { 
           id: service.id, 
           nome: service.nome, 
-          preco_custom: service.preco_base, 
+          preco_custom: finalPrice, 
           preco_base: service.preco_base,
+          preco_dinamico: finalPrice,
+          porte_aplicado: appliedPorte || null,
+          is_combo: service.is_combo || false,
+          itens_combo: service.itens_combo || [],
           garantia: service.garantia || '12 Meses',
           controle_estoque: service.controle_estoque,
           materiais: service.materiais || []
@@ -401,19 +406,17 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                       onChange={e => setNewVehicleData({...newVehicleData, ano: e.target.value})}
                                   />
                               </div>
-                              <div className="space-y-2">
-                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
-                                  <div className="flex gap-2">
-                                    <button 
-                                      type="button"
-                                      onClick={() => setNewVehicleData({...newVehicleData, tipo: 'CARRO'})}
-                                      className={`flex-1 py-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${newVehicleData.tipo === 'CARRO' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-100 text-slate-400'}`}
-                                    >Carro</button>
-                                    <button 
-                                      type="button"
-                                      onClick={() => setNewVehicleData({...newVehicleData, tipo: 'MOTO'})}
-                                      className={`flex-1 py-3 rounded-xl border-2 text-[10px] font-black uppercase transition-all ${newVehicleData.tipo === 'MOTO' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-100 text-slate-400'}`}
-                                    >Moto</button>
+                              <div className="space-y-2 col-span-1 sm:col-span-2">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Porte / Tipo</label>
+                                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                                    {['Hatch', 'Sedan', 'SUV', 'Pickup', 'Esportivo', 'Moto'].map((p) => (
+                                      <button 
+                                        type="button"
+                                        key={p}
+                                        onClick={() => setNewVehicleData({...newVehicleData, porte: p, tipo: p === 'Moto' ? 'MOTO' : 'CARRO'})}
+                                        className={`py-2.5 rounded-xl border-2 text-[9px] font-black uppercase transition-all ${newVehicleData.porte === p ? 'border-primary bg-primary/10 text-primary' : 'border-slate-100 text-slate-400 hover:border-slate-200 bg-white'}`}
+                                      >{p}</button>
+                                    ))}
                                   </div>
                               </div>
                           </div>
@@ -462,31 +465,58 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                         const st = service.tipo_veiculo.trim().toUpperCase();
                         return st === 'AMBOS' || st === vt;
                       })
-                      .map(service => (
-                      <div key={service.id} className="flex flex-col">
-                        <button 
-                          onClick={() => handleServiceToggle(service)}
-                        className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
-                          selectedServices.find(s => s.id === service.id) ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4 text-left">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                            selectedServices.find(s => s.id === service.id) ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-300'
-                          }`}>
-                            <Check size={16} strokeWidth={4} />
+                      .map(service => {
+                        const vehicle = vehicles.find(v => v.id == selectedVehicle);
+                        const vehiclePorte = vehicle?.porte || 'Hatch';
+                        const dynamicPrice = (service.precos_por_classe && service.precos_por_classe[vehiclePorte]) ? Number(service.precos_por_classe[vehiclePorte]) : null;
+                        const displayPrice = (dynamicPrice && dynamicPrice > 0) ? dynamicPrice : service.preco_base;
+                        const isDynamic = dynamicPrice && dynamicPrice > 0;
+
+                        return (
+                          <div key={service.id} className="flex flex-col">
+                            <button 
+                              onClick={() => handleServiceToggle(service, displayPrice, isDynamic ? vehiclePorte : null)}
+                            className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
+                              selectedServices.find(s => s.id === service.id) ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200 bg-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4 text-left">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                                selectedServices.find(s => s.id === service.id) ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/30' : 'bg-slate-50 text-slate-300'
+                              }`}>
+                                <Check size={16} strokeWidth={4} />
+                              </div>
+                              <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className="text-sm font-bold text-slate-700">{service.nome}</p>
+                                  {isDynamic && (
+                                    <span className="text-[8px] font-black uppercase bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded shadow-sm">
+                                      ⚡ Preço {vehiclePorte}
+                                    </span>
+                                  )}
+                                  {service.is_combo && (
+                                    <span className="text-[8px] font-black uppercase bg-purple-100 text-purple-800 border border-purple-200 px-1.5 py-0.5 rounded shadow-sm">
+                                      🎁 Combo ({service.itens_combo?.length || 0} itens)
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{service.categoria} {service.controle_estoque && '• Exige Material'}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-black text-slate-800">
+                                R$ {displayPrice.toLocaleString('pt-BR')}
+                              </p>
+                              {isDynamic && (
+                                <p className="text-[9px] text-slate-400 line-through">
+                                  R$ {service.preco_base.toLocaleString('pt-BR')}
+                                </p>
+                              )}
+                            </div>
+                          </button>
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-slate-700">{service.nome}</p>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{service.categoria} {service.controle_estoque && '• Exige Material'}</p>
-                          </div>
-                        </div>
-                        <p className="text-sm font-black text-slate-800">
-                          R$ {service.preco_base.toLocaleString('pt-BR')}
-                        </p>
-                      </button>
-                      </div>
-                    ))}
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -517,8 +547,23 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                           {selectedServices.map(service => (
                             <div key={service.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all hover:border-primary/20">
                               <div className="space-y-0.5">
-                                <p className="text-xs font-black text-slate-700 uppercase tracking-tight">{service.nome}</p>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase">Original: R$ {service.preco_base.toLocaleString('pt-BR')}</p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <p className="text-xs font-black text-slate-700 uppercase tracking-tight">{service.nome}</p>
+                                  {service.porte_aplicado && (
+                                    <span className="text-[8px] font-black uppercase bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
+                                      ⚡ {service.porte_aplicado}
+                                    </span>
+                                  )}
+                                  {service.is_combo && (
+                                    <span className="text-[8px] font-black uppercase bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">
+                                      🎁 Combo ({service.itens_combo?.length || 0} itens)
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                  Base: R$ {service.preco_base.toLocaleString('pt-BR')}
+                                  {service.porte_aplicado && ` • Dinâmico: R$ ${service.preco_dinamico?.toLocaleString('pt-BR')}`}
+                                </p>
                               </div>
                               <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 group-focus-within:border-primary/30 transition-all">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">R$</span>

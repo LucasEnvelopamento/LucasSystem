@@ -237,42 +237,69 @@ const ColaboradoresView = () => {
               setIsCreating(true);
               
               try {
-                // 1. Criar uma instância temporária que NÃO persiste sessão
-                // Isso evita que o ADM seja deslogado ao criar um novo usuário
-                const tempSupabase = createClient(
-                  import.meta.env.VITE_SUPABASE_URL,
-                  import.meta.env.VITE_SUPABASE_ANON_KEY,
-                  { 
-                    auth: { 
-                      persistSession: false,
-                      autoRefreshToken: false,
-                      detectSessionInUrl: false
-                    } 
-                  }
-                );
-
-                const { data, error } = await tempSupabase.auth.signUp({
-                  email: newUser.email,
-                  password: newUser.password,
-                  options: {
-                    data: {
-                      full_name: newUser.nome,
+                // 1. Tentar criar via Edge Function (com service_role no servidor para superar o gatilho padrão)
+                let edgeSuccess = false;
+                try {
+                  const { data: edgeData, error: edgeError } = await supabase.functions.invoke('create-user', {
+                    body: {
+                      email: newUser.email,
+                      password: newUser.password,
+                      nome: newUser.nome,
                       cargo: newUser.cargo
                     }
+                  });
+
+                  if (!edgeError && edgeData?.success) {
+                    edgeSuccess = true;
+                    toast.success(edgeData.message || 'Usuário criado com sucesso!');
+                  } else if (edgeError) {
+                    console.warn('Edge Function create-user indisponível ou erro, usando fallback local:', edgeError);
                   }
-                });
+                } catch (edgeEx) {
+                  console.warn('Fallback local ativado para criação de colaborador:', edgeEx);
+                }
 
-                if (error) throw error;
+                // 2. Fallback Seguro (caso Edge Function não esteja deployada no ambiente)
+                if (!edgeSuccess) {
+                  const tempSupabase = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    { 
+                      auth: { 
+                        persistSession: false,
+                        autoRefreshToken: false,
+                        detectSessionInUrl: false
+                      } 
+                    }
+                  );
 
-                toast.success('Usuário criado com sucesso!');
+                  const { data, error } = await tempSupabase.auth.signUp({
+                    email: newUser.email,
+                    password: newUser.password,
+                    options: {
+                      data: {
+                        full_name: newUser.nome,
+                        cargo: newUser.cargo
+                      }
+                    }
+                  });
+
+                  if (error) throw error;
+
+                  // Superar o gatilho padrão que força OPERADOR atualizando imediatamente via sessão do ADM
+                  if (data?.user) {
+                    await updateProfile(data.user.id, { cargo: newUser.cargo, nome: newUser.nome, status: true });
+                  }
+
+                  toast.success('Usuário criado com sucesso!');
+                  toast.info('Se o login falhar, verifique o e-mail para confirmação da conta.');
+                }
+
                 setShowAddModal(false);
-                fetchProfiles(); // Atualiza a lista
-                
-                // Alerta adicional
-                toast.info('Se o login falhar, verifique o e-mail para confirmação da conta.');
+                fetchProfiles(); // Atualiza a lista da equipe
               } catch (err) {
                 console.error(err);
-                toast.error(err.message || 'Erro ao criar usuário.');
+                toast.error(err.message || 'Erro ao criar colaborador.');
               } finally {
                 setIsCreating(false);
               }
