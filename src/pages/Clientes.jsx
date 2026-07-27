@@ -89,6 +89,39 @@ const ClientesView = () => {
         </button>
       </div>
 
+      {/* Banner Portal do Cliente (Meu Veículo) */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600/10 to-teal-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg flex-shrink-0">
+            🚗
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Portal do Cliente ("Meu Veículo")</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Área VIP logada por WhatsApp/Placa com histórico de serviços, laudos VCR e Certificados de Garantia.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const url = `${window.location.origin}/meu-veiculo`;
+              navigator.clipboard.writeText(url);
+              toast.success('Link do portal copiado! Envie pelo WhatsApp para o cliente 📋');
+            }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+          >
+            📋 Copiar Link do Portal
+          </button>
+          <a
+            href="/meu-veiculo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+          >
+            <span>Acessar Portal</span>
+          </a>
+        </div>
+      </div>
+
       {/* Barra de Ações */}
       <div className="flex flex-col md:flex-row gap-3 items-center">
         <div className="relative flex-1 w-full group">

@@ -469,32 +469,32 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Design Responsivo Avançado**: No celular ou tablet vertical, o formulário de resumo se posiciona perfeitamente abaixo das imagens, e no desktop/tablet horizontal, fica fixado na lateral de forma inteligente (sticky).
 
 ---
-### 🛠️ Fase 56: Hardening de Segurança, Validação de Uploads e Modularização (`useData.js`)
+### 🛠️ Fase 56: Hardening de Segurança, Validação de Uploads e Modularização (`useData.js`) (Concluída)
 - [x] **Validação de Uploads de Mídia**: Implementar verificação rigorosa de MIME Type whitelist (apenas imagens e mídias seguras) e limite de tamanho de 10MB no envio de fotos do operador para evitar injeção de arquivos perigosos.
 - [x] **Restrição de RLS para Operadores**: Ajustar política `FOR ALL` na tabela `ordens_servico`, garantindo permissão de **leitura total** (`SELECT`) para visualização da Fila Geral e atuação em emergências, e permissão controlada de **atualização** (`UPDATE`) apenas para OS ativas (bloqueando modificações em OS Concluídas/Entregues/Canceladas e negando `INSERT`/`DELETE`).
 - [x] **Modularização do `useData.js`**: Refatorar o arquivo monolítico de hooks em módulos limpos especializados (`useOrders`, `useClients`, `useCatalog`, `useMaterials`, etc.) facilitando code review e escalabilidade.
 - [x] **Criação Segura de Usuários**: Implementar criação de colaboradores via Admin API / Edge Function com `service_role`, garantindo que o cargo escolhido no modal (ADM/GESTOR/OPERADOR) seja persistido sem limitações do trigger padrão.
 
-### 🎯 Fase 57: Quick Wins Competitivos & Precificação Inteligente (Sprint 1 do Roadmap)
+### 🎯 Fase 57: Quick Wins Competitivos & Precificação Inteligente (Sprint 1 do Roadmap) (Concluída)
 - [x] **Preço Dinâmico por Classe de Veículo**: Cadastrar faixas automáticas de preços variando por porte (Hatch, Sedan, SUV, Pickup, Esportivo, Moto) sugeridas ao gestor na abertura de orçamento/OS.
 - [x] **Pacotes e Combos de Serviços**: Agrupar serviços no catálogo (Ex: PPF + Ceramic Coating + Insulfilm) aplicando descontos automáticos na seleção do combo.
 - [x] **QR Code Instantâneo na Recepção**: Gerar QR Code único com `tracking_token` ao abrir a OS para leitura direta e acompanhamento instantâneo pelo celular do cliente na loja.
 - [x] **Dark Mode Nativo**: Adicionar comutação de tema escuro de alto contraste em todo o painel gerencial (Dashboard do Gestor).
 
-### 📸 Fase 58: Documentação Visual Avançada & VCR (Sprint 2 do Roadmap)
-- [ ] **Fotos Antes/Depois por Serviço**: Implementar registro fotográfico comparativo obrigatório ou opcional na execução com guias de ângulos visuais (frontal, lateral, traseira).
-- [ ] **Laudo de Inspeção Digital (VCR - Vehicle Condition Report)**: Evoluir o checklist para gerar um laudo em PDF com fotos vinculadas por ponto de avaria assinado digitalmente e enviável por WhatsApp.
-- [ ] **Push Notifications PWA**: Habilitar notificações nativas em tempo real no dispositivo do operador e gestor (nova OS atribuída, alerta de estoque mínimo, aprovação de orçamento).
+### 📸 Fase 58: Documentação Visual Avançada & VCR (Sprint 2 do Roadmap) (Concluída)
+- [x] **Fotos Antes/Depois por Serviço**: Implementar registro fotográfico comparativo obrigatório ou opcional na execução com guias de ângulos visuais (frontal, lateral, traseira).
+- [x] **Laudo de Inspeção Digital (VCR - Vehicle Condition Report)**: Evoluir o checklist para gerar um laudo em PDF com fotos vinculadas por ponto de avaria assinado digitalmente e enviável por WhatsApp.
+- [x] **Push Notifications PWA**: Habilitar notificações nativas em tempo real no dispositivo do operador e gestor (nova OS atribuída, alerta de estoque mínimo, aprovação de orçamento).
 
-### 🌐 Fase 59: Portal do Cliente "Meu Veículo" & Self-Booking (Sprint 3 do Roadmap)
-- [ ] **Auto-Agendamento Online (Self-Booking)**: Página pública de reservas onde o cliente escolhe veículo, serviço e horário disponível com checagem de conflitos em tempo real e aprovação pelo gestor.
-- [ ] **Portal "Meu Veículo" (Área do Cliente)**: Área logada por Magic Link ou WhatsApp OTP com timeline do histórico completo da frota, fotos Antes/Depois e download de Certificados de Garantia.
-- [ ] **Sincronização de Calendário**: Integração de agendamentos via iCal feed com Google Calendar e Apple Calendar.
+### 🌐 Fase 59: Portal do Cliente "Meu Veículo" & Self-Booking (Sprint 3 do Roadmap) (Concluída)
+- [x] **Auto-Agendamento Online (Self-Booking)**: Página pública de reservas onde o cliente escolhe veículo, serviço e horário disponível com checagem de conflitos em tempo real e aprovação pelo gestor.
+- [x] **Portal "Meu Veículo" (Área do Cliente)**: Área logada por Magic Link ou WhatsApp OTP com timeline do histórico completo da frota, fotos Antes/Depois e download de Certificados de Garantia.
+- [x] **Sincronização de Calendário**: Integração de agendamentos via iCal feed com Google Calendar e Apple Calendar.
 
-### 🔄 Fase 60: Motor de Retenção & Pós-Venda Ativo (Sprint 4 do Roadmap)
-- [ ] **Pesquisa de Satisfação (NPS Automático)**: Disparo automático de mensagem via WhatsApp 24h após entrega perguntando nota de 0 a 10 com painel analítico de Detratores, Neutros e Promotores.
-- [ ] **Sistema de Garantia Ativa (Lembretes Automáticos)**: Automação que calcula término/revisão de garantia e alerta gestor (30 dias antes) e cliente por WhatsApp (15 e 7 dias antes) para agendar revisão.
-- [ ] **Lembretes de Manutenção Periódica**: Disparos preventivos periódicos por tipo de serviço (ex: inspeção de PPF a cada 12 meses, hidrofobia do Ceramic a cada 6 meses).
+### 🔄 Fase 60: Motor de Retenção & Pós-Venda Ativo (Sprint 4 do Roadmap) (Concluída)
+- [x] **Pesquisa de Satisfação (NPS Automático)**: Disparo automático de mensagem via WhatsApp 24h após entrega perguntando nota de 0 a 10 com painel analítico de Detratores, Neutros e Promotores.
+- [x] **Sistema de Garantia Ativa (Lembretes Automáticos)**: Automação que calcula término/revisão de garantia e alerta gestor (30 dias antes) e cliente por WhatsApp (15 e 7 dias antes) para agendar revisão.
+- [x] **Lembretes de Manutenção Periódica**: Disparos preventivos periódicos por tipo de serviço (ex: inspeção de PPF a cada 12 meses, hidrofobia do Ceramic a cada 6 meses).
 
 ### 📈 Fase 61: Inteligência Financeira (DRE) & Gamificação da Equipe (Sprint 5 do Roadmap)
 - [ ] **Dashboard Financeiro Avançado (DRE Simplificado)**: Painel gerencial detalhando Receita Bruta, Custo de Materiais deduzidos por OS, Margem de Lucro por Serviço, Lucro Líquido e Projeção de Fluxo de Caixa.
@@ -515,4 +515,4 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [ ] **Dashboard Gerencial na TV (Visão 360° Office)**: Painel de TV focado na gestão do escritório com métricas de faturamento do dia, ocupação dos técnicos e alertas críticos de estoque.
 
 ---
-*Última atualização: 27/07/2026 às 03:40 - STATUS: FASE 57 CONCLUÍDA — COMBOS, QR CODE NA RECEPÇÃO E DARK MODE NATIVO (COM REFINAMENTOS DE UI E CONTRASTE) EM TODO O SISTEMA ENTREGUES 🚀*
+*Última atualização: 27/07/2026 - STATUS: FASE 60 100% CONCLUÍDA (PESQUISA NPS AUTOMÁTICA, CENTRAL DE GARANTIAS ATIVAS E LEMBRETES DE MANUTENÇÃO PREVENTIVA) — DISPONÍVEL PARA HOMOLOGAÇÃO E AVANÇO À FASE 61 🚀*

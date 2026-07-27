@@ -16,13 +16,13 @@ import {
   Trash2
 } from 'lucide-react';
 import { getStatusStyle, formatCurrency } from '../../utils/statusUtils';
-import { useOrders } from '../../hooks/useData';
 import { confirmDialog } from '../../utils/confirm';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from '../../utils/toast';
+import PhotoGuideGallery from './PhotoGuideGallery';
 
 const DetalhesServicoModal = ({ os, onClose }) => {
-  const { fetchOsPhotos, removeServiceFromOrder } = useOrders();
+  const { fetchOsPhotos, removeServiceFromOrder, deleteOsPhoto } = useOrders();
   const { isGestor, isAdmin } = useAuth();
   const isManagement = isGestor || isAdmin;
   const [photos, setPhotos] = useState([]);
@@ -30,13 +30,13 @@ const DetalhesServicoModal = ({ os, onClose }) => {
 
   useEffect(() => {
     const loadPhotos = async () => {
-      if (!os?.id) return;
-      setLoadingPhotos(true);
-      const res = await fetchOsPhotos(os.id);
-      if (res.success) {
-        setPhotos(res.data.filter(p => p.tipo !== 'assinatura'));
-      }
-      setLoadingPhotos(false);
+       if (!os?.id) return;
+       setLoadingPhotos(true);
+       const res = await fetchOsPhotos(os.id);
+       if (res.success) {
+          setPhotos(res.data || []);
+       }
+       setLoadingPhotos(false);
     };
     loadPhotos();
   }, [os?.id]);
@@ -139,29 +139,28 @@ const DetalhesServicoModal = ({ os, onClose }) => {
             </div>
           </div>
 
-          {/* Galeria de Fotos da Execução */}
+          {/* Galeria Guiada 360° Antes x Depois */}
           <div className="space-y-4">
             <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-2 flex items-center gap-2">
-              <Camera size={14} className="text-primary" /> Galeria de Execução
+              <Camera size={14} className="text-primary" /> Inspeção e Documentação 360°
             </h4>
-            {loadingPhotos ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 size={24} className="text-primary animate-spin" />
-              </div>
-            ) : photos.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {photos.map((photo, i) => (
-                  <div key={photo.id || i} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:scale-[1.05] transition-all cursor-pointer bg-slate-50">
-                    <img src={photo.url} alt={`Execução ${i}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-slate-50 p-8 rounded-3xl border-2 border-dashed border-slate-200 text-center">
-                <Camera size={24} className="text-slate-300 mx-auto mb-2 opacity-30" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Nenhuma foto anexada pelo operador.</p>
-              </div>
-            )}
+            <PhotoGuideGallery
+              photos={photos}
+              onDelete={isManagement ? async (photoId, url) => {
+                const conf = await confirmDialog('Excluir Foto', 'Deseja realmente excluir esta foto da galeria?', 'Excluir', 'Cancelar');
+                if (conf) {
+                  const res = await deleteOsPhoto(photoId, url);
+                  if (res.success) {
+                    setPhotos(prev => prev.filter(p => p.id !== photoId && p.url !== url));
+                    toast.success('Foto removida!');
+                  } else toast.error('Erro ao remover foto.');
+                }
+              } : null}
+              isReadOnly={true}
+              loading={loadingPhotos}
+              vehicleDesc={os.veiculo_desc}
+              osId={os.id}
+            />
           </div>
 
           {/* Lista de Itens do Serviço */}

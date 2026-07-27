@@ -132,6 +132,59 @@ Para proporcionar conforto visual em ambientes com pouca iluminação, reduzir a
   - *Diagramas no Checklist Digital (`CarVisualChecklist.jsx`)*: Blindagem com estilo inline (`style={{ backgroundColor: '#ffffff' }}`) garantindo fundo branco fixo na área de desenho dos veículos em qualquer tema, preservando 100% da nitidez dos contornos pretos para marcação de avarias.
   - *QR Code da Recepção (`QRCodeModal.jsx`)*: Ajuste do cabeçalho no modo escuro para eliminar transparências leitosas, utilizando degradê dark puro e textos de alto contraste.
 
+### Fase 58: Documentação Visual Avançada & VCR (Vehicle Condition Report) 📸
+Para elevar a transparência para o proprietário do veículo, otimizar o controle técnico e prover blindagem jurídica em serviços automotivos, criamos uma suíte completa de inspeção visual:
+- **Guias de Ângulos Corporativos (`photoConstants.js`)**: Padronização em 5 ângulos estratégicos: Frontal 🏎️, Lateral Esquerda 🚗, Lateral Direita 🚙, Traseira 🚘 e Detalhe/Livre 📷, segmentados nas abas de fase: **Antes (Recepção)**, **Durante (Processo)** e **Depois (Acabamento)**.
+- **Galeria Guiada 360° (`PhotoGuideGallery.jsx`)**: Componente interativo que exibe dropzones tracejadas e thumbnails em alta resolução com suporte a lightbox, download e exclusão controlada.
+- **Comparador Visual Interativo (`PhotoComparisonModal.jsx`)**: Modal com duplo modo de inspeção (Deslizante/Slider e Lado a Lado/Split).
+- **Inspeção Digital Enriquecida (`CarVisualChecklist.jsx`)**: Os pontos de avaria marcados nos diagramas (Carro ou Moto) agora são numerados (1, 2, 3...) e interativos. Ao clicar ou criar um ponto, abre-se um modal de detalhamento que permite atribuir o **Tipo do Dano** (⚡ Risco, 🔨 Amassado, 🎨 Pintura Queimada, 🪟 Trinca, 🫧 Mancha, ❓ Outro), uma **Descrição Técnica** e **Anexar uma Foto Fotográfica Específica do Dano** (vinculada ao bucket `os-photos` e salva no array JSONB da vistoria sem necessidade de alteração de schema SQL).
+- **Laudo Digital de Inspeção (VCR - `VcrReportModal.jsx`)**: Gerador de relatório A4 completo, contendo cabeçalho corporativo com token/QR Code anti-IDOR, dados completos do cliente e veículo, mapa de avarias, tabela detalhada com miniaturas das fotos dos danos, termo de consentimento formal e quadro de assinatura digital.
+  - *Impressão e Exportação*: Suporte nativo a impressão física e salvar em PDF (`window.print()`).
+  - *Disparo via WhatsApp*: Botão dedicado que formata um resumo profissional da vistoria e envia via API do WhatsApp Web/Mobile com o link direto de acompanhamento.
+- **Push Notifications PWA & Web Audio API (`useNotifications.js` / `Header.jsx`)**: Sistema de alertas nativos em tempo real operando via Supabase Realtime no navegador e em dispositivos móveis (Android/iOS PWA e Desktop):
+  - *Chime de Áudio Zero-Latência*: Implementação nativa usando **Web Audio API** (`playNotificationChime`), gerando um sinal harmônico duplo (D5 + A5) diretamente pelo oscilador do navegador sem necessidade de carregamento de arquivos MP3 externos.
+  - *Disparo Push Nativo*: Integração via `ServiceWorkerRegistration.showNotification` e fallback `new Notification()` ativados por permissão interativa no Header do PWA (`[ 🔔 Ativar Alertas Push no Celular ]`).
+  - *Eventos Críticos Mapeados*: 
+    1. **Nova OS Atribuída**: Disparado automaticamente na aprovação de orçamento ou designação de técnico em `useQuotes.js` e `useOrders.js`.
+    2. **Alerta de Estoque Mínimo**: Disparado na transição de status para `ENTREGUE` caso o consumo de materiais reduza o estoque abaixo de `minimo_alerta` na tabela `estoque_materiais`.
+    3. **Aprovação de Orçamento**: Disparado sempre que o status de uma O.S. avança para `AGUARDANDO` ou `APROVADO`.
+  - *Democratização de Acesso*: Desbloqueado o sino de notificações para usuários com cargo `OPERADOR`, permitindo acompanhamento instantâneo de suas novas OS atribuídas no celular.
+
+### Fase 59: Portal do Cliente "Meu Veículo" & Self-Booking 🌐
+Para transformar a captação de clientes em um fluxo 100% automatizado, transparente e que funciona 24 horas por dia, implementamos o portal público de **Auto-Agendamento Online (`/agendar` ou `/reserva`)**:
+- **Pública e Isolada (`SelfBooking.jsx`)**: Página interativa sem necessidade de login prévio, acessível diretamente por link na bio do Instagram, WhatsApp da loja ou site.
+- **Wizard Interativo em 5 Etapas**:
+  1. *Identificação do Veículo*: Seleção de categoria por cartões (Hatch, Sedan, SUV, Pickup, Esportivo, Moto) com marca/modelo e ano.
+  2. *Catálogo de Serviços e Combos*: Leitura em tempo real da tabela `servicos` via política pública, permitindo seleção múltipla de serviços individuais ou combos promocionais com estimativa de valor em tempo real.
+  3. *Calendário Inteligente com Checagem de Conflitos*: Exibição dinâmica de dias úteis com seletor de horários. O sistema consulta a tabela `ordens_servico` e **bloqueia automaticamente (badge "Ocupado 🔒")** horários que já possuam agendamentos ativos na data.
+  4. *Resumo e Contato*: Validação de telefone e nome do cliente com card lateral resumo.
+  5. *Tela de Confirmação & WhatsApp*: Geração automática da solicitação como uma Ordem de Serviço em status `ORCAMENTO` (sujeita à aprovação da gerência), disparo imediato de alerta em tempo real e push na central de notificações do Gestor (`notificacoes`), e botão para o cliente enviar uma mensagem pré-formatada para o WhatsApp da loja.
+- **Divulgação na Agenda (`Agenda.jsx`)**: Adicionado banner explicativo na aba de Agenda do painel gerencial com botão **`[ 📋 Copiar Link ]`** para o gestor copiar instantaneamente a URL do portal e enviar para clientes.
+- **Portal VIP do Cliente — "Meu Veículo" (`/meu-veiculo` ou `/portal`)**:
+  - *Autenticação 2-em-1 Sem Atrito (`ClientPortal.jsx`)*: Sistema seguro de login por WhatsApp OTP ou acesso instantâneo via Placa + Telefone, persistido em `localStorage` para navegação contínua no celular.
+  - *Seletor de Frota ("Minha Frota")*: Filtro visual por cartões de todos os veículos vinculados ao cliente, permitindo visualização unificada ou individual por carro.
+  - *Timeline Cronológica Interativa*: Exibição vertical animada de todas as visitas à loja, detalhando data, investimento, status e descrição técnica dos serviços.
+  - *Evidências Fotográficas & Lightbox*: Integração com a tabela `os_midia` que exibe miniaturas das fotos Antes, Durante e Depois do serviço, abrindo em zoom de alta definição ao clicar.
+  - *Garantia Digital Ativa*: Para serviços concluídos ou entregues, disponibiliza o botão **`[ 📜 Certificado de Garantia ]`** que abre o nosso laudo oficial (`CertificadoGarantia.jsx`) para impressão ou salvamento em PDF.
+  - *Banner em Clientes (`Clientes.jsx`)*: Adicionada área de compartilhamento rápido no topo da listagem de clientes para envio instantâneo do link do portal pelo WhatsApp.
+- **Sincronização Universal de Calendário (`calendarUtils.js` & `CalendarSyncModal.jsx`)**:
+  - *Exportação Padrão RFC 5545 (iCalendar / `.ics`)*: Utilitário para formatação de datas em UTC, sanitização e montagem do feed VCALENDAR/VEVENT.
+  - *Integração Web em 1 Clique*: Geração dinâmica de URLs diretas para abertura com campos preenchidos no Google Calendar (`calendar.google.com/calendar/render?action=TEMPLATE...`) e Microsoft Outlook / 365.
+  - *Para o Gestor (`Agenda.jsx`)*: Botão **`[ 📅 Sincronizar Google/Apple ]`** no cabeçalho da agenda da loja que permite exportar em lote todos os futuros agendamentos e ordens em andamento em um único arquivo `.ics` para importação no celular do gerente ou gestor.
+  - *Para o Cliente*: Botões de adição rápida à agenda integrados na tela final de sucesso do Auto-Agendamento Online (`SelfBooking.jsx`) e em cada card da timeline do Portal "Meu Veículo" (`ClientPortal.jsx`), evitando esquecimentos de horários.
+
+- **Motor de Retenção & Pós-Venda Ativo — Pesquisa NPS Automática (`Fase 60`)**:
+  - *Banco de Dados (`pesquisas_nps`)*: Criada tabela dedicada com chave estrangeira para `ordens_servico(id)`, armazenando nota de 0 a 10, comentário e classificação automática em Promotor (9-10), Neutro (7-8) ou Detrator (0-6), com fallback de resiliência em `localStorage` para operação offline/demo.
+  - *Pública e Sem Atrito (`PesquisaNPS.jsx` & `/nps/:osId`)*: Interface interativa e otimizada para o cliente avaliar seu atendimento em 1 clique sem necessidade de login. Apresenta feedback visual dinâmico com emoticons e cores de acordo com a nota e convite final para compartilhamento no Instagram ou WhatsApp da loja.
+  - *Painel Analítico Gerencial (`NpsDashboard.jsx` & `Relatorios.jsx`)*: Incorporada nova aba **`[ ⭐ NPS & Retenção Ativa (24h) ]`** na Central de Relatórios.
+  - *Cálculo Real-Time de Net Promoter Score*: Medição automática da fórmula `(% Promotores - % Detratores)` indicando em tempo real se a loja opera em Zona de Excelência (75 a 100), Zona de Qualidade (50 a 74), Zona de Aperfeiçoamento (0 a 49) ou Zona Crítica (< 0).
+  - *Automação de Disparo no WhatsApp*: Fila ativa que monitora serviços entregues recentemente e disponibiliza botões de disparo individual ou em massa no WhatsApp com link personalizado contendo nome e veículo do cliente prontas para envio.
+  - *Alerta e Tratativa de Detratores*: Destacamento visual em vermelho pulsante para clientes que avaliaram com nota de 0 a 6, incluindo botão **`[ 🚨 Tratar Detrator ]`** que abre o WhatsApp com mensagem empática propondo agendamento de retorno para ajuste imediato e sem custo da garantia automotiva.
+  - *Garantia Ativa & Revisões Preventivas (`GarantiaAtivaDashboard.jsx`)*: Incorporada a aba **`[ 🛡️ Garantias & Manutenções Preventivas ]`** na Central de Relatórios.
+  - *Cálculo Inteligente de Ciclos de Vida*: Leitura dinâmica dos serviços entregues para computar o vencimento da garantia (ex: 12 meses, 3 anos, 10 anos) e emissão automática de alertas segmentados: Alerta Gestor (30 dias antes), Alerta Cliente (15 e 7 dias antes) e Alerta Urgente.
+  - *Lembretes de Manutenção Preventiva*: Detecção automática de serviços que necessitam de cuidados cíclicos para preservação de performance — ex: inspeção anual de bordas e regeneração em películas PPF (12 meses) e manutenção de repelência e hidrofobia em vitrificações cerâmicas 9H (6 meses).
+  - *Ações em 1 Clique*: Disparo individual ou em massa no WhatsApp com textos consultivos de pós-venda, gerando novas oportunidades de faturamento e agendamento contínuo de revisões, além do botão de acesso ao laudo digital do Certificado de Garantia.
+
 ---
 
 ## 🌐 Controle de Repositórios e Fluxo de Deploy Git
@@ -147,4 +200,4 @@ Para garantir a estabilidade do sistema em produção no nosso cliente e manter 
    - **Regra de Ouro:** **NOSSO CLIENTE SÓ VAMOS ENVIAR DEPOIS DE TUDO PRONTO E TESTADO!** Nunca subir código direto sem validação prévia. O envio para este repositório (`git push client main`) é realizado apenas após homologação total.
 
 ---
-*Última revisão da documentação: 27/07/2026 às 03:30 - Fase 57 entregue e testada (Build 100% OK).*
+*Última revisão da documentação: 27/07/2026 - Fase 60 100% concluída (Motor de Retenção & Pós-Venda Ativo: Pesquisa NPS Automática, Central de Garantias Ativas e Lembretes de Manutenção Preventiva - Build 100% OK).*

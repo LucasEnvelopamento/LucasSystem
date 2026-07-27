@@ -17,9 +17,10 @@ import {
 import { useOrders } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../utils/toast';
+import PhotoGuideGallery from '../components/features/PhotoGuideGallery';
 
 const ExecutorView = ({ os, onBack, onComplete }) => {
-  const { updateOrderProgress, uploadOsPhoto, fetchOsPhotos } = useOrders();
+  const { updateOrderProgress, uploadOsPhoto, fetchOsPhotos, deleteOsPhoto } = useOrders();
   const { profile } = useAuth();
   
   // Novos estados para múltiplos serviços
@@ -43,16 +44,12 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Busca fotos iniciais da OS
+  // Busca fotos iniciais da OS com suporte a ângulos e fases
   useEffect(() => {
     const loadPhotos = async () => {
        const res = await fetchOsPhotos(os.id);
        if (res.success) {
-          // Filtra para mostrar apenas fotos de execução, removendo assinaturas da galeria
-          setPhotos(res.data
-            .filter(p => p.tipo !== 'assinatura')
-            .map(p => p.url)
-          );
+          setPhotos(res.data || []);
        }
     };
     loadPhotos();
@@ -188,16 +185,21 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
     await updateOrderProgress(os.id, updateData);
   };
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+  const handlePhotoUpload = async (file, fase = 'durante', angulo = 'livre') => {
     if (!file) return;
 
     setIsUploading(true);
     try {
-      const res = await uploadOsPhoto(os.id, file);
+      const res = await uploadOsPhoto(os.id, file, fase, angulo);
       if (res.success) {
-        setPhotos(prev => [res.url, ...prev]);
-        toast.success('Foto enviada com sucesso!');
+        const newPhotoObj = res.data || {
+          id: Date.now(),
+          url: res.url,
+          fase_execucao: fase,
+          angulo: angulo
+        };
+        setPhotos(prev => [newPhotoObj, ...prev]);
+        toast.success(`Foto ${fase.toUpperCase()} (${angulo}) enviada!`);
       } else {
         toast.error('Erro ao enviar foto: ' + (res.error?.message || 'Falha no upload'));
       }
@@ -206,6 +208,16 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
       toast.error('Erro inesperado no upload.');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handlePhotoDelete = async (photoId, url) => {
+    const res = await deleteOsPhoto(photoId, url);
+    if (res.success) {
+      setPhotos(prev => prev.filter(p => p.id !== photoId && p.url !== url));
+      toast.success('Foto removida com sucesso!');
+    } else {
+      toast.error('Erro ao excluir foto.');
     }
   };
 
@@ -312,27 +324,17 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
           </div>
         </div>
 
-        {/* Documentação */}
+        {/* Documentação Fotográfica Guiada 360° */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between px-2">
-            <h4 className="text-[12px] font-black uppercase text-slate-400 tracking-[0.2em]">Relatório Técnico</h4>
-            <div className="flex gap-2">
-                <label className={`p-3 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-500 hover:border-emerald-200 transition-all cursor-pointer shadow-sm ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                   <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={isUploading} />
-                   {isUploading ? <Loader2 className="animate-spin" size={18} /> : <Camera size={18} />}
-                </label>
-            </div>
-          </div>
-
-          {photos.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {photos.map((url, i) => (
-                <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-slate-100 shadow-sm transition-transform hover:scale-105 bg-slate-50">
-                  <img src={url} alt={`Foto ${i}`} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
+          <PhotoGuideGallery
+            photos={photos}
+            onUpload={handlePhotoUpload}
+            onDelete={handlePhotoDelete}
+            isReadOnly={false}
+            loading={isUploading}
+            vehicleDesc={os.carro}
+            osId={os.id}
+          />
 
           <div className="bg-slate-50 rounded-[2.5rem] p-8 border-2 border-slate-100 shadow-inner focus-within:bg-white focus-within:border-primary/20 transition-all">
              <textarea 

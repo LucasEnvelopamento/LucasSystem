@@ -3,17 +3,21 @@ import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User, Car, Loader2, Mes
 import { useOrders, useQuotes } from '../hooks/useData';
 import NovoOrcamentoModal from '../components/features/NovoOrcamentoModal';
 import AgendamentoModal from '../components/features/AgendamentoModal';
+import CalendarSyncModal from '../components/ui/CalendarSyncModal';
+import { useBrand } from '../contexts/BrandContext';
 import { getStatusStyle } from '../utils/statusUtils';
 import { sendWhatsApp, getAppointmentConfirmationMsg } from '../utils/whatsappUtils';
 import { toast } from '../utils/toast';
 
 const AgendaView = () => {
+  const brand = useBrand();
   const [currentDate, setCurrentDate] = useState(new Date());
   const { orders, loading, fetchOrders } = useOrders();
   const { saveQuote, approveQuote } = useQuotes();
   
   const [showNovoModal, setShowNovoModal] = useState(false);
   const [showAgendaModal, setShowAgendaModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [selectedOS, setSelectedOS] = useState(null);
 
   const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -80,9 +84,51 @@ const AgendaView = () => {
           </div>
           <button onClick={() => setCurrentDate(new Date())} className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all">Hoje</button>
         </div>
-        <button onClick={() => setShowNovoModal(true)} className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2">
-          <Plus size={18} /> Novo Agendamento
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={() => setShowSyncModal(true)} 
+            className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-slate-900/30 transition-all border border-slate-700"
+            title="Sincronizar agendamentos com Google ou Apple Calendar"
+          >
+            <span>📅 Sincronizar Google/Apple</span>
+          </button>
+          <button onClick={() => setShowNovoModal(true)} className="btn-primary shadow-xl shadow-primary/20 flex items-center gap-2">
+            <Plus size={18} /> Novo Agendamento
+          </button>
+        </div>
+      </div>
+
+      {/* Banner Self-Booking Online */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-600/10 to-teal-500/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg flex-shrink-0">
+            🌐
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Portal de Auto-Agendamento (Self-Booking)</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Compartilhe seu link exclusivo na bio do Instagram ou WhatsApp para reservas online 24h.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const url = `${window.location.origin}/agendar`;
+              navigator.clipboard.writeText(url);
+              toast.success('Link do portal copiado para a área de transferência! 📋');
+            }}
+            className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+          >
+            📋 Copiar Link
+          </button>
+          <a
+            href="/agendar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+          >
+            <span>Ver Portal</span>
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
@@ -263,6 +309,14 @@ const AgendaView = () => {
            }}
          />
       )}
+
+      <CalendarSyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        ordersList={orders}
+        shopName={brand.name}
+        isManagerView={true}
+      />
     </div>
   );
 };

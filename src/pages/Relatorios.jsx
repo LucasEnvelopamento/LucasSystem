@@ -9,17 +9,22 @@ import {
   Wrench,
   FileText,
   ChevronDown,
-  Check
+  Check,
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 import { useOrders, useProfiles } from '../hooks/useData';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import Pagination from '../components/ui/Pagination';
+import NpsDashboard from '../components/features/NpsDashboard';
+import GarantiaAtivaDashboard from '../components/features/GarantiaAtivaDashboard';
 
 
 const Relatorios = () => {
   const { orders, loading: ordersLoading } = useOrders();
   const { profiles, loading: profilesLoading } = useProfiles();
   
+  const [activeTab, setActiveTab] = useState('GERENCIAL'); // 'GERENCIAL' ou 'NPS'
   const [startDate, setStartDate] = useState(getStartOfMonth());
   const [endDate, setEndDate] = useState(getEndOfMonth());
   const [searchTerm, setSearchTerm] = useState('');
@@ -181,9 +186,49 @@ const Relatorios = () => {
         </div>
       </div>
 
-      {/* KPI & Gráficos (Escondidos na Impressão) */}
-      <div className="kpi-section no-print space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Abas de Navegação interna no Relatório */}
+      <div className="flex items-center gap-3 no-print overflow-x-auto pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('GERENCIAL')}
+          className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'GERENCIAL' ? 'bg-slate-900 text-white shadow-xl shadow-slate-950/20 ring-2 ring-emerald-500/30' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <BarChart3 size={16} />
+          <span>📈 Visão Gerencial & Auditoria</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('NPS')}
+          className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'NPS' ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-xl shadow-emerald-950/40 ring-2 ring-emerald-400' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Star size={16} className={activeTab === 'NPS' ? 'fill-white' : ''} />
+          <span>⭐ NPS & Retenção Ativa (24h)</span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Ativo</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('GARANTIA')}
+          className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'GARANTIA' ? 'bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow-xl shadow-teal-950/40 ring-2 ring-teal-400' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <ShieldCheck size={16} />
+          <span>🛡️ Garantias & Manutenções Preventivas</span>
+          <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">Alerta 30/15d</span>
+        </button>
+      </div>
+
+      {activeTab === 'GERENCIAL' ? (
+        <>
+          {/* KPI & Gráficos (Escondidos na Impressão) */}
+          <div className="kpi-section no-print space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'Faturamento Bruto', value: `R$ ${stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'emerald' },
             { label: 'Total Serviços', value: stats.count, icon: Wrench, color: 'blue' },
@@ -407,7 +452,13 @@ const Relatorios = () => {
               h3, p, span, td, th { color: black !important; }
             }
          `}} />
-      </div>
+         </div>
+        </>
+      ) : activeTab === 'NPS' ? (
+        <NpsDashboard orders={orders} />
+      ) : (
+        <GarantiaAtivaDashboard orders={orders} />
+      )}
     </div>
   );
 };

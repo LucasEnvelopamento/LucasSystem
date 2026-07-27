@@ -136,6 +136,8 @@ CREATE TABLE IF NOT EXISTS public.os_midia (
     os_id INTEGER REFERENCES public.ordens_servico(id) ON DELETE CASCADE,
     url TEXT NOT NULL,
     tipo TEXT,
+    fase_execucao TEXT DEFAULT 'durante',
+    angulo TEXT DEFAULT 'livre',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
@@ -188,6 +190,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- B2. Sobrecarga universal para aceitar arrays de Texto (compatibilidade com qualquer banco)
+CREATE OR REPLACE FUNCTION public.check_user_role(required_roles text[])
+RETURNS boolean AS $$
+BEGIN
+  RETURN (
+    SELECT (cargo::text = ANY(required_roles))
+    FROM public.profiles
+    WHERE id = auth.uid()
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 
 -- 4. SEGURANÇA (RLS)
 -- ----------------------------------------------------------------------------
@@ -219,17 +233,26 @@ CREATE POLICY "Leitura essencial para Operador" ON public.servicos FOR SELECT US
 CREATE POLICY "OS: Leitura para Operador" ON public.ordens_servico FOR SELECT USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 CREATE POLICY "OS: Atualização para Operador" ON public.ordens_servico FOR UPDATE USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]) AND status NOT IN ('CONCLUÍDO', 'ENTREGUE', 'CANCELADO')) WITH CHECK (public.check_user_role(ARRAY['OPERADOR'::public.user_role]) AND status NOT IN ('CONCLUÍDO', 'ENTREGUE', 'CANCELADO'));
 
--- POLÍTICAS PARA CHECKLIST E MÍDIAS (Gestão e Operação)
+-- POLÍTICAS PARA CHECKLIST, MÍDIAS E NOTIFICAÇÕES (Gestão e Operação)
 CREATE POLICY "Checklist: Gestores total" ON public.checklist_avarias FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 CREATE POLICY "Checklist: Operadores gestão" ON public.checklist_avarias FOR ALL USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 CREATE POLICY "Midia: Gestores total" ON public.os_midia FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
 CREATE POLICY "Midia: Operadores gestão" ON public.os_midia FOR ALL USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
+CREATE POLICY "Notificacoes: Operadores gestão" ON public.notificacoes FOR ALL USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 
--- POLÍTICAS PÚBLICAS (MONITOR TV / LINK CLIENTE)
+-- POLÍTICAS PÚBLICAS (MONITOR TV / LINK CLIENTE / SELF-BOOKING / PORTAL MEU VEÍCULO)
 CREATE POLICY "Monitor TV Config Pública" ON public.loja_config FOR SELECT USING (true);
 CREATE POLICY "Monitor TV Perfis Pública" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Monitor TV OS Pública" ON public.ordens_servico FOR SELECT USING (true);
 CREATE POLICY "Trabalhos: Leitura Pública" ON public.trabalhos_recentes FOR SELECT USING (true);
+CREATE POLICY "Midia: Leitura Pública" ON public.os_midia FOR SELECT USING (true);
+CREATE POLICY "Servicos: Leitura Pública" ON public.servicos FOR SELECT USING (true);
+CREATE POLICY "Clientes: Leitura Pública Portal" ON public.clientes FOR SELECT USING (true);
+CREATE POLICY "Veiculos: Leitura Pública Portal" ON public.veiculos FOR SELECT USING (true);
+CREATE POLICY "Checklist: Leitura Pública Portal" ON public.checklist_avarias FOR SELECT USING (true);
+CREATE POLICY "OS: Criação Pública para Agendamento Online" ON public.ordens_servico FOR INSERT WITH CHECK (true);
+CREATE POLICY "Notificacoes: Criação Pública para Agendamentos" ON public.notificacoes FOR INSERT WITH CHECK (true);
+
 
 -- 5. STORAGE
 -- Criar bucket 'os-photos' manualmente como PUBLIC.
@@ -314,6 +337,27 @@ BEGIN
   RETURN QUERY SELECT TRUE, 'Estoque baixado com sucesso.';
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 11. TABELA DE PESQUISA DE SATISFAÇÃO (NPS E RETENÇÃO)
+CREATE TABLE IF NOT EXISTS public.pesquisas_nps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    os_id BIGINT REFERENCES public.ordens_servico(id) ON DELETE CASCADE,
+    cliente_nome TEXT NOT NULL,
+    cliente_telefone TEXT,
+    veiculo_texto TEXT,
+    servico_texto TEXT,
+    nota INT NOT NULL CHECK (nota >= 0 AND nota <= 10),
+    comentario TEXT,
+    classificacao TEXT NOT NULL, -- 'PROMOTOR' (9-10), 'NEUTRO' (7-8), 'DETRATOR' (0-6)
+    disparado_em TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    respondido_em TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.pesquisas_nps ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "NPS: Leitura Pública e Autenticada" ON public.pesquisas_nps FOR SELECT USING (true);
+CREATE POLICY "NPS: Inserção Pública e Autenticada" ON public.pesquisas_nps FOR INSERT WITH CHECK (true);
+CREATE POLICY "NPS: Atualização para todos" ON public.pesquisas_nps FOR UPDATE USING (true);
 ```
 
 ## 📋 Passo a Passo de Deploy
@@ -327,3 +371,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ### 📝 Histórico de Migrações
 - **Fase 53 (18/05/2026)**: Paginação de dados no lado do cliente. Não houve necessidade de alterações nas tabelas, esquemas ou procedimentos SQL do banco de dados, visto que o fatiamento e paginação foram orquestrados inteiramente na interface React para manter a reatividade Supabase Realtime intacta.
 - **Fase 54 (18/05/2026)**: Otimização da fila do operador e auto-início. Não houve alterações no banco de dados, visto que o auto-início e as validações de checklist foram integrados diretamente no fluxo de navegação do frontend React.
+- **Fase 58 (27/07/2026)**: Suporte a fotos Antes/Depois com guias de ângulos visuais (frontal, lateral esquerda, lateral direita, traseira, livre). Adicionadas colunas `fase_execucao` e `angulo` em `os_midia`, além da política RLS `Midia: Leitura Pública` para permitir acesso anônimo seguro de clientes no acompanhamento do status.
+- **Fase 60 (27/07/2026)**: Criação da tabela `pesquisas_nps` com colunas `os_id`, `nota` (0 a 10), `classificacao` (PROMOTOR, NEUTRO, DETRATOR) e políticas de RLS públicas/autenticadas para permitir a captação direta das avaliações de satisfação via link disparado por WhatsApp sem necessidade de login.

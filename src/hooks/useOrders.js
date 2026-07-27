@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase, hasRealConnection } from '../lib/supabase';
 import { validateMediaUpload } from '../utils/fileValidation';
+import { createNotification } from './useNotifications';
 
 export const useOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -132,13 +133,21 @@ export const useOrders = () => {
               for (const serv of currentOs.servicos_detalhados) {
                  if (serv.controle_estoque && Array.isArray(serv.materiais)) {
                     for (const mat of serv.materiais) {
-                       if (mat.material_id && mat.quantidade_utilizada > 0) {
-                          const { data: matData } = await supabase.from('estoque_materiais').select('quantidade').eq('id', mat.material_id).single();
+                        if (mat.material_id && mat.quantidade_utilizada > 0) {
+                          const { data: matData } = await supabase.from('estoque_materiais').select('quantidade, minimo_alerta, nome').eq('id', mat.material_id).single();
                           if (matData) {
                              const novoEstoque = Math.max(0, matData.quantidade - mat.quantidade_utilizada);
                              await supabase.from('estoque_materiais').update({ quantidade: novoEstoque }).eq('id', mat.material_id);
+                             if (novoEstoque <= (Number(matData.minimo_alerta) || 5)) {
+                               createNotification({
+                                 titulo: 'Alerta de Estoque Crítico ⚠️',
+                                 mensagem: `O material "${matData.nome || 'Item'}" atingiu o nível mínimo (${novoEstoque} restantes) após a OS #${id}.`,
+                                 tipo: 'ALERTA',
+                                 item_id: mat.material_id
+                               });
+                             }
                           }
-                       }
+                        }
                     }
                  }
               }
@@ -178,6 +187,21 @@ export const useOrders = () => {
         // Se não houver erro, o estado já foi atualizado otimisticamente
         // mas o fetchOrders garante que pegamos dados desnormalizados do banco (nomes, etc)
         fetchOrders(); 
+
+        if (data.tecnico_id || data.tecnico) {
+          createNotification({
+            titulo: 'Nova OS Atribuída 👨‍🔧',
+            mensagem: `A OS #${id} foi atribuída a um técnico para execução.`,
+            tipo: 'OS'
+          });
+        }
+        if (data.status === 'AGUARDANDO' || data.status === 'APROVADO') {
+          createNotification({
+            titulo: 'Orçamento Aprovado 🚀',
+            mensagem: `A OS #${id} foi confirmada e agendada para execução!`,
+            tipo: 'SUCESSO'
+          });
+        }
         return { success: true };
       } catch (error) {
         console.error('Falha crítica no hook useOrders:', error);
@@ -323,7 +347,7 @@ export const useOrders = () => {
     return { success: true };
   };
 
-  const uploadOsPhoto = async (osId, file) => {
+  const uploadOsPhoto = async (osId, file, fase = 'durante', angulo = 'livre') => {
     const validation = validateMediaUpload(file);
     if (!validation.valid) {
       return { success: false, error: { message: validation.error } };
@@ -332,7 +356,7 @@ export const useOrders = () => {
     if (hasRealConnection()) {
       try {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${osId}/${Date.now()}.${fileExt}`;
+        const fileName = `${osId}/${Date.now()}_${fase}_${angulo}.${fileExt}`;
         const filePath = `${fileName}`;
 
         // 1. Upload para o Bucket 'os-photos'
@@ -347,24 +371,42 @@ export const useOrders = () => {
           .from('os-photos')
           .getPublicUrl(filePath);
 
-        // 3. Salvar na Tabela 'os_midia'
-        const { error: dbError } = await supabase
+        // 3. Salvar na Tabela 'os_midia' com suporte resiliente às colunas de fase e ângulo
+        const payload = {
+          os_id: osId,
+          url: publicUrl,
+          tipo: `${fase}:${angulo}`,
+          fase_execucao: fase,
+          angulo: angulo
+        };
+
+        let { error: dbError, data: insertData } = await supabase
           .from('os_midia')
-          .insert({
+          .insert(payload)
+          .select()
+          .single();
+
+        // Se falhar porque o usuário ainda não rodou o script SQL com as colunas, faz fallback no campo 'tipo'
+        if (dbError && (dbError.code === '42703' || dbError.message?.includes('does not exist') || dbError.message?.includes('column'))) {
+          const fallbackPayload = {
             os_id: osId,
             url: publicUrl,
-            tipo: 'execucao'
-          });
+            tipo: `${fase}:${angulo}`
+          };
+          const res = await supabase.from('os_midia').insert(fallbackPayload).select().single();
+          dbError = res.error;
+          insertData = res.data;
+        }
 
         if (dbError) throw dbError;
 
-        return { success: true, url: publicUrl };
+        return { success: true, url: publicUrl, data: insertData || { url: publicUrl, fase_execucao: fase, angulo: angulo } };
       } catch (error) {
         console.error('Erro no upload de foto:', error);
         return { success: false, error };
       }
     }
-    return { success: true, url: URL.createObjectURL(file) };
+    return { success: true, url: URL.createObjectURL(file), data: { url: URL.createObjectURL(file), fase_execucao: fase, angulo: angulo, id: Date.now() } };
   };
 
   const fetchOsPhotos = async (osId) => {
@@ -375,9 +417,44 @@ export const useOrders = () => {
         .eq('os_id', osId)
         .order('created_at', { ascending: false });
       
-      return { success: !error, data: data || [], error };
+      const filtered = (data || []).filter(item => item.tipo !== 'assinatura' && item.fase_execucao !== 'assinatura').map(item => {
+        let fase = item.fase_execucao || 'durante';
+        let ang = item.angulo || 'livre';
+        if ((!item.fase_execucao || !item.angulo) && item.tipo && item.tipo.includes(':')) {
+          const parts = item.tipo.split(':');
+          fase = parts[0] || 'durante';
+          ang = parts[1] || 'livre';
+        }
+        return {
+          ...item,
+          fase_execucao: fase,
+          angulo: ang
+        };
+      });
+
+      return { success: !error, data: filtered, error };
     }
     return { success: true, data: [] };
+  };
+
+  const deleteOsPhoto = async (photoId, url) => {
+    if (hasRealConnection()) {
+      try {
+        if (url && url.includes('os-photos/')) {
+          const filePath = url.split('os-photos/')[1];
+          if (filePath) {
+            await supabase.storage.from('os-photos').remove([filePath]);
+          }
+        }
+        const { error } = await supabase.from('os_midia').delete().eq('id', photoId);
+        if (error) throw error;
+        return { success: true };
+      } catch (error) {
+        console.error('Erro ao excluir foto:', error);
+        return { success: false, error };
+      }
+    }
+    return { success: true };
   };
 
   const updateOrderServices = async (osId, newServices, newTotal) => {
@@ -403,5 +480,6 @@ export const useOrders = () => {
     return { success: true };
   };
 
-  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, deletePayment, removeServiceFromOrder, uploadOsPhoto, fetchOsPhotos, updateOrderServices };
+  return { orders, loading, fetchOrders, updateOrderProgress, saveOrderChecklist, deliverOrder, registerPayment, deletePayment, removeServiceFromOrder, uploadOsPhoto, fetchOsPhotos, deleteOsPhoto, updateOrderServices };
 };
+

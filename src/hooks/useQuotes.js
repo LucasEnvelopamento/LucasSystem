@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, hasRealConnection } from '../lib/supabase';
+import { createNotification } from './useNotifications';
 
 export const useQuotes = () => {
   const [quotes, setQuotes] = useState([]);
@@ -50,15 +51,25 @@ export const useQuotes = () => {
 
   const saveQuote = async (quoteData) => {
     if (hasRealConnection()) {
+      const statusFinal = quoteData.status || 'ORCAMENTO';
       const { data, error } = await supabase
         .from('ordens_servico')
         .insert([{ 
           ...quoteData, 
-          status: quoteData.status || 'ORCAMENTO',
+          status: statusFinal,
           created_at: new Date().toISOString() 
         }])
         .select();
-      if (!error) await fetchQuotes();
+      if (!error) {
+        await fetchQuotes();
+        if (quoteData.tecnico_id || statusFinal === 'AGUARDANDO' || statusFinal === 'EM_ANDAMENTO') {
+          createNotification({
+            titulo: 'Nova OS Atribuída 👨‍🔧',
+            mensagem: `Nova ordem de serviço cadastrada na fila e pronta para execução.`,
+            tipo: 'OS'
+          });
+        }
+      }
       return { success: !error, error, data: data?.[0] };
     }
     return { success: true };
@@ -89,7 +100,21 @@ export const useQuotes = () => {
         .from('ordens_servico')
         .update(updates)
         .eq('id', appointmentData.id);
-      if (!error) await fetchQuotes();
+      if (!error) {
+        await fetchQuotes();
+        createNotification({
+          titulo: 'Orçamento Aprovado 🚀',
+          mensagem: `A OS #${appointmentData.id || ''} teve o orçamento aprovado e foi agendada para execução!`,
+          tipo: 'SUCESSO'
+        });
+        if (appointmentData.tecnico_id) {
+          createNotification({
+            titulo: 'Nova OS Atribuída 👨‍🔧',
+            mensagem: `Uma nova OS foi agendada e atribuída para o dia ${new Date(appointmentData.data_agendamento || Date.now()).toLocaleDateString('pt-BR')}.`,
+            tipo: 'OS'
+          });
+        }
+      }
       return { success: !error, error };
     }
     return { success: true };

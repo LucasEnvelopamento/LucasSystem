@@ -32,6 +32,9 @@ const ProfilePage = React.lazy(() => import('./pages/Profile'));
 const CustomerStatus = React.lazy(() => import('./pages/CustomerStatus'));
 const Relatorios = React.lazy(() => import('./pages/Relatorios'));
 const Ajuda = React.lazy(() => import('./pages/Ajuda'));
+const SelfBooking = React.lazy(() => import('./pages/SelfBooking'));
+const ClientPortal = React.lazy(() => import('./pages/ClientPortal'));
+const PesquisaNPS = React.lazy(() => import('./pages/PesquisaNPS'));
 
 // Componente de Loading Premium para Transições de Rota
 const PageLoading = () => (
@@ -287,6 +290,12 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/tv" element={<MonitorTV />} />
               <Route path="/status/:id" element={<CustomerStatus />} />
+              <Route path="/agendar" element={<SelfBooking />} />
+              <Route path="/reserva" element={<SelfBooking />} />
+              <Route path="/meu-veiculo" element={<ClientPortal />} />
+              <Route path="/portal" element={<ClientPortal />} />
+              <Route path="/nps/:osId" element={<PesquisaNPS />} />
+              <Route path="/avaliar/:osId" element={<PesquisaNPS />} />
 
               {/* Rotas Administrativas */}
               <Route path="/" element={<ProtectedRoute allowedRoles={['ADM', 'GESTOR']}><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />

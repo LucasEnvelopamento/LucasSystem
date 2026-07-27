@@ -3,11 +3,15 @@ import { useParams } from 'react-router-dom';
 import { supabase, hasRealConnection } from '../lib/supabase';
 import { Car, Activity, CheckCircle2, ShieldCheck, LayoutGrid, MessageCircle, Instagram, Youtube, Music2 } from 'lucide-react';
 import { useBrand } from '../contexts/BrandContext';
+import { useOrders } from '../hooks/useData';
+import PhotoGuideGallery from '../components/features/PhotoGuideGallery';
 
 const CustomerStatus = () => {
   const { id } = useParams();
   const { name, logoUrl, whatsapp, instagramUrl, youtubeSocialUrl, tiktokUrl } = useBrand();
+  const { fetchOsPhotos } = useOrders();
   const [orders, setOrders] = useState([]);
+  const [photosMap, setPhotosMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -68,6 +72,22 @@ const CustomerStatus = () => {
       return () => supabase.removeChannel(channel);
     }
   }, [id, orders.length]);
+
+  useEffect(() => {
+    const loadAllPhotos = async () => {
+      const newMap = {};
+      for (const os of orders) {
+        const res = await fetchOsPhotos(os.id);
+        if (res.success) {
+          newMap[os.id] = res.data || [];
+        }
+      }
+      setPhotosMap(newMap);
+    };
+    if (orders.length > 0) {
+      loadAllPhotos();
+    }
+  }, [orders]);
 
   if (loading) {
     return (
@@ -195,6 +215,16 @@ const CustomerStatus = () => {
                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">SERVIÇO FINALIZADO!</span>
                </div>
              )}
+
+             {/* Vistoria e Galeria Antes x Depois do Cliente */}
+             <div className="mt-8 ml-4">
+               <PhotoGuideGallery
+                 photos={photosMap[item.id] || []}
+                 isReadOnly={true}
+                 vehicleDesc={item.veiculo_desc}
+                 osId={item.id}
+               />
+             </div>
 
           </div>
         ))}

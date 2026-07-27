@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { X, Save, AlertCircle, Info, MousePointer2, Trash2, ShieldCheck, ChevronRight, Camera, QrCode } from 'lucide-react';
+import { X, Save, AlertCircle, Info, MousePointer2, Trash2, ShieldCheck, ChevronRight, Camera, QrCode, FileText } from 'lucide-react';
 import { useBrand } from '../../contexts/BrandContext';
 import { useOrders } from '../../hooks/useData';
 import { sendWhatsApp, getVehicleReceivedMsg } from '../../utils/whatsappUtils';
 import { toast } from '../../utils/toast';
 import QRCodeModal from './QRCodeModal';
+import VcrReportModal from './VcrReportModal';
 
 const SignaturePad = ({ onSave, onCancel }) => {
   const canvasRef = React.useRef(null);
@@ -118,10 +119,13 @@ const CarVisualChecklist = ({ onClose, osData }) => {
   const [showSignature, setShowSignature] = useState(false);
   const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showVcrModal, setShowVcrModal] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [signature, setSignature] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { saveOrderChecklist } = useOrders();
+  const { saveOrderChecklist, uploadOsPhoto } = useOrders();
   
   const vehicleType = useMemo(() => {
     // Agora usamos o tipo explícito do banco de dados (carro ou moto)
@@ -208,7 +212,17 @@ const CarVisualChecklist = ({ onClose, osData }) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setPoints([...points, { id: Date.now(), view, x, y }]);
+    const newPoint = { 
+      id: Date.now(), 
+      view, 
+      x, 
+      y, 
+      tipo: '⚡ Risco / Arranhão', 
+      descricao: '', 
+      fotoUrl: '' 
+    };
+    setPoints([...points, newPoint]);
+    setSelectedPoint(newPoint);
   };
 
   const removePoint = (id) => setPoints(points.filter(p => p.id !== id));
@@ -259,12 +273,23 @@ const CarVisualChecklist = ({ onClose, osData }) => {
              <div className="text-[10px] font-black text-slate-400 uppercase">Falta: {viewId}.png</div>
           )}
           <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md">
-            {points.filter(p => p.view === viewId).map(p => (
-              <g key={p.id} onClick={(e) => { e.stopPropagation(); removePoint(p.id); }} className="pointer-events-auto cursor-pointer transition-transform hover:scale-125 hover:drop-shadow-2xl">
-                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="14" className="fill-rose-500/20 stroke-rose-500 stroke-[3]" />
-                <circle cx={`${p.x}%`} cy={`${p.y}%`} r="4" className="fill-rose-600" />
-              </g>
-            ))}
+            {points.filter(p => p.view === viewId).map(p => {
+              const ptIdx = points.findIndex(item => item.id === p.id) + 1;
+              return (
+                <g 
+                  key={p.id} 
+                  onClick={(e) => { e.stopPropagation(); setSelectedPoint(p); }} 
+                  className="pointer-events-auto cursor-pointer transition-transform hover:scale-125 hover:drop-shadow-2xl"
+                  title={`#${ptIdx} - ${p.tipo || 'Dano'} (Clique para detalhar)`}
+                >
+                  <circle cx={`${p.x}%`} cy={`${p.y}%`} r="14" className="fill-rose-500/30 stroke-rose-500 stroke-[3]" />
+                  <circle cx={`${p.x}%`} cy={`${p.y}%`} r="10" className="fill-rose-600" />
+                  <text x={`${p.x}%`} y={`${p.y}%`} textAnchor="middle" dy=".3em" className="fill-white text-[9px] font-black pointer-events-none">
+                    {ptIdx > 0 ? ptIdx : ''}
+                  </text>
+                </g>
+              );
+            })}
           </svg>
         </div>
       </div>
@@ -395,7 +420,15 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                       )}
                   </div>
 
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
+                  <div className="border-t border-slate-100 dark:border-slate-800 pt-6 space-y-3">
+                      <button 
+                        type="button"
+                        onClick={() => setShowVcrModal(true)}
+                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                      >
+                          <FileText size={16} /> Ver Laudo Digital (VCR PDF)
+                      </button>
+
                       <button 
                         onClick={() => setShowSignature(true)}
                         disabled={isSaving}
@@ -410,7 +443,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
                             <><Save size={14} /> Finalizar e Assinar</>
                           )}
                       </button>
-                      <button onClick={onClose} className="w-full mt-3 py-2 text-[9px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest hover:text-slate-900 dark:hover:text-white transition-all">Cancelar</button>
+                      <button onClick={onClose} className="w-full mt-1 py-2 text-[9px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest hover:text-slate-900 dark:hover:text-white transition-all">Cancelar</button>
                   </div>
                 </div>
               </div>
@@ -507,6 +540,159 @@ const CarVisualChecklist = ({ onClose, osData }) => {
             onClose();
           }} 
         />
+      )}
+
+      {showVcrModal && (
+        <VcrReportModal 
+          isOpen={showVcrModal}
+          onClose={() => setShowVcrModal(false)}
+          osData={osData}
+          points={points}
+          generalNotes={generalNotes}
+          km={km}
+          signature={signature}
+        />
+      )}
+
+      {selectedPoint && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-[#1e293b] rounded-3xl w-full max-w-md p-6 shadow-2xl border border-slate-100 dark:border-slate-700 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full bg-rose-500 text-white font-black text-xs flex items-center justify-center">
+                  {points.findIndex(p => p.id === selectedPoint.id) + 1 || '#'}
+                </span>
+                <h4 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-white">
+                  Registrar Avaria — {(selectedPoint.view || '').toUpperCase()}
+                </h4>
+              </div>
+              <button onClick={() => setSelectedPoint(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">Tipo de Avaria</label>
+              <div className="grid grid-cols-2 gap-2">
+                {['⚡ Risco / Arranhão', '🔨 Amassado / Mossa', '🎨 Pintura Queimada', '🪟 Trinca / Vidro', '🫧 Mancha / Resina', '❓ Outro / Desgaste'].map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => {
+                      const updated = points.map(p => p.id === selectedPoint.id ? { ...p, tipo: t } : p);
+                      setPoints(updated);
+                      setSelectedPoint({ ...selectedPoint, tipo: t });
+                    }}
+                    className={`py-2 px-2 rounded-xl text-[10px] font-black uppercase text-left truncate border transition-all ${
+                      (selectedPoint.tipo || '⚡ Risco / Arranhão') === t 
+                        ? 'bg-rose-500 text-white border-rose-500 shadow-md' 
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Descrição / Observação</label>
+              <input
+                type="text"
+                value={selectedPoint.descricao || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const updated = points.map(p => p.id === selectedPoint.id ? { ...p, descricao: val } : p);
+                  setPoints(updated);
+                  setSelectedPoint({ ...selectedPoint, descricao: val });
+                }}
+                placeholder="Ex: Risco profundo de 5cm perto da maçaneta"
+                className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-white focus:border-primary outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Foto da Avaria (Opcional)</label>
+              <div className="flex items-center gap-3">
+                {selectedPoint.fotoUrl ? (
+                  <div className="relative w-20 h-16 rounded-xl overflow-hidden border border-slate-200 group">
+                    <img src={selectedPoint.fotoUrl} alt="Avaria" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => {
+                        const updated = points.map(p => p.id === selectedPoint.id ? { ...p, fotoUrl: '' } : p);
+                        setPoints(updated);
+                        setSelectedPoint({ ...selectedPoint, fotoUrl: '' });
+                      }}
+                      className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ) : null}
+
+                <label className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-600 transition-all">
+                  {isUploadingPhoto ? (
+                    <span className="animate-pulse">Enviando...</span>
+                  ) : (
+                    <>
+                      <Camera size={16} className="text-primary" />
+                      <span>{selectedPoint.fotoUrl ? 'Trocar Foto' : 'Anexar Foto da Avaria'}</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    disabled={isUploadingPhoto}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploadingPhoto(true);
+                      try {
+                        const res = await uploadOsPhoto(osData.id, file, 'antes', 'livre');
+                        if (res.success && res.url) {
+                          const updated = points.map(p => p.id === selectedPoint.id ? { ...p, fotoUrl: res.url } : p);
+                          setPoints(updated);
+                          setSelectedPoint({ ...selectedPoint, fotoUrl: res.url });
+                          toast.success("Foto da avaria anexada!");
+                        } else {
+                          toast.error("Erro ao enviar foto: " + (res.error?.message || 'Tente novamente'));
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        toast.error("Erro ao enviar foto.");
+                      } finally {
+                        setIsUploadingPhoto(false);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => {
+                  removePoint(selectedPoint.id);
+                  setSelectedPoint(null);
+                }}
+                className="py-2.5 px-4 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
+              >
+                <Trash2 size={14} /> Excluir Ponto
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedPoint(null)}
+                className="py-2.5 px-6 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md shadow-primary/20 hover:scale-105 transition-all"
+              >
+                Confirmar Dano
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
