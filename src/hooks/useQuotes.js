@@ -19,11 +19,27 @@ export const useQuotes = () => {
           const veiculoObj = Array.isArray(q.veiculos) ? q.veiculos[0] : q.veiculos;
           const clienteObj = Array.isArray(q.clientes) ? q.clientes[0] : q.clientes;
 
+          let nomeCli = clienteObj?.nome || 'Cliente';
+          let telCli = clienteObj?.telefone;
+          let descVeic = veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''} ${veiculoObj.ano ? '(' + veiculoObj.ano + ')' : ''}`.trim() || 'Veículo' : 'Veículo';
+
+          // Fallback inteligente para propostas sem cliente vinculado na tabela
+          if ((!nomeCli || nomeCli === 'Cliente') && q.observacoes && q.observacoes.includes('👤 Cliente:')) {
+            const matchNome = q.observacoes.match(/👤 Cliente:\s*([^\n(]+)/);
+            if (matchNome && matchNome[1]) nomeCli = matchNome[1].trim();
+            const matchTel = q.observacoes.match(/\(([^)]+)\)/);
+            if (matchTel && matchTel[1]) telCli = matchTel[1].trim();
+          }
+          if ((!descVeic || descVeic === 'Veículo') && q.observacoes && q.observacoes.includes('🚗 Veículo:')) {
+            const matchVeic = q.observacoes.match(/🚗 Veículo:\s*([^\n]+)/);
+            if (matchVeic && matchVeic[1]) descVeic = matchVeic[1].trim();
+          }
+
           return {
             ...q,
-            cliente_nome: clienteObj?.nome || 'Cliente',
-            cliente_telefone: clienteObj?.telefone,
-            veiculo_desc: veiculoObj ? `${veiculoObj.marca || ''} ${veiculoObj.modelo || ''} ${veiculoObj.ano ? '(' + veiculoObj.ano + ')' : ''}`.trim() || 'Veículo' : 'Veículo',
+            cliente_nome: nomeCli,
+            cliente_telefone: telCli,
+            veiculo_desc: descVeic,
             placa: veiculoObj?.placa,
             valor: Number(q.valor_total) || 0,
             desconto: Number(q.desconto) || 0,

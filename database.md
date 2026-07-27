@@ -93,9 +93,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   cargo public.user_role DEFAULT 'OPERADOR',
   status boolean DEFAULT true,
   avatar_url text,
+  senha_temporaria text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS senha_temporaria text;
 
 CREATE TABLE IF NOT EXISTS public.ordens_servico (
     id SERIAL PRIMARY KEY,
@@ -119,6 +122,7 @@ CREATE TABLE IF NOT EXISTS public.ordens_servico (
     tracking_token UUID DEFAULT gen_random_uuid(),
     obs_tecnico TEXT,
     estoque_baixado BOOLEAN DEFAULT false,
+    origem TEXT DEFAULT 'LOJA',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
@@ -158,6 +162,26 @@ CREATE TABLE IF NOT EXISTS public.trabalhos_recentes (
     url TEXT NOT NULL,
     storage_path TEXT NOT NULL,
     categoria TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS public.pesquisas_nps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    os_id INTEGER REFERENCES public.ordens_servico(id) ON DELETE CASCADE,
+    cliente_nome TEXT,
+    veiculo TEXT,
+    nota INTEGER NOT NULL CHECK (nota >= 0 AND nota <= 10),
+    comentario TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+CREATE TABLE IF NOT EXISTS public.qa_auditorias (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    os_id INTEGER REFERENCES public.ordens_servico(id) ON DELETE CASCADE,
+    tecnico_id UUID REFERENCES public.profiles(id),
+    score INTEGER DEFAULT 5 CHECK (score >= 1 AND score <= 5),
+    observacoes TEXT,
+    status TEXT DEFAULT 'APROVADO',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
@@ -253,6 +277,19 @@ CREATE POLICY "Checklist: Leitura Pública Portal" ON public.checklist_avarias F
 CREATE POLICY "OS: Criação Pública para Agendamento Online" ON public.ordens_servico FOR INSERT WITH CHECK (true);
 CREATE POLICY "Notificacoes: Criação Pública para Agendamentos" ON public.notificacoes FOR INSERT WITH CHECK (true);
 
+-- Políticas para NPS e QA
+ALTER TABLE public.pesquisas_nps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.qa_auditorias ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "NPS: Acesso Total" ON public.pesquisas_nps FOR ALL USING (true);
+CREATE POLICY "QA: Gestores total" ON public.qa_auditorias FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE id = auth.uid() AND cargo::text IN ('ADM', 'GESTOR')
+  )
+);
+CREATE POLICY "QA: Leitura Técnicos" ON public.qa_auditorias FOR SELECT USING (auth.uid() IS NOT NULL);
+
 
 -- 5. STORAGE
 -- Criar bucket 'os-photos' manualmente como PUBLIC.
@@ -261,7 +298,7 @@ CREATE POLICY "Notificacoes: Criação Pública para Agendamentos" ON public.not
 -- UPDATE public.profiles SET cargo = 'ADM' WHERE email = 'cf95.souza@gmail.com';
 
 -- 7. REALTIME
-ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notificacoes, estoque_materiais, trabalhos_recentes;
+ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notificacoes, estoque_materiais, trabalhos_recentes, pesquisas_nps, qa_auditorias;
 
 
 

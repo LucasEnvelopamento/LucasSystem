@@ -37,20 +37,23 @@ const ClientPortal = React.lazy(() => import('./pages/ClientPortal'));
 const PesquisaNPS = React.lazy(() => import('./pages/PesquisaNPS'));
 
 // Componente de Loading Premium para Transições de Rota
-const PageLoading = () => (
-  <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-6 animate-in fade-in duration-700">
-    <div className="relative">
-      <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
+const PageLoading = () => {
+  const { name } = useBrand();
+  return (
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 gap-6 animate-in fade-in duration-700">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-primary/10 border-t-primary rounded-full animate-spin"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] mb-1">{name || 'OsSystem Automotivo'}</p>
+        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando módulo...</p>
       </div>
     </div>
-    <div className="text-center">
-      <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] mb-1">Lucas Envelopamento</p>
-      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">Sincronizando módulo...</p>
-    </div>
-  </div>
-);
+  );
+};
 
 // Sincronizador de Favicon e Title
 const DocumentHead = () => {

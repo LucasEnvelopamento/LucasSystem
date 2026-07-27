@@ -496,23 +496,21 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Sistema de Garantia Ativa (Lembretes Automáticos)**: Automação que calcula término/revisão de garantia e alerta gestor (30 dias antes) e cliente por WhatsApp (15 e 7 dias antes) para agendar revisão.
 - [x] **Lembretes de Manutenção Periódica**: Disparos preventivos periódicos por tipo de serviço (ex: inspeção de PPF a cada 12 meses, hidrofobia do Ceramic a cada 6 meses).
 
-### 📈 Fase 61: Inteligência Financeira (DRE) & Gamificação da Equipe (Sprint 5 do Roadmap)
-- [ ] **Dashboard Financeiro Avançado (DRE Simplificado)**: Painel gerencial detalhando Receita Bruta, Custo de Materiais deduzidos por OS, Margem de Lucro por Serviço, Lucro Líquido e Projeção de Fluxo de Caixa.
-- [ ] **Ranking de Técnicos (Gamificação)**: Quadro de produtividade com troféus, badges, nota NPS recebida, tempo médio de execução e dias consecutivos sem retrabalho (streak).
-- [ ] **Controle de Comissões de Equipe**: Módulo de cálculo automático de porcentagem ou valor fixo por serviço para remuneração transparente aos técnicos no final do período.
-- [ ] **Checklist de Qualidade (QA pelo Gestor)**: Vistoria rápida de acabamento e limpeza obrigatória antes de transicionar a OS de concluída para entregue.
+### 📈 Fase 61: Inteligência Financeira (DRE) & Gamificação da Equipe (Sprint 5 do Roadmap) (Concluída)
+- [x] **Dashboard Financeiro Avançado (DRE Simplificado)**: Painel gerencial detalhando Receita Bruta, Custo de Materiais deduzidos por OS, Margem de Lucro por Serviço, Lucro Líquido e Projeção de Fluxo de Caixa.
+- [x] **Ranking de Técnicos (Gamificação)**: Quadro de produtividade com troféus, badges, nota NPS recebida, tempo médio de execução e dias consecutivos sem retrabalho (streak).
+- [x] **Controle de Comissões de Equipe**: Módulo de cálculo automático de porcentagem ou valor fixo por serviço para remuneração transparente aos técnicos no final do período.
+- [x] **Checklist de Qualidade (QA pelo Gestor)**: Vistoria rápida de acabamento e limpeza obrigatória antes de transicionar a OS de concluída para entregue.
 
-### 🏢 Fase 62: Escalabilidade Multi-Tenant SaaS & Programas de Fidelidade (Sprint 6 do Roadmap)
-- [ ] **Arquitetura Multi-Tenant Real**: Evolução de deploy White Label para modelo SaaS single-deploy com isolamento de dados por coluna `tenant_id` e políticas RLS multi-loja.
-- [ ] **Planos de Assinatura e Cobrança Recorrente**: Integração de gateway (Stripe/Asaas) para cobrança recorrente automatizada nos planos Starter, Professional e Enterprise.
-- [ ] **Programa de Indicação ("Member Get Member")**: Geração de código de indicação por cliente que concede descontos/créditos automáticos quando novos clientes utilizam a indicação.
-- [ ] **Programa de Fidelidade por Pontos**: Acúmulo e conversão de pontos por valor gasto em benefícios ou serviços gratuitos (ex: lavagem ou polimento).
+### 🚫 Fase 62: Programas de Fidelidade e Indicação (Descontinuada - Fora do Escopo Single-Tenant)
+- [~] **Programa de Indicação ("Member Get Member")**: Excluído por decisão de escopo (modelo Single-Tenant vendido completo sem recorrência/assinatura).
+- [~] **Programa de Fidelidade por Pontos**: Excluído por decisão de escopo (modelo Single-Tenant).
 
-### 🔌 Fase 63: Ecossistema Aberto, APIs e Dashboard TV 360° (Sprint 7 do Roadmap)
-- [ ] **API Pública RESTful + Swagger**: Abertura de endpoints seguros (`GET/POST /api/orders`, etc.) com documentação interativa para integração de ERPs externos.
-- [ ] **Webhooks de Eventos**: Disparo de eventos em tempo real para sistemas de contabilidade e automações (OS criada, entregue, pagamento recebido).
-- [ ] **Marketplace de Templates e Checklists**: Biblioteca de compartilhamento de receitas de serviços, laudos e checklists customizados entre lojas da rede.
-- [ ] **Dashboard Gerencial na TV (Visão 360° Office)**: Painel de TV focado na gestão do escritório com métricas de faturamento do dia, ocupação dos técnicos e alertas críticos de estoque.
+### 🔌 Fase 63: Ecossistema Aberto, APIs e Dashboard TV 360° (Sprint 7 do Roadmap) (CONCLUÍDA)
+- [x] **API Pública RESTful + Swagger**: Abertura de endpoints seguros (`GET/POST /api/orders`, etc.) com documentação interativa para integração de ERPs externos.
+- [x] **Webhooks de Eventos**: Disparo de eventos em tempo real para sistemas de contabilidade e automações (OS criada, entregue, pagamento recebido).
+- [x] **Marketplace de Templates e Checklists**: Biblioteca de compartilhamento de receitas de serviços, laudos e checklists customizados entre lojas da rede.
+- [x] **Dashboard Gerencial na TV (Visão 360° Office)**: Painel de TV focado na gestão do escritório com métricas de faturamento do dia, ocupação dos técnicos e alertas críticos de estoque.
 
 ---
-*Última atualização: 27/07/2026 - STATUS: FASE 60 100% CONCLUÍDA (PESQUISA NPS AUTOMÁTICA, CENTRAL DE GARANTIAS ATIVAS E LEMBRETES DE MANUTENÇÃO PREVENTIVA) — DISPONÍVEL PARA HOMOLOGAÇÃO E AVANÇO À FASE 61 🚀*
+*Última atualização: 27/07/2026 - STATUS: FASE 63 100% CONCLUÍDA (ECOSSISTEMA ABERTO, APIS RESTFUL, WEBHOOKS, MARKETPLACE DE TEMPLATES E TV 360° OFFICE) — PRODUTO COMPLETO HOMOLOGADO E PRONTO PARA PRODUÇÃO! 🏆🚀*

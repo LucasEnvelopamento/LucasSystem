@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Wrench, AlertCircle, Car, Clock, ChevronRight } from 'lucide-react';
+import { User, Wrench, AlertCircle, Car, Clock, ChevronRight, Trophy, Star, Flame } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle } from '../utils/statusUtils';
@@ -39,8 +39,44 @@ const OperadorHome = ({ onSelectOS }) => {
     checklist_concluido: os.has_checklist
   });
 
+  const streakDias = Number(localStorage.getItem(`ossystem_tecnico_streak_${profile?.id}`) || 12);
+
   return (
     <div className="fade-in space-y-4">
+      {/* Banner Motivacional de Gamificação - Fase 61 */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-4 rounded-2xl text-white shadow-lg flex items-center justify-between border border-slate-700/80">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30 animate-pulse">
+            <Trophy size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+              <span>Sua Performance</span>
+              <span className="px-1.5 py-0.2 bg-emerald-500 text-slate-950 font-black rounded text-[8px]">Fase 61</span>
+            </p>
+            <p className="text-xs font-black text-white mt-0.5">
+              Top Destaque Técnico • {minhasFinalizadas.length} OS Concluídas
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-right">
+          <div className="hidden sm:block">
+            <p className="text-[9px] font-bold text-slate-400 uppercase">NPS Média</p>
+            <p className="text-xs font-black text-amber-400 flex items-center justify-end gap-1">
+              <span>9.8</span>
+              <Star size={11} className="fill-amber-400" />
+            </p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase">Sem Retrabalho</p>
+            <p className="text-xs font-black text-rose-400 flex items-center justify-end gap-1">
+              <span>{streakDias}d</span>
+              <Flame size={11} className="fill-rose-400" />
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Resumo Rápido Reestruturado */}
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">

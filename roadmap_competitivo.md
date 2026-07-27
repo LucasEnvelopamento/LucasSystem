@@ -237,27 +237,16 @@ Os concorrentes internacionais (Urable, RoadFS, Anolla) são genéricos ou focad
 
 ---
 
-### ⚫ FASE F: Escalabilidade e Profissionalismo (Multi-Tenant SaaS)
+### ⚫ FASE F: Ecossistema Aberto e Marketplace (Modelo White Label Single-Tenant)
 
-#### F1. Multi-Tenant Real (SaaS)
-**O que é:** Em vez de deploys separados por cliente (White Label atual), ter um único deploy com isolamento por tenant.
-**Por que:** Reduz custo operacional de 1 Supabase por cliente para 1 Supabase para todos.
-**Como funciona:**
-- Coluna `tenant_id` em todas as tabelas
-- RLS filtra por tenant automaticamente
-- Subdomínio por loja: `lucasenvelopamento.ossystem.com.br`
-- Painel Master para gerenciar todos os tenants
+> [!IMPORTANT]
+> **Decisão de Modelo de Negócios:** Os itens F1 (Multi-Tenant SaaS) e F2 (Planos de Assinatura) foram **EXCLUÍDOS DO ESCOPO**, pois o OsSystem segue o modelo comercial de venda completa da licença White Label Single-Tenant para cada cliente (sem cobranças de mensalidade ou assinaturas de software da oficina).
 
-#### F2. Plano de Assinatura e Cobrança
-**O que é:** Sistema de planos para cobrar mensalidade dos clientes B2B.
-**Planos sugeridos:**
-| Plano | Preço | Limites |
-|:---|:---|:---|
-| **Starter** | R$ 97/mês | 1 usuário, 50 OS/mês, sem TV |
-| **Professional** | R$ 197/mês | 5 usuários, OS ilimitada, TV, WhatsApp |
-| **Enterprise** | R$ 397/mês | Ilimitado, Multi-filial, API, Suporte Premium |
+#### ~~F1. Multi-Tenant Real (SaaS)~~ (EXCLUÍDO DO ESCOPO)
+**Motivo da Exclusão:** O sistema é entregue completo em instância dedicada por cliente (Single-Tenant White Label), garantindo isolamento total de banco de dados e performance sem compartilhamento de recursos (Multi-Tenant).
 
-**Integração:** Stripe ou Asaas para cobrança recorrente automática.
+#### ~~F2. Plano de Assinatura e Cobrança~~ (EXCLUÍDO DO ESCOPO)
+**Motivo da Exclusão:** O sistema é comercializado como produto fechado/completo sem mensalidade de software (assinaturas).
 
 #### F3. Marketplace de Templates/Checklists
 **O que é:** Biblioteca de templates compartilhados entre lojas.

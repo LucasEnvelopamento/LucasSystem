@@ -11,13 +11,17 @@ import {
   ChevronDown,
   Check,
   Star,
-  ShieldCheck
+  ShieldCheck,
+  PieChart,
+  Monitor
 } from 'lucide-react';
 import { useOrders, useProfiles } from '../hooks/useData';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
 import Pagination from '../components/ui/Pagination';
 import NpsDashboard from '../components/features/NpsDashboard';
 import GarantiaAtivaDashboard from '../components/features/GarantiaAtivaDashboard';
+import DreDashboard from '../components/features/DreDashboard';
+import Tv360OfficeView from '../components/features/Tv360OfficeView';
 
 
 const Relatorios = () => {
@@ -25,6 +29,7 @@ const Relatorios = () => {
   const { profiles, loading: profilesLoading } = useProfiles();
   
   const [activeTab, setActiveTab] = useState('GERENCIAL'); // 'GERENCIAL' ou 'NPS'
+  const [showTv360, setShowTv360] = useState(false);
   const [startDate, setStartDate] = useState(getStartOfMonth());
   const [endDate, setEndDate] = useState(getEndOfMonth());
   const [searchTerm, setSearchTerm] = useState('');
@@ -222,7 +227,31 @@ const Relatorios = () => {
           <span>🛡️ Garantias & Manutenções Preventivas</span>
           <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 font-extrabold text-[10px]">Alerta 30/15d</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('DRE')}
+          className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'DRE' ? 'bg-gradient-to-r from-emerald-700 to-slate-900 text-white shadow-xl shadow-emerald-950/40 ring-2 ring-emerald-500' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <PieChart size={16} className={activeTab === 'DRE' ? 'text-emerald-400' : ''} />
+          <span>📊 DRE & Fluxo de Caixa</span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 61</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowTv360(true)}
+          className="px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 shadow-xl"
+        >
+          <Monitor size={16} className="animate-pulse text-emerald-400" />
+          <span>🖥️ TV 360° Office</span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 63</span>
+        </button>
       </div>
+
+      {showTv360 && <Tv360OfficeView onClose={() => setShowTv360(false)} />}
 
       {activeTab === 'GERENCIAL' ? (
         <>
@@ -456,8 +485,10 @@ const Relatorios = () => {
         </>
       ) : activeTab === 'NPS' ? (
         <NpsDashboard orders={orders} />
-      ) : (
+      ) : activeTab === 'GARANTIA' ? (
         <GarantiaAtivaDashboard orders={orders} />
+      ) : (
+        <DreDashboard orders={orders} />
       )}
     </div>
   );

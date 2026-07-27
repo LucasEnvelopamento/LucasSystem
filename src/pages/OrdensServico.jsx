@@ -26,6 +26,7 @@ import PagamentoModal from '../components/features/PagamentoModal';
 import DetalhesServicoModal from '../components/features/DetalhesServicoModal';
 import AtribuirTecnicoModal from '../components/features/AtribuirTecnicoModal';
 import QRCodeModal from '../components/features/QRCodeModal';
+import QaChecklistModal from '../components/features/QaChecklistModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getStatusStyle, formatCurrency } from '../utils/statusUtils';
 import CarVisualChecklist from '../components/features/CarVisualChecklist';
@@ -50,6 +51,7 @@ const OrdensServico = () => {
   const [showPagamento, setShowPagamento] = useState(false);
   const [showDetalhes, setShowDetalhes] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [showQaModal, setShowQaModal] = useState(false);
   const { isAdmin, isGestor } = useAuth();
   const isManagement = isAdmin || isGestor;
   const [activePaymentOS, setActivePaymentOS] = useState(null);
@@ -327,20 +329,9 @@ const OrdensServico = () => {
                               <Zap size={20} fill="currentColor" />
                             </button>
                             <button 
-                              onClick={async () => {
-                                const confirm = await confirmDialog(
-                                  'Confirmar Entrega',
-                                  'Deseja registrar a entrega do veículo ao cliente? Esta OS será finalizada e sairá da lista ativa.',
-                                  'Confirmar Entrega',
-                                  'Cancelar'
-                                );
-                                if (confirm) {
-                                  const result = await deliverOrder(os.id);
-                                  if (result.success) toast.success('Veículo entregue com sucesso!');
-                                }
-                              }}
+                              onClick={() => { setActiveOS(os); setShowQaModal(true); }}
                               className="p-2.5 hover:bg-amber-50 rounded-xl text-amber-600 hover:text-amber-800 transition-all border border-transparent hover:border-amber-200"
-                              title="Confirmar Entrega"
+                              title="Vistoria QA & Confirmar Entrega"
                             >
                               <PackageCheck size={20} />
                             </button>
@@ -453,6 +444,30 @@ const OrdensServico = () => {
           onClose={() => {
             setShowQRCode(false);
             setActiveOS(null);
+          }}
+        />
+      )}
+      {showQaModal && currentActiveOS && (
+        <QaChecklistModal
+          os={currentActiveOS}
+          onClose={() => { setShowQaModal(false); setActiveOS(null); }}
+          onApprove={async (score, obs) => {
+            const result = await deliverOrder(currentActiveOS.id);
+            if (result.success) {
+              setShowQaModal(false);
+              setActiveOS(null);
+            }
+          }}
+          onReject={async (obs) => {
+            const result = await updateOrderProgress(currentActiveOS.id, {
+              status: 'EM EXECUÇÃO',
+              progresso: 80,
+              observacoes: `[RETRABALHO QA]: ${obs}`
+            });
+            if (result.success) {
+              setShowQaModal(false);
+              setActiveOS(null);
+            }
           }}
         />
       )}

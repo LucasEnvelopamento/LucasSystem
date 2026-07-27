@@ -13,20 +13,32 @@ import {
   UserPlus, 
   Loader2,
   Lock,
-  Edit2
+  Edit2,
+  Trophy,
+  DollarSign,
+  Key,
+  MessageCircle
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { useProfiles } from '../hooks/useData';
+import { useProfiles, useOrders } from '../hooks/useData';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../utils/toast';
 import { supabase } from '../lib/supabase';
+import TecnicosRanking from '../components/features/TecnicosRanking';
+import ComissoesExtrato from '../components/features/ComissoesExtrato';
 
 const ColaboradoresView = () => {
   const { profiles, loading, updateProfile, fetchProfiles } = useProfiles();
+  const { orders } = useOrders();
   const { profile: currentUserProfile, isAdmin } = useAuth();
+  const [activeTab, setActiveTab] = useState('MEMBROS'); // 'MEMBROS', 'RANKING', 'COMISSOES'
   const [updatingId, setUpdatingId] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingColab, setEditingColab] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetingColab, setResetingColab] = useState(null);
+  const [newManualPassword, setNewManualPassword] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', cargo: 'OPERADOR' });
   const [isCreating, setIsCreating] = useState(false);
@@ -107,7 +119,46 @@ const ColaboradoresView = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Abas de Navegação - Fase 61 */}
+      <div className="flex items-center gap-3 overflow-x-auto pb-2 no-print">
+        <button
+          type="button"
+          onClick={() => setActiveTab('MEMBROS')}
+          className={`px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'MEMBROS' ? 'bg-slate-900 text-white shadow-xl ring-2 ring-primary/30' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Users size={16} />
+          <span>👥 Membros & Acessos</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('RANKING')}
+          className={`px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'RANKING' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xl shadow-emerald-950/20 ring-2 ring-emerald-400' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Trophy size={16} className={activeTab === 'RANKING' ? 'text-amber-300' : ''} />
+          <span>🏆 Ranking & Gamificação</span>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 61</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('COMISSOES')}
+          className={`px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 flex-shrink-0 ${
+            activeTab === 'COMISSOES' ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xl shadow-amber-950/20 ring-2 ring-amber-400' : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <DollarSign size={16} className={activeTab === 'COMISSOES' ? 'text-white' : ''} />
+          <span>💰 Extrato de Comissões</span>
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 font-extrabold text-[10px]">Fase 61</span>
+        </button>
+      </div>
+
+      {activeTab === 'MEMBROS' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {profiles.map((colab) => (
           <div key={colab.id} className={`card-premium p-6 text-center group border-0 shadow-xl shadow-slate-200/50 transition-all duration-500 ${!colab.status ? 'opacity-50 grayscale' : 'hover:shadow-2xl hover:shadow-primary/5'}`}>
             <div className="relative inline-block mb-6">
@@ -176,6 +227,14 @@ const ColaboradoresView = () => {
                 >
                   <Edit2 size={18} />
                 </button>
+
+                <button 
+                  onClick={() => { setResetingColab(colab); setNewManualPassword(Math.random().toString(36).slice(-8)); setShowResetModal(true); }}
+                  className="p-3 bg-slate-50 hover:text-amber-600 hover:bg-amber-50 text-slate-500 rounded-xl border border-slate-100 transition-all ml-2"
+                  title="Gerenciar Acesso & Redefinir Senha"
+                >
+                  <Key size={18} />
+                </button>
               </div>
             )}
           </div>
@@ -188,6 +247,11 @@ const ColaboradoresView = () => {
           </div>
         )}
       </div>
+      ) : activeTab === 'RANKING' ? (
+        <TecnicosRanking profiles={profiles} orders={orders} />
+      ) : (
+        <ComissoesExtrato profiles={profiles} orders={orders} />
+      )}
 
       {showEditModal && editingColab && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
@@ -222,6 +286,146 @@ const ColaboradoresView = () => {
                 <button type="submit" className="flex-1 py-4 bg-primary text-white rounded-xl font-black uppercase text-[10px] shadow-lg shadow-primary/20 hover:bg-emerald-600 tracking-widest">Salvar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+
+      {/* Modal Redefinir Senha & Acesso do Operador */}
+      {showResetModal && resetingColab && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl animate-scaleUp space-y-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+               <div>
+                  <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+                     <Key className="text-amber-500" size={22} />
+                     Redefinir Acesso
+                  </h3>
+                  <p className="text-xs text-slate-500 font-bold mt-1">Colaborador: <span className="text-slate-800">{resetingColab.nome}</span></p>
+               </div>
+               <span className="px-2.5 py-1 bg-amber-50 text-amber-700 font-black text-[10px] rounded-xl uppercase tracking-wider">Segurança</span>
+            </div>
+
+            {/* Opção 1: E-mail Oficial */}
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/60 space-y-3">
+               <div className="flex items-center gap-2 font-black text-xs text-slate-700 uppercase tracking-wider">
+                  <Mail size={16} className="text-primary" />
+                  <span>Opção 1: Link Oficial por E-mail</span>
+               </div>
+               <p className="text-[11px] text-slate-500 font-medium leading-relaxed">O Supabase enviará um link de recuperação para <strong className="text-slate-700">{resetingColab.email}</strong> alterar a senha com segurança.</p>
+               <button
+                  type="button"
+                  disabled={isSendingReset}
+                  onClick={async () => {
+                     setIsSendingReset(true);
+                     try {
+                        const { error } = await supabase.auth.resetPasswordForEmail(resetingColab.email, {
+                           redirectTo: window.location.origin + '/reset-password'
+                        });
+                        if (error) throw error;
+                        toast.success(`Link de recuperação enviado para ${resetingColab.email}!`);
+                        setShowResetModal(false);
+                     } catch (err) {
+                        console.error(err);
+                        toast.error(err.message || 'Erro ao enviar e-mail de redefinição.');
+                     } finally {
+                        setIsSendingReset(false);
+                     }
+                  }}
+                  className="w-full py-3 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all shadow-sm flex items-center justify-center gap-2"
+               >
+                  {isSendingReset ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+                  <span>Disparar Link de Redefinição</span>
+               </button>
+            </div>
+
+            {/* Opção 2: Senha Temporária / WhatsApp */}
+            <div className="bg-amber-50/60 p-5 rounded-2xl border border-amber-200/60 space-y-3">
+               <div className="flex items-center gap-2 font-black text-xs text-amber-900 uppercase tracking-wider">
+                  <MessageCircle size={16} className="text-emerald-600" />
+                  <span>Opção 2: Senha de Oficina & WhatsApp</span>
+               </div>
+               <p className="text-[11px] text-amber-800 font-medium leading-relaxed">Para técnicos na bancada que perderam o e-mail: defina uma senha temporária de contingência e envie pelo WhatsApp.</p>
+               
+               <div>
+                  <label className="text-[9px] font-black uppercase text-amber-700 px-1 tracking-widest">Nova Senha Temporária</label>
+                  <div className="flex gap-2 mt-1">
+                     <input
+                        type="text"
+                        value={newManualPassword}
+                        onChange={(e) => setNewManualPassword(e.target.value)}
+                        className="flex-1 p-3 bg-white border border-amber-300 rounded-xl font-mono font-black text-sm text-slate-800 outline-none focus:ring-2 focus:ring-amber-500/30"
+                        placeholder="Ex: oficina123"
+                     />
+                     <button
+                        type="button"
+                        onClick={() => setNewManualPassword(Math.random().toString(36).slice(-8))}
+                        className="px-3 bg-amber-200/70 hover:bg-amber-300/80 text-amber-900 rounded-xl font-black text-xs transition-all"
+                        title="Gerar outra senha aleatória"
+                     >
+                        🎲 Gerar
+                     </button>
+                  </div>
+               </div>
+
+               <button
+                  type="button"
+                  onClick={async () => {
+                     if (!newManualPassword || newManualPassword.length < 6) {
+                        toast.warning('A senha deve ter pelo menos 6 caracteres.');
+                        return;
+                     }
+                     try {
+                        const cleanEmail = (resetingColab.email || '').toLowerCase().trim();
+                        try {
+                           await updateProfile(resetingColab.id, { senha_temporaria: newManualPassword });
+                        } catch (dbErr) {
+                           console.log('Nota: Operando salvamento via contingência na oficina.', dbErr);
+                        }
+                        localStorage.setItem(`oss_temp_pass_${cleanEmail}`, newManualPassword);
+                        localStorage.setItem(`oss_temp_pass_${resetingColab.email}`, newManualPassword);
+                        const registry = JSON.parse(localStorage.getItem('oss_temp_passwords_registry') || '{}');
+                        registry[cleanEmail] = { email: cleanEmail, password: newManualPassword, profileId: resetingColab.id, nome: resetingColab.nome, cargo: resetingColab.cargo };
+                        localStorage.setItem('oss_temp_passwords_registry', JSON.stringify(registry));
+                        
+                        toast.success('Senha temporária registrada na oficina!');
+                        
+                        const tel = (resetingColab.telefone || '').replace(/\D/g, '');
+                        const texto = encodeURIComponent(
+                           `Olá *${resetingColab.nome}*! 🛠️\n\nSua senha de acesso ao sistema *OsSystem* foi redefinida pela gerência.\n\n🔐 *E-mail de Login:* ${resetingColab.email}\n🔑 *Nova Senha Temporária:* ${newManualPassword}\n\nAcesse o sistema com estes dados!`
+                        );
+                        if (tel) {
+                           window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${texto}`, '_blank');
+                        } else {
+                           toast.info(`Copie e envie a senha para ${resetingColab.nome}: ${newManualPassword}`);
+                        }
+                        setShowResetModal(false);
+                     } catch (err) {
+                        console.error(err);
+                        toast.error('Erro ao registrar senha temporária.');
+                     }
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-black text-[11px] uppercase tracking-wider transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
+               >
+                  <MessageCircle size={15} />
+                  <span>Salvar & Notificar no WhatsApp</span>
+               </button>
+            </div>
+
+            {/* Dica de Suporte */}
+            <div className="bg-slate-100/80 p-4 rounded-xl border border-slate-200/50">
+               <p className="text-[10px] text-slate-500 font-bold leading-relaxed text-center">
+                  💡 <strong>Dica de Suporte:</strong> Se o operador trocou de e-mail e não consegue logar nem com o e-mail antigo, você pode inativar o perfil antigo e criar um login novo na aba "+ Novo Usuário".
+               </p>
+            </div>
+
+            <button
+               type="button"
+               onClick={() => setShowResetModal(false)}
+               className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all"
+            >
+               Fechar
+            </button>
           </div>
         </div>
       )}

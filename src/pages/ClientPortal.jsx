@@ -17,12 +17,8 @@ const ClientPortal = () => {
   
   // Auth & Session state
   const [session, setSession] = useState(null);
-  const [loginMethod, setLoginMethod] = useState('OTP'); // 'OTP' ou 'PLACA'
   const [phoneInput, setPhoneInput] = useState('');
   const [placaInput, setPlacaInput] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState(null);
-  const [stepLogin, setStepLogin] = useState(1); // 1: input, 2: OTP verification
   const [loadingAuth, setLoadingAuth] = useState(false);
 
   // Data state
@@ -62,33 +58,6 @@ const ClientPortal = () => {
     let v = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
     if (v.length > 8) v = v.slice(0, 8);
     setPlacaInput(v);
-  };
-
-  // Gerar OTP via WhatsApp (ou Simulação de segurança)
-  const handleSendOtp = () => {
-    if (!phoneInput || phoneInput.length < 14) {
-      toast.warning('Informe um número de WhatsApp válido (com DDD).');
-      return;
-    }
-    setLoadingAuth(true);
-    setTimeout(() => {
-      // Gera código de 4 dígitos
-      const code = Math.floor(1000 + Math.random() * 9000).toString();
-      setGeneratedOtp(code);
-      setStepLogin(2);
-      setLoadingAuth(false);
-      toast.success(`Código de segurança enviado! (Simulação PWA: ${code})`);
-    }, 1000);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode !== generatedOtp && otpCode !== '0000') {
-      toast.error('Código de verificação incorreto. Verifique ou tente novamente.');
-      return;
-    }
-    setLoadingAuth(true);
-    await loginClient(phoneInput, null);
-    setLoadingAuth(false);
   };
 
   const handleLoginByPlaca = async () => {
@@ -309,8 +278,6 @@ const ClientPortal = () => {
     setSession(null);
     setOrders([]);
     setVehicles([]);
-    setStepLogin(1);
-    setOtpCode('');
     toast.info('Sessão encerrada com segurança.');
   };
 
@@ -360,142 +327,48 @@ const ClientPortal = () => {
             </p>
           </div>
 
-          {/* Abas de Método de Acesso */}
-          {stepLogin === 1 && (
-            <>
-              <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setLoginMethod('OTP')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                    loginMethod === 'OTP' 
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Smartphone className="w-3.5 h-3.5" /> WhatsApp OTP
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLoginMethod('PLACA')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                    loginMethod === 'PLACA' 
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Car className="w-3.5 h-3.5" /> Placa + Celular
-                </button>
-              </div>
-
-              {loginMethod === 'OTP' ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">Seu Celular / WhatsApp</label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                      <input
-                        type="text"
-                        placeholder="(11) 99999-9999"
-                        value={phoneInput}
-                        onChange={handlePhoneChange}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-medium"
-                      />
-                    </div>
-                    <span className="text-[10px] text-slate-500 mt-1 block">
-                      Enviaremos um código de verificação instantâneo por segurança.
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={loadingAuth}
-                    onClick={handleSendOtp}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
-                  >
-                    {loadingAuth ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span>Receber Código de Acesso 📲</span>}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">Placa do Veículo</label>
-                    <div className="relative">
-                      <Car className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                      <input
-                        type="text"
-                        placeholder="ABC-1234 ou ABC1B34"
-                        value={placaInput}
-                        onChange={handlePlacaChange}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono font-bold uppercase tracking-widest"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">Seu Celular / WhatsApp registrado</label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                      <input
-                        type="text"
-                        placeholder="(11) 99999-9999"
-                        value={phoneInput}
-                        onChange={handlePhoneChange}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={loadingAuth}
-                    onClick={handleLoginByPlaca}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5"
-                  >
-                    {loadingAuth ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span>Acessar Meu Veículo 🔓</span>}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Etapa 2 de Verificação OTP */}
-          {stepLogin === 2 && (
-            <div className="space-y-5 animate-in fade-in duration-300">
-              <div className="text-center p-4 bg-slate-950 rounded-2xl border border-slate-800">
-                <span className="text-xs text-slate-400 block mb-1">Código enviado para:</span>
-                <span className="font-bold text-emerald-400 text-base">{phoneInput}</span>
-                <button 
-                  type="button" 
-                  onClick={() => setStepLogin(1)} 
-                  className="text-[11px] text-slate-500 underline block mx-auto mt-1 hover:text-slate-300"
-                >
-                  Alterar número
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2 text-center">Digite o Código de 4 Dígitos</label>
+          {/* Formulário de Acesso Realista (Placa + Celular) */}
+          <div className="space-y-4 mt-6 animate-in fade-in duration-300">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">Placa do Veículo</label>
+              <div className="relative">
+                <Car className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
-                  maxLength="4"
-                  placeholder="0000"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  className="w-40 mx-auto block bg-slate-950 border border-slate-700 rounded-2xl py-3 text-center text-2xl font-black text-white focus:outline-none focus:border-emerald-500 tracking-[0.4em]"
+                  placeholder="ABC-1234 ou POR9110"
+                  value={placaInput}
+                  onChange={handlePlacaChange}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono font-bold uppercase tracking-widest transition-all"
                 />
               </div>
-
-              <button
-                type="button"
-                disabled={loadingAuth || otpCode.length < 4}
-                onClick={handleVerifyOtp}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
-              >
-                {loadingAuth ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span>Confirmar Acesso 🚀</span>}
-              </button>
             </div>
-          )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">Seu Celular / WhatsApp Cadastrado</label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  placeholder="(11) 99999-9999"
+                  value={phoneInput}
+                  onChange={handlePhoneChange}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-medium transition-all"
+                />
+              </div>
+              <span className="text-[10px] text-slate-500 mt-1.5 block leading-relaxed">
+                Informe o mesmo número registrado na recepção da oficina para validação instantânea.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              disabled={loadingAuth}
+              onClick={handleLoginByPlaca}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 mt-2"
+            >
+              {loadingAuth ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <span>Acessar Portal Meu Veículo 🔓</span>}
+            </button>
+          </div>
 
           <div className="mt-8 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-500">
             <span className="flex items-center justify-center gap-1 mb-1 font-semibold text-slate-400">

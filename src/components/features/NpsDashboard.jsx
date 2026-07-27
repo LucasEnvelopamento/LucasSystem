@@ -56,62 +56,7 @@ const NpsDashboard = ({ orders = [] }) => {
         }
       });
 
-      // Se não houver nenhum, adicionar alguns dados de demonstração de alta qualidade para o gestor
-      if (combined.length === 0) {
-        const demoFbs = [
-          {
-            id: 'demo-fb-1',
-            os_id: '1042',
-            cliente_nome: 'Marcelo Oliveira',
-            cliente_telefone: '11988887777',
-            veiculo_texto: 'BMW 320i Sport (Sedan)',
-            servico_texto: 'PPF Frontal + Ceramic 9H',
-            nota: 10,
-            comentario: 'O carro ficou espetacular! O brilho e o acabamento nos cantos do PPF estão invisíveis. Atendimento nota 1000!',
-            classificacao: 'PROMOTOR',
-            created_at: new Date(Date.now() - 3600000 * 4).toISOString()
-          },
-          {
-            id: 'demo-fb-2',
-            os_id: '1039',
-            cliente_nome: 'Dra. Camila Santos',
-            cliente_telefone: '11977776666',
-            veiculo_texto: 'Porsche Macan GTS (SUV)',
-            servico_texto: 'Vitrificação Ceramic Coating 9H',
-            nota: 9,
-            comentario: 'Entregaram no prazo e o carro está com brilho espelhado incrível. Recomendarei aos meus amigos.',
-            classificacao: 'PROMOTOR',
-            created_at: new Date(Date.now() - 3600000 * 24).toISOString()
-          },
-          {
-            id: 'demo-fb-3',
-            os_id: '1035',
-            cliente_nome: 'Ricardo Souza',
-            cliente_telefone: '11966665555',
-            veiculo_texto: 'VW Golf GTI (Hatch)',
-            servico_texto: 'Insulfilm Nanocerâmica',
-            nota: 8,
-            comentario: 'A película é ótima e o conforto térmico melhorou muito, só achei o tempo de espera na recepção um pouco longo.',
-            classificacao: 'NEUTRO',
-            created_at: new Date(Date.now() - 3600000 * 48).toISOString()
-          },
-          {
-            id: 'demo-fb-4',
-            os_id: '1031',
-            cliente_nome: 'Fernando Costa',
-            cliente_telefone: '11955554444',
-            veiculo_texto: 'Toyota Hilux SRX (Pickup)',
-            servico_texto: 'Envelopamento Teto Black Piano',
-            nota: 5,
-            comentario: 'Ficou uma pequena bolha na antena do teto. Preciso agendar um retorno para ajustar.',
-            classificacao: 'DETRATOR',
-            created_at: new Date(Date.now() - 3600000 * 72).toISOString()
-          }
-        ];
-        setFeedbacks(demoFbs);
-      } else {
-        setFeedbacks(combined);
-      }
+      setFeedbacks(combined);
 
     } catch (err) {
       console.error('Erro ao buscar NPS:', err);

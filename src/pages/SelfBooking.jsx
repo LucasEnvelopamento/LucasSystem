@@ -179,7 +179,61 @@ const SelfBooking = () => {
       const dataAgendamentoIso = `${selectedDate}T${selectedTime}:00.000Z`;
       const veiculoTexto = `${vehicleModel || 'Veículo'} (${vehicleClass}) ${vehicleYear ? '-' + vehicleYear : ''} ${vehiclePlate ? '[' + vehiclePlate.toUpperCase() + ']' : ''}`.trim();
 
+      let clientId = null;
+      let veiculoId = null;
+
+      if (hasRealConnection()) {
+        try {
+          // 1. Tentar localizar ou cadastrar o Cliente na tabela clientes para aparecer em Vendas/OS
+          const cleanPhone = (clientPhone || '').replace(/\D/g, '');
+          if (cleanPhone) {
+            const { data: existingClient } = await supabase
+              .from('clientes')
+              .select('id')
+              .eq('telefone', cleanPhone)
+              .maybeSingle();
+
+            if (existingClient?.id) {
+              clientId = existingClient.id;
+            } else {
+              const { data: newClient } = await supabase
+                .from('clientes')
+                .insert([{ 
+                  nome: clientName.trim(), 
+                  telefone: cleanPhone, 
+                  email: clientEmail ? clientEmail.trim() : null,
+                  created_at: new Date().toISOString()
+                }])
+                .select('id')
+                .single();
+              if (newClient?.id) clientId = newClient.id;
+            }
+          }
+
+          // 2. Cadastrar Veículo na tabela veiculos vinculado ao cliente
+          if (clientId) {
+            const { data: newVeiculo } = await supabase
+              .from('veiculos')
+              .insert([{ 
+                cliente_id: clientId, 
+                modelo: vehicleModel || 'Veículo', 
+                marca: vehicleClass || 'Automóvel', 
+                placa: vehiclePlate ? vehiclePlate.toUpperCase().trim() : null, 
+                ano: vehicleYear || null,
+                created_at: new Date().toISOString()
+              }])
+              .select('id')
+              .single();
+            if (newVeiculo?.id) veiculoId = newVeiculo.id;
+          }
+        } catch (errSync) {
+          console.warn('Erro ao vincular cliente e veículo no agendamento online:', errSync);
+        }
+      }
+
       const newOrderPayload = {
+        cliente_id: clientId,
+        veiculo_id: veiculoId,
         status: 'ORCAMENTO', // Requer aprovação do Gestor
         progresso: 0,
         servico: selectedServicesList.map(s => s.nome).join(' + '),
@@ -191,13 +245,12 @@ const SelfBooking = () => {
         valor_total: totalEstimated,
         desconto: 0,
         data_agendamento: dataAgendamentoIso,
-        observacoes: `🌐 SELF-BOOKING ONLINE: Cliente solicitou agendamento para ${selectedDate.split('-').reverse().join('/')} às ${selectedTime}.\n${notes ? 'Obs do Cliente: ' + notes : ''}`,
-        origem: 'ONLINE_BOOKING',
+        observacoes: `🌐 SELF-BOOKING ONLINE:\n👤 Cliente: ${clientName} (${clientPhone})\n🚗 Veículo: ${veiculoTexto}\n📅 Agendado para: ${selectedDate.split('-').reverse().join('/')} às ${selectedTime}\n${notes ? '📝 Obs do Cliente: ' + notes : ''}`,
         created_at: new Date().toISOString()
       };
 
       if (hasRealConnection()) {
-        // 1. Tentar salvar em ordens_servico
+        // 3. Tentar salvar em ordens_servico
         const { data: ordRes, error: ordErr } = await supabase
           .from('ordens_servico')
           .insert([newOrderPayload])
@@ -211,7 +264,7 @@ const SelfBooking = () => {
           titulo: '📅 Novo Agendamento Online!',
           mensagem: `${clientName} solicitou reserva para ${veiculoTexto} em ${selectedDate.split('-').reverse().join('/')} às ${selectedTime}.`,
           tipo: 'ALERTA',
-          item_id: ordRes?.id || null,
+          item_id: null,
           lida: false,
           created_at: new Date().toISOString()
         }]);

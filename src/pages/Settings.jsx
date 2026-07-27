@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Youtube, Palette, Type, Globe, CheckCircle2, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Settings, Save, Youtube, Palette, Type, Globe, CheckCircle2, AlertCircle, Image as ImageIcon, Zap, ShoppingBag } from 'lucide-react';
 import { useBrand } from '../contexts/BrandContext';
 import { supabase } from '../lib/supabase';
+import ApiWebhooksManager from '../components/features/ApiWebhooksManager';
+import TemplatesMarketplace from '../components/features/TemplatesMarketplace';
 
 const SettingsPage = () => {
   const { updateConfig, ...brand } = useBrand();
+  const [activeTab, setActiveTab] = useState('GERAL'); // 'GERAL', 'API_WEBHOOKS', 'MARKETPLACE'
   const [formData, setFormData] = useState({
     nome_loja: brand.name || '',
     logo_url: brand.logoUrl || '',
@@ -41,11 +44,43 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 fade-in pb-20">
-      <div className="flex items-center justify-between">
+    <div className={`mx-auto space-y-6 fade-in pb-20 ${activeTab === 'GERAL' ? 'max-w-4xl' : 'max-w-6xl'}`}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Configurações do Sistema</h2>
-          <p className="text-slate-500 text-sm">Personalize a identidade visual e o conteúdo da TV.</p>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight uppercase">Configurações & Integrações</h2>
+          <p className="text-slate-500 text-xs font-medium">Gerencie a identidade visual, APIs REST, webhooks e marketplace da sua loja.</p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
+          <button
+            onClick={() => setActiveTab('GERAL')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              activeTab === 'GERAL' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+            }`}
+          >
+            <Palette size={15} />
+            <span>Identidade e TV</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('API_WEBHOOKS')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              activeTab === 'API_WEBHOOKS' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+            }`}
+          >
+            <Zap size={15} />
+            <span>APIs & Webhooks</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('MARKETPLACE')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
+              activeTab === 'MARKETPLACE' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+            }`}
+          >
+            <ShoppingBag size={15} />
+            <span>Marketplace</span>
+          </button>
         </div>
       </div>
 
@@ -58,6 +93,10 @@ const SettingsPage = () => {
         </div>
       )}
 
+      {activeTab === 'API_WEBHOOKS' && <ApiWebhooksManager />}
+      {activeTab === 'MARKETPLACE' && <TemplatesMarketplace />}
+
+      {activeTab === 'GERAL' && (
       <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Identidade Visual */}
         <div className="card-premium p-6 space-y-6">
@@ -233,6 +272,7 @@ const SettingsPage = () => {
            </button>
         </div>
       </form>
+      )}
     </div>
   );
 };

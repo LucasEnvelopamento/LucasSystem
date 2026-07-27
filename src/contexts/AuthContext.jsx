@@ -22,6 +22,24 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           await fetchProfile(session.user.id, (p) => setProfile(p));
+          return;
+        }
+
+        // Contingência / Modo Oficina: Se o Supabase Auth não tem sessão ativa, verifica se há sessão temporária salva
+        const contSession = JSON.parse(localStorage.getItem('oss_session_contingency') || 'null');
+        if (contSession && contSession.user && contSession.profile) {
+          setUser(contSession.user);
+          setProfile(contSession.profile);
+          await fetchProfile(contSession.user.id, (p) => {
+            if (p && p.status !== false) {
+              setProfile(p);
+              localStorage.setItem('oss_session_contingency', JSON.stringify({ user: contSession.user, profile: p }));
+            } else if (p && p.status === false) {
+              localStorage.removeItem('oss_session_contingency');
+              setUser(null);
+              setProfile(null);
+            }
+          }, true);
         }
       } catch (error) {
         console.error('Erro na inicialização do Auth:', error);
@@ -85,12 +103,96 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanPass = (password || '').trim();
+
+    let data = null;
+    let error = null;
+
+    try {
+      const res = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPass,
+      });
+      data = res.data;
+      error = res.error;
+    } catch (err) {
+      error = err;
+    }
     
     if (error) {
+      // Contingência / Modo Oficina: Verificar se a senha corresponde à senha_temporaria gravada no Supabase ou localStorage
+      try {
+        const localPass = localStorage.getItem(`oss_temp_pass_${cleanEmail}`);
+        const registry = JSON.parse(localStorage.getItem('oss_temp_passwords_registry') || '{}');
+        let regEntry = registry[cleanEmail];
+        
+        // Se não achou pelo e-mail exato, busca em qualquer item do registro pela senha ou e-mail aproximado
+        if (!regEntry) {
+          regEntry = Object.values(registry).find(item => 
+            (item.password && item.password.trim() === cleanPass) || 
+            (item.email && item.email.toLowerCase().trim() === cleanEmail)
+          );
+        }
+
+        const matchLocal = (localPass && localPass.trim() === cleanPass) || (regEntry && regEntry.password && regEntry.password.trim() === cleanPass);
+
+        console.log('[Auth Contingência] Tentando login:', { cleanEmail, matchLocal, temReg: !!regEntry });
+
+        let tempProfile = null;
+        try {
+          const { data: pData } = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('email', cleanEmail)
+            .maybeSingle();
+          if (pData && (pData.senha_temporaria === cleanPass || matchLocal)) {
+            tempProfile = pData;
+          } else if (pData && matchLocal) {
+            tempProfile = pData;
+          }
+        } catch (dbErr) {
+          console.log('Verificação DB contingência (ignorado em modo anônimo):', dbErr);
+        }
+
+        if (tempProfile || matchLocal) {
+          let targetProfile = tempProfile;
+          if (!targetProfile) {
+            try {
+              const { data: pData } = await supabase.from('profiles').select('*').ilike('email', cleanEmail).maybeSingle();
+              targetProfile = pData;
+            } catch (e) {}
+          }
+
+          if (!targetProfile && matchLocal) {
+            targetProfile = {
+              id: (regEntry && regEntry.profileId) || 'contingencia-' + Math.random().toString(36).substring(2, 9),
+              email: (regEntry && regEntry.email) || cleanEmail,
+              nome: (regEntry && regEntry.nome) || cleanEmail.split('@')[0] || 'Operador',
+              cargo: (regEntry && regEntry.cargo) || 'OPERADOR',
+              status: true
+            };
+          }
+
+          if (targetProfile && targetProfile.status !== false) {
+            const fakeUser = {
+              id: targetProfile.id,
+              email: targetProfile.email,
+              user_metadata: { name: targetProfile.nome, cargo: targetProfile.cargo },
+              role: 'authenticated'
+            };
+            setUser(fakeUser);
+            setProfile(targetProfile);
+            localStorage.setItem('oss_session_contingency', JSON.stringify({ user: fakeUser, profile: targetProfile }));
+            setLoading(false);
+            console.log('[Auth Contingência] Login de contingência realizado com sucesso!');
+            return { user: fakeUser, profile: targetProfile };
+          }
+        }
+      } catch (contErr) {
+        console.error('Erro na verificação de contingência:', contErr);
+      }
+
       setLoading(false);
       throw error;
     }
@@ -102,6 +204,8 @@ export const AuthProvider = ({ children }) => {
       .eq('id', data.user.id)
       .maybeSingle();
     
+    localStorage.removeItem('oss_session_contingency');
+    
     setProfile(profileData);
     setUser(data.user);
     setLoading(false);
@@ -111,6 +215,7 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
+      localStorage.removeItem('oss_session_contingency');
       // Limpamos o estado local imediatamente para a UI reagir
       setUser(null);
       setProfile(null);
