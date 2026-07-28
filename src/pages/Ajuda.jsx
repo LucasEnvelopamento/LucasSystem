@@ -84,50 +84,70 @@ const AjudaPage = () => {
       ]
     },
     { 
+      id: 'cliente_auto', 
+      title: 'Autoatendimento (Self-Booking)', 
+      icon: Smartphone, 
+      description: 'Portal online para agendamentos e acompanhamento.',
+      content: [
+        { 
+          q: "Como meu cliente agenda um serviço sozinho?", 
+          a: "Basta enviar o link do seu portal (ex: seudominio.com.br/booking) ou gerar um QR Code. O cliente acessa, escolhe o serviço, veículo, data e hora, e o pedido cai na sua tela inicial como 'ORÇAMENTO' para você aprovar." 
+        },
+        { 
+          q: "Como o cliente acompanha o status do serviço?", 
+          a: "Você pode enviar o Link de Acompanhamento no WhatsApp. Lá, o cliente consegue ver em tempo real se o veículo está 'Na Fila', 'Em Execução' ou 'Finalizado', além de ver as fotos Antes/Depois se você habilitar." 
+        }
+      ]
+    },
+    { 
       id: 'agenda', 
       title: 'Agenda & Produção', 
       icon: Calendar, 
-      description: 'Gestão de horários, ocupação da oficina e agendamentos.',
+      description: 'Gestão de horários, fila de técnicos e serviços.',
       content: [
         { 
           q: "Como visualizar a ocupação do dia antes de agendar?", 
-          a: "Ao abrir o modal de agendamento, o sistema exibe automaticamente uma seção chamada 'Ocupação deste dia' na lateral ou rodapé, mostrando todos os serviços já marcados para o mesmo horário para evitar conflitos." 
+          a: "Ao abrir o modal de agendamento, o sistema exibe automaticamente uma seção chamada 'Ocupação deste dia', mostrando todos os serviços já marcados para o mesmo horário para evitar conflitos." 
         },
         { 
-          q: "Consigo trocar o técnico de uma OS já agendada?", 
-          a: "Sim. Na Agenda, localize o serviço, clique nele e selecione 'Alterar Agenda'. Você poderá escolher um novo responsável e o sistema atualizará a fila do Operador em tempo real." 
+          q: "Como funciona a nova Fila de Produção?", 
+          a: "A Fila foi otimizada. Os serviços aparecem para os técnicos conforme o status 'AGUARDANDO'. Quando um técnico puxa o serviço, ele vira 'EM EXECUÇÃO' e o cronômetro começa automaticamente." 
         }
       ]
     },
     { 
       id: 'checklist', 
-      title: 'Checklist & Vistoria', 
+      title: 'Checklist & Fotos', 
       icon: ShieldCheck, 
-      description: 'Uso do mapa visual de avarias e assinatura digital.',
+      description: 'Mapa de avarias, fotos Antes/Depois e segurança.',
       content: [
         { 
           q: "Para que serve o Checklist Visual?", 
-          a: "O Checklist é a sua segurança jurídica. Ele permite marcar no desenho do veículo (Carro ou Moto) onde já existem riscos ou amassados antes de você iniciar o trabalho, evitando que o cliente alegue que o dano ocorreu na sua loja." 
+          a: "Ele permite marcar no desenho do veículo onde já existem riscos ou amassados antes de você iniciar o trabalho. A nova versão tem grade simétrica e é 100% responsiva para uso em Tablets na recepção da oficina." 
+        },
+        { 
+          q: "Como funcionam as Fotos com Guias de Ângulo?", 
+          a: "Quando o técnico vai adicionar fotos, o sistema sugere ângulos (Frente, Lateral Esquerda, Lateral Direita, Traseira). Isso padroniza o Antes/Depois e gera um portfólio perfeito para as redes sociais ou para resguardar a oficina." 
         },
         { 
           q: "O cliente precisa assinar no celular?", 
-          a: "Sim. Ao finalizar a vistoria de entrada, o sistema solicita a assinatura digital do cliente diretamente na tela do tablet ou celular. Essa assinatura é salva junto com as avarias para conferência futura." 
+          a: "Sim. Ao finalizar a vistoria de entrada, o sistema solicita a assinatura digital do cliente na tela. Essa assinatura é criptografada e salva junto com as avarias para conferência futura." 
         }
       ]
     },
     { 
-      id: 'operador', 
-      title: 'Módulo do Operador (PWA)', 
-      icon: Smartphone, 
-      description: 'Orientações para os técnicos na linha de frente.',
+      id: 'retencao', 
+      title: 'NPS & Retenção', 
+      icon: TrendingUp, 
+      description: 'Pesquisas de satisfação e garantias ativas.',
       content: [
         { 
-          q: "Como o Operador coleta um serviço disponível?", 
-          a: "Na tela inicial (Tarefas), o operador verá a aba 'Disponíveis'. Basta clicar no serviço desejado e selecionar 'Coletar'. A OS passará imediatamente para o status 'EM EXECUÇÃO' e o cronômetro será iniciado." 
+          q: "O que é o NPS Automático?", 
+          a: "Quando uma OS é entregue, você pode enviar um link via WhatsApp para o cliente avaliar de 0 a 10. O sistema compila isso na dashboard e classifica os clientes em Promotores, Neutros ou Detratores, alertando os Gestores." 
         },
         { 
-          q: "Como registrar fotos durante a execução?", 
-          a: "Dentro de uma OS em aberto, o operador pode clicar em 'Adicionar Foto' e usar a câmera do celular para registrar etapas críticas do processo. Essas fotos ficam vinculadas à OS no histórico do Gestor." 
+          q: "Como funcionam os Lembretes de Manutenção?", 
+          a: "Você pode programar na aba de Lembretes um aviso (ex: 'Revisão de Envelopamento após 3 meses'). O sistema vai te notificar quando o prazo estiver vencendo para você puxar o cliente de volta via WhatsApp." 
         }
       ]
     },
@@ -135,15 +155,15 @@ const AjudaPage = () => {
       id: 'tv', 
       title: 'Monitor TV & Branding', 
       icon: Monitor, 
-      description: 'Configuração da TV da oficina e identidade visual.',
+      description: 'Configuração da TV da oficina e marketing.',
       content: [
         { 
           q: "Como alterar o vídeo que passa na TV?", 
-          a: "Vá em Configurações > TV e Marketing. Insira o ID do vídeo do YouTube (os caracteres após 'v=' no link) e salve. O monitor da loja atualizará automaticamente em poucos segundos." 
+          a: "Vá em Configurações > TV e Marketing. Insira o ID do vídeo do YouTube (os caracteres após 'v=' no link) e salve. O monitor da loja atualizará automaticamente." 
         },
         { 
-          q: "Minha logomarca não aparece no Certificado de Garantia.", 
-          a: "Certifique-se de que fez o upload da Logomarca em Configurações > Identidade Visual. O sistema utiliza esse mesmo arquivo para a TV, os Certificados de Garantia e o Link de acompanhamento do cliente." 
+          q: "Minha logomarca não aparece no Certificado.", 
+          a: "Certifique-se de fazer o upload da Logomarca em Configurações. O sistema utiliza o mesmo arquivo para a TV, os Certificados de Garantia, a tela de Self-Booking e o Link de acompanhamento." 
         }
       ]
     },

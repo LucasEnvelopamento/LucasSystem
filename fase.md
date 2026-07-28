@@ -608,4 +608,17 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 
 ---
 
-*Última atualização: 28/07/2026 - STATUS: FASE 64 CRIADA — HARDENING DE SEGURANÇA PRÉ-PRODUÇÃO BASEADO EM AUDITORIA ESTRUTURAL 🛡️*
+*Última atualização: 28/07/2026 - STATUS: FASE 65 CRIADA — DOCUMENTAÇÃO DE APRESENTAÇÃO E ATUALIZAÇÃO DA TELA DE AJUDA 📖*
+
+---
+
+### Fase 65: Atualização da Ajuda e Documentação Comercial
+**Objetivo:** Refletir no sistema todas as inovações recentes (Fases 50 a 64) e gerar material de apresentação para captação e retenção de clientes.
+
+#### 🔵 Escopo de Entregas
+
+- [x] **65.1 — Atualização da Tela de Ajuda (`Ajuda.jsx`)**
+  - 🎯 **Ação:** Incluir tutoriais sobre NPS, Tracking Online, Lembretes de Manutenção, Self-Booking, Fotos Guiadas e Segurança. Adicionar novas categorias.
+
+- [x] **65.2 — Criação do Documento Comercial (`Apresentacao_OsSystem.md`)**
+  - 🎯 **Ação:** Compilar e estruturar todos os recursos, módulos e vantagens do sistema (Gestão, Operação, Retenção, Segurança) num formato elegante para envio a clientes antigos e potenciais novos clientes.
