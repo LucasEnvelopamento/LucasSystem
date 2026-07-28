@@ -122,10 +122,12 @@ const ComissoesExtrato = ({ profiles = [], orders = [] }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 no-print">
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl">
-            <Calendar size={16} className="text-primary" />
-            <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400">Mês de Folha:</span>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print w-full md:w-auto mt-2 md:mt-0">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex-1">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-primary" />
+              <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400">Mês:</span>
+            </div>
             <input 
               type="month" 
               value={mesAno} 
@@ -136,10 +138,10 @@ const ComissoesExtrato = ({ profiles = [], orders = [] }) => {
 
           <button 
             onClick={() => window.print()} 
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-2xl hover:bg-slate-700 shadow-lg active:scale-95 text-xs font-black uppercase tracking-wider"
+            className="flex items-center justify-center gap-2 px-5 py-3 bg-slate-800 text-white rounded-2xl hover:bg-slate-700 shadow-lg active:scale-95 text-xs font-black uppercase tracking-wider flex-1"
           >
             <Printer size={16} />
-            <span>Imprimir Folha</span>
+            <span>Imprimir</span>
           </button>
         </div>
       </div>
@@ -189,7 +191,7 @@ const ComissoesExtrato = ({ profiles = [], orders = [] }) => {
                     {/* Regra de comissão exibida ou modo de edição */}
                     <div className="mt-1 flex items-center gap-2 text-xs">
                       {isEditing ? (
-                        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-300 dark:border-slate-700 no-print">
+                        <div className="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-300 dark:border-slate-700 no-print mt-2 sm:mt-0">
                           <input 
                             type="number" 
                             value={tempVal} 
@@ -236,7 +238,7 @@ const ComissoesExtrato = ({ profiles = [], orders = [] }) => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-800">
+                <div className="flex flex-wrap items-center justify-between md:justify-end gap-4 sm:gap-6 border-t md:border-t-0 pt-4 md:pt-0 mt-4 md:mt-0 border-slate-100 dark:border-slate-800 w-full md:w-auto">
                   <div className="text-right">
                     <p className="text-[10px] font-bold text-slate-400 uppercase">OS Concluídas</p>
                     <p className="font-black text-slate-800 dark:text-white">{tec.totalOs} OS</p>
