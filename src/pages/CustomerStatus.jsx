@@ -131,7 +131,7 @@ const CustomerStatus = () => {
 
       <div className="max-w-2xl mx-auto space-y-6">
         {orders.map((item) => (
-          <div key={item.id} className="bg-slate-900 border border-white/10 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden">
+          <div key={item.id} className="bg-slate-900 border border-white/10 p-5 md:p-6 pl-8 md:pl-10 rounded-[2rem] shadow-2xl relative overflow-hidden">
              
              {/* Fita de Status */}
              <div className={`absolute top-0 left-0 w-2 h-full ${
@@ -139,7 +139,7 @@ const CustomerStatus = () => {
                item.status === 'EM EXECUÇÃO' ? 'bg-primary' : 'bg-amber-500'
              }`}></div>
 
-             <div className="flex items-center justify-between mb-6 pl-4">
+             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                <div>
                   <h2 className="text-xl font-black uppercase text-white tracking-tight">{item.veiculo_desc}</h2>
                   <div className="flex items-center gap-2 mt-1">
@@ -162,7 +162,7 @@ const CustomerStatus = () => {
              </div>
 
              {/* Barras de Progresso Múltiplas */}
-             <div className="bg-black/40 rounded-3xl p-5 border border-white/5 ml-4">
+             <div className="bg-black/40 rounded-3xl p-4 md:p-5 border border-white/5">
                 {item.servicos_detalhados && Array.isArray(item.servicos_detalhados) && item.servicos_detalhados.length > 0 ? (
                   <div className="space-y-4">
                     {item.servicos_detalhados.map((sub, sIdx) => (
@@ -210,14 +210,14 @@ const CustomerStatus = () => {
 
              {/* Footer do Card */}
              {(item.status === 'CONCLUÍDO' || item.status === 'ENTREGUE') && (
-               <div className="mt-6 ml-4 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center justify-center gap-2">
+               <div className="mt-6 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center justify-center gap-2">
                  <ShieldCheck size={18} className="text-emerald-500" />
                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">SERVIÇO FINALIZADO!</span>
                </div>
              )}
 
              {/* Vistoria e Galeria Antes x Depois do Cliente */}
-             <div className="mt-8 ml-4">
+             <div className="mt-8">
                <PhotoGuideGallery
                  photos={photosMap[item.id] || []}
                  isReadOnly={true}

@@ -120,7 +120,7 @@ const ColaboradoresView = () => {
       </div>
 
       {/* Abas de Navegação - Fase 61 */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 no-print">
+      <div className="flex flex-wrap items-center gap-3 pb-2 no-print w-full">
         <button
           type="button"
           onClick={() => setActiveTab('MEMBROS')}
@@ -376,19 +376,23 @@ const ColaboradoresView = () => {
                         return;
                      }
                      try {
-                        const cleanEmail = (resetingColab.email || '').toLowerCase().trim();
                         try {
-                           await updateProfile(resetingColab.id, { senha_temporaria: newManualPassword });
-                        } catch (dbErr) {
-                           console.log('Nota: Operando salvamento via contingência na oficina.', dbErr);
+                           const { data: edgeData, error: edgeError } = await supabase.functions.invoke('reset-password', {
+                             body: {
+                               userId: resetingColab.id,
+                               newPassword: newManualPassword
+                             }
+                           });
+                           
+                           if (edgeError) throw edgeError;
+                           if (edgeData?.error) throw new Error(edgeData.error);
+                           
+                           toast.success('Senha atualizada com sucesso no servidor!');
+                        } catch (edgeErr) {
+                           console.error('Erro ao resetar senha via Edge Function:', edgeErr);
+                           toast.error(edgeErr.message || 'Erro ao registrar nova senha.');
+                           return;
                         }
-                        localStorage.setItem(`oss_temp_pass_${cleanEmail}`, newManualPassword);
-                        localStorage.setItem(`oss_temp_pass_${resetingColab.email}`, newManualPassword);
-                        const registry = JSON.parse(localStorage.getItem('oss_temp_passwords_registry') || '{}');
-                        registry[cleanEmail] = { email: cleanEmail, password: newManualPassword, profileId: resetingColab.id, nome: resetingColab.nome, cargo: resetingColab.cargo };
-                        localStorage.setItem('oss_temp_passwords_registry', JSON.stringify(registry));
-                        
-                        toast.success('Senha temporária registrada na oficina!');
                         
                         const tel = (resetingColab.telefone || '').replace(/\D/g, '');
                         const texto = encodeURIComponent(

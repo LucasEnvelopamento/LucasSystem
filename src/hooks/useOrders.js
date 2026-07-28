@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, hasRealConnection } from '../lib/supabase';
 import { validateMediaUpload } from '../utils/fileValidation';
 import { createNotification } from './useNotifications';
+import { compressImage } from '../utils/imageCompression';
 
 export const useOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -62,12 +63,12 @@ export const useOrders = () => {
         const channel = supabase
             .channel('os-changes-realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'ordens_servico' }, (payload) => {
-                console.log('Realtime update received:', payload);
+                // console.log('Realtime update received');
                 fetchOrders();
             })
             .subscribe((status) => {
                 if (status === 'CHANNEL_ERROR') {
-                    console.log('Aviso: Conexão Realtime em fallback de contingência da oficina.');
+                    // console.log('Aviso: Conexão Realtime em fallback de contingência da oficina.');
                 }
             });
 
@@ -370,14 +371,17 @@ export const useOrders = () => {
 
     if (hasRealConnection()) {
       try {
-        const fileExt = file.name.split('.').pop();
+        // Compressão agressiva nativa para salvar storage (transforma MBs em KBs)
+        const compressedFile = await compressImage(file);
+        
+        const fileExt = compressedFile.name.split('.').pop();
         const fileName = `${osId}/${Date.now()}_${fase}_${angulo}.${fileExt}`;
         const filePath = `${fileName}`;
 
         // 1. Upload para o Bucket 'os-photos'
         const { error: uploadError, data } = await supabase.storage
           .from('os-photos')
-          .upload(filePath, file);
+          .upload(filePath, compressedFile);
 
         if (uploadError) throw uploadError;
 

@@ -7,7 +7,7 @@ export const useProfiles = () => {
 
     const fetchProfiles = async () => {
         if (hasRealConnection()) {
-            const { data, error } = await supabase.from('profiles').select('*').order('nome');
+            const { data, error } = await supabase.from('profiles').select('id, nome, email, cargo, status, avatar_url, created_at').order('nome');
             if (!error && data) setProfiles(data);
         }
         setLoading(false);

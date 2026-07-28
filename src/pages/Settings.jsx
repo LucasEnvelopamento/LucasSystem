@@ -51,7 +51,7 @@ const SettingsPage = () => {
           <p className="text-slate-500 text-xs font-medium">Gerencie a identidade visual, APIs REST, webhooks e marketplace da sua loja.</p>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
+        <div className="flex flex-wrap items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl w-full">
           <button
             onClick={() => setActiveTab('GERAL')}
             className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${

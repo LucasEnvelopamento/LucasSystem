@@ -513,4 +513,99 @@ Para entregar um produto superior aos concorrentes, implementaremos:
 - [x] **Dashboard Gerencial na TV (Visão 360° Office)**: Painel de TV focado na gestão do escritório com métricas de faturamento do dia, ocupação dos técnicos e alertas críticos de estoque.
 
 ---
-*Última atualização: 27/07/2026 - STATUS: FASE 63 100% CONCLUÍDA (ECOSSISTEMA ABERTO, APIS RESTFUL, WEBHOOKS, MARKETPLACE DE TEMPLATES E TV 360° OFFICE) — PRODUTO COMPLETO HOMOLOGADO E PRONTO PARA PRODUÇÃO! 🏆🚀*
+
+### 🛡️ Fase 64: Hardening de Segurança Pré-Produção (Auditoria Estrutural)
+
+> **Referência completa:** [`auditoria_seguranca_v2.md`](./auditoria_seguranca_v2.md)
+> Esta fase foi criada a partir da auditoria de segurança realizada em 28/07/2026, que identificou 1 achado crítico, 2 de severidade alta, 2 de severidade média e 1 de severidade baixa. Cada item abaixo referencia a seção correspondente no relatório.
+
+#### 🔴 Prioridade CRÍTICA
+
+- [x] **64.1 — Remoção do Modo Contingência (Backdoor de Autenticação)**
+  - 📋 **Ref. Auditoria:** Achado Crítico #1 — "Modo Contingência é um Backdoor"
+  - 📂 **Arquivos:** `src/contexts/AuthContext.jsx` (linhas 124-194), `src/pages/Colaboradores.jsx` (linhas 378-400)
+  - 🎯 **Ação:** Remover integralmente o bloco de login por contingência que cria `fakeUser` sem JWT válido. Remover toda lógica de `localStorage` que armazena senhas em texto puro (`oss_temp_pass_*`, `oss_temp_passwords_registry`, `oss_session_contingency`). Todo login deve passar obrigatoriamente pelo Supabase Auth.
+  - ⚠️ **Impacto:** Operadores que dependiam do modo offline precisarão de login real via Supabase Auth.
+
+- [x] **64.2 — Remoção da coluna `senha_temporaria` do banco de dados**
+  - 📋 **Ref. Auditoria:** Achado Crítico #1 (continuação) + Achado #4
+  - 📂 **Arquivos:** `database.md` (linha 101 — `ALTER TABLE profiles ADD COLUMN senha_temporaria`)
+  - 🎯 **Ação:** Executar `ALTER TABLE public.profiles DROP COLUMN IF EXISTS senha_temporaria;` no Supabase SQL Editor. Atualizar o `database.md` removendo a referência a essa coluna.
+  - 🔧 **SQL de Migração:**
+    ```sql
+    ALTER TABLE public.profiles DROP COLUMN IF EXISTS senha_temporaria;
+    ```
+
+- [x] **64.3 — Criar Edge Function para Reset de Senha Seguro**
+  - 📋 **Ref. Auditoria:** Achado Crítico #1 (recomendação de substituição)
+  - 📂 **Arquivos:** Novo arquivo `supabase/functions/reset-password/index.ts`, e refatorar `src/pages/Colaboradores.jsx` (modal de reset)
+  - 🎯 **Ação:** Criar Edge Function server-side que recebe `userId` + `newPassword`, valida que o caller é ADM/GESTOR via JWT, e chama `auth.admin.updateUserById()` para alterar a senha real do Supabase Auth. Substituir o modal de "senha temporária" no frontend pelo novo fluxo seguro.
+
+#### ⚠️ Prioridade ALTA
+
+- [x] **64.4 — Restringir RLS da tabela `pesquisas_nps`**
+  - 📋 **Ref. Auditoria:** Achado #2 — "RLS da tabela pesquisas_nps totalmente aberta"
+  - 📂 **Arquivos:** `database.md` (linhas 388-390)
+  - 🎯 **Ação:** Manter `INSERT WITH CHECK (true)` para permitir respostas públicas via WhatsApp. Substituir `SELECT USING (true)` e `UPDATE USING (true)` por políticas restritas a ADM/GESTOR usando `check_user_role()`. Impedir que usuários anônimos leiam nomes de clientes, notas e comentários.
+  - 🔧 **SQL de Migração:**
+    ```sql
+    DROP POLICY IF EXISTS "NPS: Leitura Pública e Autenticada" ON public.pesquisas_nps;
+    DROP POLICY IF EXISTS "NPS: Inserção Pública e Autenticada" ON public.pesquisas_nps;
+    DROP POLICY IF EXISTS "NPS: Atualização para todos" ON public.pesquisas_nps;
+    DROP POLICY IF EXISTS "NPS: Acesso Total" ON public.pesquisas_nps;
+
+    CREATE POLICY "NPS: Inserção Pública" ON public.pesquisas_nps FOR INSERT WITH CHECK (true);
+    CREATE POLICY "NPS: Leitura Gestores" ON public.pesquisas_nps FOR SELECT USING (public.check_user_role(ARRAY['ADM','GESTOR']));
+    CREATE POLICY "NPS: Atualização Gestores" ON public.pesquisas_nps FOR UPDATE USING (public.check_user_role(ARRAY['ADM','GESTOR']));
+    ```
+
+- [x] **64.5 — Proteger INSERT público em `ordens_servico` via Function SECURITY DEFINER**
+  - 📋 **Ref. Auditoria:** Achado #3 — "INSERT público em ordens_servico sem restrição"
+  - 📂 **Arquivos:** `database.md` (linha 270), `src/pages/SelfBooking.jsx`
+  - 🎯 **Ação:** Criar função `criar_agendamento_publico()` que aceita apenas campos seguros (nome, telefone, veículo, serviço, data) e fixa `status = 'ORÇAMENTO'` e `origem = 'ONLINE'`. Remover a política de INSERT público direto e substituir a chamada no SelfBooking por um `rpc('criar_agendamento_publico', {...})`.
+
+#### ⚠️ Prioridade MÉDIA
+
+- [x] **64.6 — Substituir `select('*')` por campos explícitos em `profiles`**
+  - 📋 **Ref. Auditoria:** Achado #4 — "select('*') em profiles expõe senha_temporaria"
+  - 📂 **Arquivos:** `src/hooks/useProfiles.js` (linha 10), `src/contexts/AuthContext.jsx` (linhas 84-88, 201-205)
+  - 🎯 **Ação:** Trocar todos os `select('*')` que consultam a tabela `profiles` por `select('id, nome, email, cargo, status, avatar_url, created_at')`. Garantir que nenhum campo sensível trafegue para o frontend.
+
+- [x] **64.7 — Restringir CORS da Edge Function `create-user`**
+  - 📋 **Ref. Auditoria:** Achado #5 — "CORS com Allow-Origin: *"
+  - 📂 **Arquivos:** `supabase/functions/create-user/index.ts` (linha 5)
+  - 🎯 **Ação:** Substituir `'Access-Control-Allow-Origin': '*'` por leitura de variável de ambiente `ALLOWED_ORIGIN` com fallback para o domínio de produção da Vercel (`https://os-system-tau.vercel.app`).
+
+#### 🟢 Prioridade BAIXA
+
+- [x] **64.8 — Remover `console.log` sensíveis de produção**
+  - 📋 **Ref. Auditoria:** Achado #6 — "Console Logs sensíveis em produção"
+  - 📂 **Arquivos:** `src/contexts/AuthContext.jsx` (linhas 55, 140, 155, 188), `src/pages/Colaboradores.jsx` (linha 383), `src/hooks/useOrders.js` (linha 71)
+  - 🎯 **Ação:** Remover todos os `console.log` que exponham eventos de autenticação, tentativas de login e dados de contingência. Opcionalmente, criar wrapper `debugLog()` condicionado a `import.meta.env.DEV` para uso futuro de depuração.
+
+---
+
+#### 🚀 Roteiro Obrigatório de Implantação nos Clientes (Update Guide)
+
+> **ATENÇÃO:** Como esse patch envolve segurança de banco e edge functions, você precisará seguir estes passos **em cada cliente (instância Supabase)** no momento que for atualizar o código deles:
+
+1. **SQL Editor (No painel do cliente):**
+   ```sql
+   -- Remover backdoor e regras antigas
+   ALTER TABLE public.profiles DROP COLUMN IF EXISTS senha_temporaria;
+   DROP POLICY IF EXISTS "NPS: Leitura Pública e Autenticada" ON public.pesquisas_nps;
+   DROP POLICY IF EXISTS "NPS: Inserção Pública e Autenticada" ON public.pesquisas_nps;
+   DROP POLICY IF EXISTS "NPS: Atualização para todos" ON public.pesquisas_nps;
+   DROP POLICY IF EXISTS "NPS: Acesso Total" ON public.pesquisas_nps;
+   DROP POLICY IF EXISTS "OS: Criação Pública para Agendamento Online" ON public.ordens_servico;
+   DROP POLICY IF EXISTS "Notificacoes: Criação Pública para Agendamentos" ON public.notificacoes;
+   ```
+2. **Rodar o novo arquivo `database.md`** completo no SQL Editor do cliente (ele criará a `criar_agendamento_publico` e as novas policies do NPS).
+3. **Fazer login no projeto do cliente no terminal:** `npx supabase login` e depois `npx supabase link --project-ref ID_DO_CLIENTE`
+4. **Fazer deploy das funções no ambiente do cliente:**
+   - `npx supabase functions deploy create-user`
+   - `npx supabase functions deploy reset-password`
+
+---
+
+*Última atualização: 28/07/2026 - STATUS: FASE 64 CRIADA — HARDENING DE SEGURANÇA PRÉ-PRODUÇÃO BASEADO EM AUDITORIA ESTRUTURAL 🛡️*

@@ -93,12 +93,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   cargo public.user_role DEFAULT 'OPERADOR',
   status boolean DEFAULT true,
   avatar_url text,
-  senha_temporaria text,
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS senha_temporaria text;
 
 CREATE TABLE IF NOT EXISTS public.ordens_servico (
     id SERIAL PRIMARY KEY,
@@ -255,7 +252,7 @@ CREATE POLICY "Trabalhos: Gestores total" ON public.trabalhos_recentes FOR ALL U
 -- POLÍTICAS PARA OPERADORES (Leitura Total para Fila Geral/Emergências e Atualização Controlada)
 CREATE POLICY "Leitura essencial para Operador" ON public.servicos FOR SELECT USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 CREATE POLICY "OS: Leitura para Operador" ON public.ordens_servico FOR SELECT USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
-CREATE POLICY "OS: Atualização para Operador" ON public.ordens_servico FOR UPDATE USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]) AND status NOT IN ('CONCLUÍDO', 'ENTREGUE', 'CANCELADO')) WITH CHECK (public.check_user_role(ARRAY['OPERADOR'::public.user_role]) AND status NOT IN ('CONCLUÍDO', 'ENTREGUE', 'CANCELADO'));
+CREATE POLICY "OS: Atualização para Operador" ON public.ordens_servico FOR UPDATE USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]) AND status NOT IN ('CONCLUÍDO', 'ENTREGUE', 'CANCELADO')) WITH CHECK (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 
 -- POLÍTICAS PARA CHECKLIST, MÍDIAS E NOTIFICAÇÕES (Gestão e Operação)
 CREATE POLICY "Checklist: Gestores total" ON public.checklist_avarias FOR ALL USING (public.check_user_role(ARRAY['ADM'::public.user_role, 'GESTOR'::public.user_role]));
@@ -264,18 +261,7 @@ CREATE POLICY "Midia: Gestores total" ON public.os_midia FOR ALL USING (public.c
 CREATE POLICY "Midia: Operadores gestão" ON public.os_midia FOR ALL USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 CREATE POLICY "Notificacoes: Operadores gestão" ON public.notificacoes FOR ALL USING (public.check_user_role(ARRAY['OPERADOR'::public.user_role]));
 
--- POLÍTICAS PÚBLICAS (MONITOR TV / LINK CLIENTE / SELF-BOOKING / PORTAL MEU VEÍCULO)
-CREATE POLICY "Monitor TV Config Pública" ON public.loja_config FOR SELECT USING (true);
-CREATE POLICY "Monitor TV Perfis Pública" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Monitor TV OS Pública" ON public.ordens_servico FOR SELECT USING (true);
-CREATE POLICY "Trabalhos: Leitura Pública" ON public.trabalhos_recentes FOR SELECT USING (true);
-CREATE POLICY "Midia: Leitura Pública" ON public.os_midia FOR SELECT USING (true);
-CREATE POLICY "Servicos: Leitura Pública" ON public.servicos FOR SELECT USING (true);
-CREATE POLICY "Clientes: Leitura Pública Portal" ON public.clientes FOR SELECT USING (true);
-CREATE POLICY "Veiculos: Leitura Pública Portal" ON public.veiculos FOR SELECT USING (true);
-CREATE POLICY "Checklist: Leitura Pública Portal" ON public.checklist_avarias FOR SELECT USING (true);
-CREATE POLICY "OS: Criação Pública para Agendamento Online" ON public.ordens_servico FOR INSERT WITH CHECK (true);
-CREATE POLICY "Notificacoes: Criação Pública para Agendamentos" ON public.notificacoes FOR INSERT WITH CHECK (true);
+-- Apenas via Edge Function ou SECURITY DEFINER (Function) é permitida para agendamentos externos.
 
 -- Políticas para NPS e QA
 ALTER TABLE public.pesquisas_nps ENABLE ROW LEVEL SECURITY;
@@ -308,7 +294,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE ordens_servico, loja_config, notif
 -- 9. FUNÇÕES ATÔMICAS DE NEGÓCIO (PREVENÇÃO DE RACE CONDITIONS)
 
 -- Registrar pagamento de forma atômica
-CREATE OR REPLACE FUNCTION registrar_pagamento_atomico(
+CREATE OR REPLACE FUNCTION public.registrar_pagamento_atomico(
   p_os_id BIGINT,
   p_valor_recebido NUMERIC,
   p_metodo TEXT
@@ -392,9 +378,9 @@ CREATE TABLE IF NOT EXISTS public.pesquisas_nps (
 );
 
 ALTER TABLE public.pesquisas_nps ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "NPS: Leitura Pública e Autenticada" ON public.pesquisas_nps FOR SELECT USING (true);
-CREATE POLICY "NPS: Inserção Pública e Autenticada" ON public.pesquisas_nps FOR INSERT WITH CHECK (true);
-CREATE POLICY "NPS: Atualização para todos" ON public.pesquisas_nps FOR UPDATE USING (true);
+CREATE POLICY "NPS: Inserção Pública" ON public.pesquisas_nps FOR INSERT WITH CHECK (true);
+CREATE POLICY "NPS: Leitura Gestores" ON public.pesquisas_nps FOR SELECT USING (public.check_user_role(ARRAY['ADM','GESTOR']));
+CREATE POLICY "NPS: Atualização Gestores" ON public.pesquisas_nps FOR UPDATE USING (public.check_user_role(ARRAY['ADM','GESTOR']));
 ```
 
 ## 📋 Passo a Passo de Deploy
@@ -408,5 +394,59 @@ CREATE POLICY "NPS: Atualização para todos" ON public.pesquisas_nps FOR UPDATE
 ### 📝 Histórico de Migrações
 - **Fase 53 (18/05/2026)**: Paginação de dados no lado do cliente. Não houve necessidade de alterações nas tabelas, esquemas ou procedimentos SQL do banco de dados, visto que o fatiamento e paginação foram orquestrados inteiramente na interface React para manter a reatividade Supabase Realtime intacta.
 - **Fase 54 (18/05/2026)**: Otimização da fila do operador e auto-início. Não houve alterações no banco de dados, visto que o auto-início e as validações de checklist foram integrados diretamente no fluxo de navegação do frontend React.
-- **Fase 58 (27/07/2026)**: Suporte a fotos Antes/Depois com guias de ângulos visuais (frontal, lateral esquerda, lateral direita, traseira, livre). Adicionadas colunas `fase_execucao` e `angulo` em `os_midia`, além da política RLS `Midia: Leitura Pública` para permitir acesso anônimo seguro de clientes no acompanhamento do status.
+
+-- 10. Agendamento Público via Self-Booking
+CREATE OR REPLACE FUNCTION public.criar_agendamento_publico(
+  p_cliente_nome text,
+  p_cliente_telefone text,
+  p_cliente_email text,
+  p_veiculo_modelo text,
+  p_veiculo_marca text,
+  p_veiculo_placa text,
+  p_veiculo_ano text,
+  p_servico_texto text,
+  p_servicos_detalhados jsonb,
+  p_valor_total numeric,
+  p_data_agendamento timestamptz,
+  p_observacoes text
+) RETURNS void AS $$
+DECLARE
+  v_cliente_id uuid;
+  v_veiculo_id uuid;
+BEGIN
+  -- 1. Cliente
+  IF p_cliente_telefone IS NOT NULL AND p_cliente_telefone <> '' THEN
+    SELECT id INTO v_cliente_id FROM public.clientes WHERE telefone = p_cliente_telefone LIMIT 1;
+  END IF;
+  
+  IF v_cliente_id IS NULL THEN
+    INSERT INTO public.clientes (nome, telefone, email) 
+    VALUES (p_cliente_nome, p_cliente_telefone, p_cliente_email) 
+    RETURNING id INTO v_cliente_id;
+  END IF;
+
+  -- 2. Veículo
+  INSERT INTO public.veiculos (cliente_id, modelo, marca, placa, ano) 
+  VALUES (v_cliente_id, p_veiculo_modelo, p_veiculo_marca, p_veiculo_placa, p_veiculo_ano) 
+  RETURNING id INTO v_veiculo_id;
+
+  -- 3. Ordem de Serviço
+  INSERT INTO public.ordens_servico (
+    cliente_id, veiculo_id, servico, servicos_detalhados, valor_total, 
+    data_agendamento, status, origem, observacoes
+  ) VALUES (
+    v_cliente_id, v_veiculo_id, p_servico_texto, p_servicos_detalhados, p_valor_total, 
+    p_data_agendamento, 'ORCAMENTO', 'ONLINE', p_observacoes
+  );
+
+  -- 4. Notificação
+  INSERT INTO public.notificacoes (titulo, mensagem, tipo, read)
+  VALUES (
+    'Novo Agendamento Site', 
+    p_cliente_nome || ' agendou ' || p_servico_texto,
+    'agendamento', 
+    false
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;- **Fase 58 (27/07/2026)**: Suporte a fotos Antes/Depois com guias de ângulos visuais (frontal, lateral esquerda, lateral direita, traseira, livre). Adicionadas colunas `fase_execucao` e `angulo` em `os_midia`, além da política RLS `Midia: Leitura Pública` para permitir acesso anônimo seguro de clientes no acompanhamento do status.
 - **Fase 60 (27/07/2026)**: Criação da tabela `pesquisas_nps` com colunas `os_id`, `nota` (0 a 10), `classificacao` (PROMOTOR, NEUTRO, DETRATOR) e políticas de RLS públicas/autenticadas para permitir a captação direta das avaliações de satisfação via link disparado por WhatsApp sem necessidade de login.

@@ -179,61 +179,7 @@ const SelfBooking = () => {
       const dataAgendamentoIso = `${selectedDate}T${selectedTime}:00.000Z`;
       const veiculoTexto = `${vehicleModel || 'Veículo'} (${vehicleClass}) ${vehicleYear ? '-' + vehicleYear : ''} ${vehiclePlate ? '[' + vehiclePlate.toUpperCase() + ']' : ''}`.trim();
 
-      let clientId = null;
-      let veiculoId = null;
-
-      if (hasRealConnection()) {
-        try {
-          // 1. Tentar localizar ou cadastrar o Cliente na tabela clientes para aparecer em Vendas/OS
-          const cleanPhone = (clientPhone || '').replace(/\D/g, '');
-          if (cleanPhone) {
-            const { data: existingClient } = await supabase
-              .from('clientes')
-              .select('id')
-              .eq('telefone', cleanPhone)
-              .maybeSingle();
-
-            if (existingClient?.id) {
-              clientId = existingClient.id;
-            } else {
-              const { data: newClient } = await supabase
-                .from('clientes')
-                .insert([{ 
-                  nome: clientName.trim(), 
-                  telefone: cleanPhone, 
-                  email: clientEmail ? clientEmail.trim() : null,
-                  created_at: new Date().toISOString()
-                }])
-                .select('id')
-                .single();
-              if (newClient?.id) clientId = newClient.id;
-            }
-          }
-
-          // 2. Cadastrar Veículo na tabela veiculos vinculado ao cliente
-          if (clientId) {
-            const { data: newVeiculo } = await supabase
-              .from('veiculos')
-              .insert([{ 
-                cliente_id: clientId, 
-                modelo: vehicleModel || 'Veículo', 
-                marca: vehicleClass || 'Automóvel', 
-                placa: vehiclePlate ? vehiclePlate.toUpperCase().trim() : null, 
-                ano: vehicleYear || null,
-                created_at: new Date().toISOString()
-              }])
-              .select('id')
-              .single();
-            if (newVeiculo?.id) veiculoId = newVeiculo.id;
-          }
-        } catch (errSync) {
-          console.warn('Erro ao vincular cliente e veículo no agendamento online:', errSync);
-        }
-      }
-
       const newOrderPayload = {
-        cliente_id: clientId,
-        veiculo_id: veiculoId,
         status: 'ORCAMENTO', // Requer aprovação do Gestor
         progresso: 0,
         servico: selectedServicesList.map(s => s.nome).join(' + '),
@@ -250,26 +196,32 @@ const SelfBooking = () => {
       };
 
       if (hasRealConnection()) {
-        // 3. Tentar salvar em ordens_servico
-        const { data: ordRes, error: ordErr } = await supabase
-          .from('ordens_servico')
-          .insert([newOrderPayload])
-          .select()
-          .single();
+        try {
+          const cleanPhone = (clientPhone || '').replace(/\D/g, '');
+          
+          const { error: rpcError } = await supabase.rpc('criar_agendamento_publico', {
+            p_cliente_nome: clientName.trim(),
+            p_cliente_telefone: cleanPhone,
+            p_cliente_email: clientEmail ? clientEmail.trim() : null,
+            p_veiculo_modelo: vehicleModel || 'Veículo',
+            p_veiculo_marca: vehicleClass || 'Automóvel',
+            p_veiculo_placa: vehiclePlate ? vehiclePlate.toUpperCase().trim() : null,
+            p_veiculo_ano: vehicleYear || null,
+            p_servico_texto: newOrderPayload.servico,
+            p_servicos_detalhados: newOrderPayload.servicos_detalhados,
+            p_valor_total: newOrderPayload.valor_total,
+            p_data_agendamento: newOrderPayload.data_agendamento,
+            p_observacoes: newOrderPayload.observacoes
+          });
 
-        if (ordErr) throw ordErr;
+          if (rpcError) throw rpcError;
 
-        // 2. Disparar notificação em tempo real para o Gestor
-        await supabase.from('notificacoes').insert([{
-          titulo: '📅 Novo Agendamento Online!',
-          mensagem: `${clientName} solicitou reserva para ${veiculoTexto} em ${selectedDate.split('-').reverse().join('/')} às ${selectedTime}.`,
-          tipo: 'ALERTA',
-          item_id: null,
-          lida: false,
-          created_at: new Date().toISOString()
-        }]);
-
-        setSubmittedOrder({ ...newOrderPayload, id: ordRes?.id, clientName, clientPhone, veiculoTexto });
+        } catch (errSync) {
+          console.error('Erro ao salvar agendamento:', errSync);
+          toast.error('Ocorreu um erro ao registrar seu agendamento no sistema principal.');
+          setIsSubmitting(false);
+          return;
+        }
       } else {
         // Modo offline / demonstração
         setSubmittedOrder({ ...newOrderPayload, id: Math.floor(Math.random() * 1000), clientName, clientPhone, veiculoTexto });

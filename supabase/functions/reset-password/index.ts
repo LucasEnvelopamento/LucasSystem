@@ -57,77 +57,43 @@ serve(async (req: Request) => {
 
     if (profileError || !callerProfile || (callerProfile.cargo !== 'ADM' && callerProfile.cargo !== 'GESTOR')) {
       return new Response(
-        JSON.stringify({ error: 'Permissão negada: Apenas Administradores ou Gestores podem criar colaboradores.' }),
+        JSON.stringify({ error: 'Permissão negada: Apenas Administradores ou Gestores podem redefinir senhas.' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 3. Receber os dados do novo usuário no body da requisição
-    const { email, password, nome, cargo } = await req.json();
+    // 3. Receber os dados do usuário a ser atualizado no body da requisição
+    const { userId, newPassword } = await req.json();
 
-    if (!email || !password || !nome) {
+    if (!userId || !newPassword || newPassword.length < 6) {
       return new Response(
-        JSON.stringify({ error: 'Dados incompletos: E-mail, senha e nome são obrigatórios.' }),
+        JSON.stringify({ error: 'Dados incompletos ou senha muito curta (mín. 6 caracteres).' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const cargoValidado = ['ADM', 'GESTOR', 'OPERADOR'].includes(cargo) ? cargo : 'OPERADOR';
+    // 4. Alterar a senha via Admin API
+    const { data: updatedUser, error: updateError } = await adminClient.auth.admin.updateUserById(
+      userId,
+      { password: newPassword }
+    );
 
-    // 4. Criar o usuário via Admin API (sem deslogar quem está chamando e já confirmando o e-mail)
-    const { data: newUserAuth, error: createError } = await adminClient.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true, // Auto-confirmação para evitar bloqueio do colaborador
-      user_metadata: {
-        full_name: nome,
-        cargo: cargoValidado,
-      },
-    });
-
-    if (createError) {
-      throw createError;
-    }
-
-    if (!newUserAuth.user) {
-      throw new Error('Falha ao gerar registro do usuário na autenticação.');
-    }
-
-    // 5. Garantir que o cargo e nome sejam persistidos na tabela profiles 
-    // (superando a limitação do gatilho padrão que fixa como OPERADOR)
-    const { error: updateProfileError } = await adminClient
-      .from('profiles')
-      .update({
-        nome: nome,
-        email: email,
-        cargo: cargoValidado,
-        status: true,
-      })
-      .eq('id', newUserAuth.user.id);
-
-    if (updateProfileError) {
-      console.error('Erro ao atualizar perfil com cargo e nome:', updateProfileError);
-      // Não interrompe o fluxo, pois o usuário foi criado no Auth, mas retorna aviso logado
+    if (updateError) {
+      throw updateError;
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Colaborador ${nome} criado com sucesso como ${cargoValidado}!`,
-        user: {
-          id: newUserAuth.user.id,
-          email: newUserAuth.user.email,
-          nome: nome,
-          cargo: cargoValidado,
-        }
+        message: 'Senha redefinida com sucesso!'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: any) {
-    console.error('Erro na Edge Function create-user:', error);
+    console.error('Erro na Edge Function reset-password:', error);
     return new Response(
-      JSON.stringify({ error: error.message || 'Erro interno no servidor ao criar usuário.' }),
+      JSON.stringify({ error: error.message || 'Erro interno no servidor ao redefinir senha.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

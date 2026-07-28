@@ -86,7 +86,7 @@ const PhotoGuideGallery = ({
             <button
               key={ph.id}
               onClick={() => setActivePhase(ph.id)}
-              className={`flex-1 min-w-[140px] py-3.5 px-5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 shadow-sm ${
+              className={`flex-1 min-w-[100px] py-3 px-2 md:py-3.5 md:px-5 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2.5 shadow-sm ${
                 isActive
                   ? 'bg-white dark:bg-slate-800 text-primary dark:text-white shadow-md scale-[1.02] border border-slate-200 dark:border-slate-700'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50'

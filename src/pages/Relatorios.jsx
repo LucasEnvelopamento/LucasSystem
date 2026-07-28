@@ -148,8 +148,8 @@ const Relatorios = () => {
            </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-0 bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner">
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-1 bg-slate-50 border border-slate-100 rounded-2xl p-1 shadow-inner w-full md:w-auto">
              
              {/* Filtro Multi-Serviço */}
              <MultiSelectDropdown 
@@ -192,7 +192,7 @@ const Relatorios = () => {
       </div>
 
       {/* Abas de Navegação interna no Relatório */}
-      <div className="flex items-center gap-3 no-print overflow-x-auto pb-2">
+      <div className="flex flex-wrap items-center gap-3 no-print pb-2 w-full">
         <button
           type="button"
           onClick={() => setActiveTab('GERENCIAL')}

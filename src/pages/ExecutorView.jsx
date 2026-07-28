@@ -222,7 +222,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
+    <div className="flex flex-col bg-white rounded-3xl md:rounded-[2.5rem] shadow-sm overflow-hidden mb-6">
       {/* Header Fixo */}
       <div className="p-6 md:p-8 bg-white border-b border-slate-50 flex items-center justify-between shrink-0">
         <button 
@@ -240,8 +240,8 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
         </div>
       </div>
 
-      {/* Conteúdo Rolável */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 custom-scrollbar">
+      {/* Conteúdo */}
+      <div className="p-6 md:p-10 space-y-10">
         {!os.has_checklist && (
           <div className="bg-rose-50 border border-rose-100 rounded-[2.5rem] p-6 text-center shadow-sm">
             <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-[1.25rem] flex items-center justify-center mx-auto mb-3">
@@ -352,7 +352,7 @@ const ExecutorView = ({ os, onBack, onComplete }) => {
       </div>
 
       {/* Footer Fixo */}
-      <div className="p-6 md:p-8 bg-white border-t border-slate-50 shrink-0 shadow-[0_-20px_50px_rgba(0,0,0,0.02)]">
+      <div className="sticky bottom-0 z-40 p-6 md:p-8 bg-white border-t border-slate-100 shrink-0 shadow-[0_-20px_50px_rgba(0,0,0,0.05)]">
         <button 
           onClick={() => setShowConfirmFinish(true)}
           disabled={progress < 100 || isFinishing}
