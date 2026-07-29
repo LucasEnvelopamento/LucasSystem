@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { 
   Calendar as CalendarIcon, Clock, Car, CheckCircle2, Shield, Award, 
@@ -114,8 +115,8 @@ const SelfBooking = () => {
       const dayOfWeek = curr.getDay();
       if (dayOfWeek !== 0) { // Exclui domingo
         const dateStr = curr.toISOString().split('T')[0];
-        const dayName = curr.toLocaleDateString('pt-BR', { weekday: 'short' });
-        const dayNum = curr.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        const dayName = formatDateBR(curr);
+        const dayNum = formatDateBR(curr);
         days.push({ dateStr, dayName: dayName.toUpperCase(), dayNum, dayOfWeek });
       }
       curr.setDate(curr.getDate() + 1);

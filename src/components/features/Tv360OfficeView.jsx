@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../../utils/dateUtils';
 import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { 
@@ -126,7 +127,7 @@ const Tv360OfficeView = ({ onClose }) => {
           <div>
             <div className="flex items-center gap-2.5">
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px] uppercase tracking-widest border border-emerald-500/30">
-                ● AO VIVO • VISÃO 360° OFFICE (FASE 63)
+                ● AO VIVO • VISÃO 360° OFFICE
               </span>
               <span className="text-xs text-slate-400 font-mono">Atualização em tempo real</span>
             </div>
@@ -139,10 +140,10 @@ const Tv360OfficeView = ({ onClose }) => {
         <div className="flex items-center gap-6">
           <div className="text-right font-mono">
             <p className="text-3xl font-black tracking-tight text-white">
-              {time.toLocaleTimeString('pt-BR')}
+              {formatTimeBR(time)}
             </p>
             <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-400">
-              {time.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+              {formatDateBR(time)}
             </p>
           </div>
 

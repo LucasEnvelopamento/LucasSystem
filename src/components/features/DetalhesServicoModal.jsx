@@ -1,3 +1,4 @@
+import { formatDateBR } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -215,7 +216,7 @@ const DetalhesServicoModal = ({ os, onClose }) => {
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Finalizado em</p>
               <p className="text-base font-black text-slate-800 italic">
-                {os.data_fim ? new Date(os.data_fim).toLocaleDateString('pt-BR') : os.created_at ? new Date(os.created_at).toLocaleDateString('pt-BR') : '--/--/----'}
+                {os.data_fim ? formatDateBR(os.data_fim) : os.created_at ? formatDateBR(os.created_at) : '--/--/----'}
               </p>
             </div>
             <div className="text-right">

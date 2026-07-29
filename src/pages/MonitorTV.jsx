@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { 
   Clock, 
@@ -77,10 +78,10 @@ const MonitorTV = () => {
           <div className="flex items-center gap-8 bg-black/20 px-8 py-4 rounded-2xl border border-white/5">
             <div className="text-right">
               <p className="text-6xl font-black font-mono tracking-tighter tabular-nums text-primary/90">
-                {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                {formatTimeBR(currentTime)}
               </p>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
-                {currentTime.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                {formatDateBR(currentTime)}
               </p>
             </div>
           </div>

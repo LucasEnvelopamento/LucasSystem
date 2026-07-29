@@ -309,7 +309,7 @@ const CarVisualChecklist = ({ onClose, osData }) => {
             <div>
               <h3 className="text-xl md:text-2xl font-black tracking-tight text-slate-800 dark:text-white uppercase">Laudo de Inspeção Digital</h3>
               <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase tracking-widest mt-1">
-                 {osData?.cliente || 'Cliente'} <span className="mx-2 opacity-30">|</span> {osData?.veiculo || 'Veículo'}
+                 {osData?.cliente_nome || 'Cliente'} <span className="mx-2 opacity-30">|</span> {osData?.veiculo_desc || 'Veículo'}
               </p>
             </div>
           </div>

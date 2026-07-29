@@ -383,7 +383,6 @@ const ServicosView = () => {
                   <label className="text-[10px] font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
                     <Zap size={16} className="text-amber-500 fill-amber-500" /> Preço Dinâmico por Porte do Veículo (Opcional)
                   </label>
-                  <span className="text-[9px] font-black text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Fase 57</span>
                 </div>
                 <p className="text-xs font-medium text-slate-600 leading-relaxed">
                   Defina valores diferenciados de acordo com o porte do automóvel. Se deixado em branco ou zero, o sistema utilizará o <strong>Preço Base</strong> automaticamente na abertura de orçamento/OS.
@@ -438,7 +437,6 @@ const ServicosView = () => {
                       </span>
                     </label>
                   </div>
-                  <span className="text-[9px] font-black text-purple-700 bg-purple-100 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">Fase 57</span>
                 </div>
 
                 {formService.is_combo && (

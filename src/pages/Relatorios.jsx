@@ -13,7 +13,11 @@ import {
   Star,
   ShieldCheck,
   PieChart,
-  Monitor
+  Monitor,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import { useOrders, useProfiles } from '../hooks/useData';
 import MultiSelectDropdown from '../components/ui/MultiSelectDropdown';
@@ -35,6 +39,13 @@ const Relatorios = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // States for Performance pagination
+  const [techPage, setTechPage] = useState(1);
+  const [techItemsPerPage, setTechItemsPerPage] = useState(5);
+  const [servPage, setServPage] = useState(1);
+  const [servItemsPerPage, setServItemsPerPage] = useState(5);
+
   const [selectedServices, setSelectedServices] = useState(['TODOS']);
   const [selectedStatuses, setSelectedStatuses] = useState(['TODOS']);
   const [hideValues, setHideValues] = useState(false);
@@ -237,7 +248,6 @@ const Relatorios = () => {
         >
           <PieChart size={16} className={activeTab === 'DRE' ? 'text-emerald-400' : ''} />
           <span>📊 DRE & Fluxo de Caixa</span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 61</span>
         </button>
 
         <button
@@ -247,7 +257,6 @@ const Relatorios = () => {
         >
           <Monitor size={16} className="animate-pulse text-emerald-400" />
           <span>🖥️ TV 360° Office</span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 63</span>
         </button>
       </div>
 
@@ -276,11 +285,11 @@ const Relatorios = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
            <div className="card-premium p-8 shadow-sm">
-              <h3 className="text-xs font-black text-slate-800 uppercase tracking-tighter flex items-center gap-3 mb-8">
+              <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-tighter flex items-center gap-3 mb-8">
                  <Users size={18} className="text-primary" /> Performance Equipe
               </h3>
               <div className="space-y-6">
-                {technicianPerformance.map((tech, idx) => (
+                {technicianPerformance.slice((techPage - 1) * techItemsPerPage, techPage * techItemsPerPage).map((tech, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between text-[9px] font-black uppercase text-slate-500">
                       <span>{tech.nome}</span>
@@ -292,6 +301,61 @@ const Relatorios = () => {
                   </div>
                 ))}
               </div>
+              
+              {/* Paginação Performance Equipe */}
+              {technicianPerformance.length > 0 && (
+                <div className="flex flex-col xl:flex-row items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800/60 mt-6 gap-4">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                    EXIBINDO {Math.min(technicianPerformance.length, (techPage - 1) * techItemsPerPage + 1)} A {Math.min(technicianPerformance.length, techPage * techItemsPerPage)} DE {technicianPerformance.length}
+                  </span>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 mr-2">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">EXIBIR:</span>
+                      <select 
+                        value={techItemsPerPage} 
+                        onChange={(e) => {
+                          setTechItemsPerPage(Number(e.target.value));
+                          setTechPage(1);
+                        }}
+                        className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 text-[10px] font-bold rounded-md px-1 py-1 outline-none"
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setTechPage(1)}
+                        disabled={techPage === 1}
+                        className="p-1.5 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      ><ChevronsLeft className="w-3.5 h-3.5" /></button>
+                      <button
+                        onClick={() => setTechPage(p => Math.max(1, p - 1))}
+                        disabled={techPage === 1}
+                        className="p-1.5 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      ><ChevronLeft className="w-3.5 h-3.5" /></button>
+                      
+                      <div className="text-[10px] font-black text-slate-600 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-md">
+                        {techPage} / {Math.max(1, Math.ceil(technicianPerformance.length / techItemsPerPage))}
+                      </div>
+                      
+                      <button
+                        onClick={() => setTechPage(p => Math.min(Math.ceil(technicianPerformance.length / techItemsPerPage), p + 1))}
+                        disabled={techPage === Math.ceil(technicianPerformance.length / techItemsPerPage) || technicianPerformance.length === 0}
+                        className="p-1.5 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      ><ChevronRight className="w-3.5 h-3.5" /></button>
+                      <button
+                        onClick={() => setTechPage(Math.ceil(technicianPerformance.length / techItemsPerPage))}
+                        disabled={techPage === Math.ceil(technicianPerformance.length / techItemsPerPage) || technicianPerformance.length === 0}
+                        className="p-1.5 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      ><ChevronsRight className="w-3.5 h-3.5" /></button>
+                    </div>
+                  </div>
+                </div>
+              )}
            </div>
 
            <div className="card-premium p-8 bg-slate-900 text-white border-0 shadow-xl">
@@ -299,7 +363,7 @@ const Relatorios = () => {
                  <TrendingUp size={18} className="text-emerald-400" /> Faturamento por Serviço
               </h3>
               <div className="space-y-6">
-                {servicePerformance.map((serv, idx) => (
+                {servicePerformance.slice((servPage - 1) * servItemsPerPage, servPage * servItemsPerPage).map((serv, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between text-[9px] font-black uppercase text-slate-400">
                       <span>{serv.nome}</span>
@@ -311,6 +375,61 @@ const Relatorios = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Paginação Faturamento por Serviço */}
+              {servicePerformance.length > 0 && (
+                <div className="flex flex-col xl:flex-row items-center justify-between pt-6 border-t border-slate-800/60 mt-6 gap-4">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                    EXIBINDO {Math.min(servicePerformance.length, (servPage - 1) * servItemsPerPage + 1)} A {Math.min(servicePerformance.length, servPage * servItemsPerPage)} DE {servicePerformance.length}
+                  </span>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 mr-2">
+                      <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">EXIBIR:</span>
+                      <select 
+                        value={servItemsPerPage} 
+                        onChange={(e) => {
+                          setServItemsPerPage(Number(e.target.value));
+                          setServPage(1);
+                        }}
+                        className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] font-bold rounded-md px-1 py-1 outline-none"
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setServPage(1)}
+                        disabled={servPage === 1}
+                        className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                      ><ChevronsLeft className="w-3.5 h-3.5" /></button>
+                      <button
+                        onClick={() => setServPage(p => Math.max(1, p - 1))}
+                        disabled={servPage === 1}
+                        className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                      ><ChevronLeft className="w-3.5 h-3.5" /></button>
+                      
+                      <div className="text-[10px] font-black text-slate-200 bg-slate-900 border border-slate-800 px-2 py-1 rounded-md">
+                        {servPage} / {Math.max(1, Math.ceil(servicePerformance.length / servItemsPerPage))}
+                      </div>
+                      
+                      <button
+                        onClick={() => setServPage(p => Math.min(Math.ceil(servicePerformance.length / servItemsPerPage), p + 1))}
+                        disabled={servPage === Math.ceil(servicePerformance.length / servItemsPerPage) || servicePerformance.length === 0}
+                        className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                      ><ChevronRight className="w-3.5 h-3.5" /></button>
+                      <button
+                        onClick={() => setServPage(Math.ceil(servicePerformance.length / servItemsPerPage))}
+                        disabled={servPage === Math.ceil(servicePerformance.length / servItemsPerPage) || servicePerformance.length === 0}
+                        className="p-1.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                      ><ChevronsRight className="w-3.5 h-3.5" /></button>
+                    </div>
+                  </div>
+                </div>
+              )}
            </div>
         </div>
       </div>

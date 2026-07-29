@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { 
   Car, Shield, Award, Clock, CheckCircle2, AlertCircle, FileText, 
@@ -566,7 +567,7 @@ const ClientPortal = () => {
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-slate-400 flex items-center gap-1 font-medium">
                             <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                            {new Date(order.data_show).toLocaleDateString('pt-BR')}
+                            {formatDateBR(order.data_show)}
                           </span>
                           {getStatusBadge(order.status)}
                         </div>

@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../../utils/dateUtils';
 import React, { useState } from 'react';
 import { X, Calendar, Clock, User, Save, Bell } from 'lucide-react';
 import { useProfiles, useOrders } from '../../hooks/useData';
@@ -187,14 +188,14 @@ const AgendamentoModal = ({ quote, onClose, onConfirm }) => {
           {data && (
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
               <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Bell size={12} className="text-amber-500" /> Ocupação em {new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')}
+                <Bell size={12} className="text-amber-500" /> Ocupação em {formatDateBR(data + 'T00:00:00')}
               </h4>
               {conflitosDoDia.length > 0 ? (
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
                   {conflitosDoDia.map(os => (
                     <div key={os.id} className="flex items-center justify-between text-[10px] bg-white p-2 rounded-lg border border-slate-100 italic">
                       <span className="font-bold text-slate-700">
-                        {new Date(os.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        {formatTimeBR(os.data_agendamento)}
                       </span>
                       <span className="text-slate-500 truncate ml-2 flex-1">{os.veiculo_desc} ({os.cliente_nome})</span>
                     </div>

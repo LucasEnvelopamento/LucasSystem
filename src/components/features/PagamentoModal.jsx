@@ -1,3 +1,4 @@
+import { formatDateBR } from '../../utils/dateUtils';
 import React, { useState } from 'react';
 import { X, DollarSign, Wallet, Calendar, ArrowRight, CheckCircle2, History, Trash2 } from 'lucide-react';
 import { toast } from '../../utils/toast';
@@ -127,7 +128,7 @@ const PagamentoModal = ({ os, onClose, onSave, onDelete }) => {
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">R$ {p.valor?.toLocaleString('pt-BR')}</p>
-                            <p className="text-[8px] text-slate-400 font-bold uppercase">{p.metodo} • {new Date(p.data).toLocaleDateString('pt-BR')}</p>
+                            <p className="text-[8px] text-slate-400 font-bold uppercase">{p.metodo} • {formatDateBR(p.data)}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">

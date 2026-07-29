@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../utils/dateUtils';
 import React from 'react';
 import { User, Wrench, AlertCircle, Car, Clock, ChevronRight, Trophy, Star, Flame } from 'lucide-react';
 import { useOrders } from '../hooks/useData';
@@ -52,7 +53,6 @@ const OperadorHome = ({ onSelectOS }) => {
           <div>
             <p className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
               <span>Sua Performance</span>
-              <span className="px-1.5 py-0.2 bg-emerald-500 text-slate-950 font-black rounded text-[8px]">Fase 61</span>
             </p>
             <p className="text-xs font-black text-white mt-0.5">
               Top Destaque Técnico • {minhasFinalizadas.length} OS Concluídas
@@ -207,7 +207,7 @@ const ServiceCard = ({ os, onSelect, isMine }) => {
         }`}>
           <Clock size={10} />
           <span className="text-[9px] font-black uppercase whitespace-nowrap">
-            {new Date(os.data_agendamento).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} - {new Date(os.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            {formatDateBR(os.data_agendamento)} - {formatTimeBR(os.data_agendamento)}
           </span>
         </div>
       )}

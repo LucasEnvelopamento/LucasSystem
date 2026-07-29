@@ -141,7 +141,6 @@ const ColaboradoresView = () => {
         >
           <Trophy size={16} className={activeTab === 'RANKING' ? 'text-amber-300' : ''} />
           <span>🏆 Ranking & Gamificação</span>
-          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">Fase 61</span>
         </button>
 
         <button
@@ -153,7 +152,6 @@ const ColaboradoresView = () => {
         >
           <DollarSign size={16} className={activeTab === 'COMISSOES' ? 'text-white' : ''} />
           <span>💰 Extrato de Comissões</span>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 font-extrabold text-[10px]">Fase 61</span>
         </button>
       </div>
 

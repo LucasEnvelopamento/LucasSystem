@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, 
@@ -238,7 +239,7 @@ const ApiWebhooksManager = () => {
     setTimeout(() => {
       setWebhooks(prev => prev.map(w => {
         if (w.id === wh.id) {
-          return { ...w, last_triggered: `Sucesso (200 OK) - ${new Date().toLocaleTimeString('pt-BR')}` };
+          return { ...w, last_triggered: `Sucesso (200 OK) - ${formatTimeBR(new Date())}` };
         }
         return w;
       }));
@@ -301,7 +302,9 @@ print(response.json())`;
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[9px] uppercase tracking-widest border border-emerald-500/30">
                   Arquitetura Blindada • Zero Risco
                 </span>
-                <span className="text-xs text-slate-400 font-bold">Fase 63</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-extrabold text-[9px] uppercase tracking-widest border border-amber-500/30">
+                  Em Desenvolvimento
+                </span>
               </div>
               <h3 className="text-lg font-black uppercase tracking-tight mt-1">
                 Ecossistema de Integrações REST & Webhooks
@@ -432,7 +435,7 @@ print(response.json())`;
                       </code>
                     </td>
                     <td className="p-4 text-slate-500">
-                      {new Date(k.created_at).toLocaleDateString('pt-BR')}
+                      {formatDateBR(k.created_at)}
                     </td>
                     <td className="p-4 text-slate-500">
                       {k.last_used}

@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState } from 'react';
 import { Users, TrendingUp, Clock, CheckCircle, ExternalLink, X, Calendar, User, Car, DollarSign, Activity } from 'lucide-react';
 import { useOrders, useClients, useCatalog } from '../hooks/useData';
@@ -260,7 +261,7 @@ const Dashboard = () => {
                     <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Agendamento</span>
                   </div>
                   <p className="text-sm font-black text-blue-900 leading-none">
-                    {selectedOrder.data_agendamento ? new Date(selectedOrder.data_agendamento).toLocaleDateString('pt-BR') : 'Sem data'}
+                    {selectedOrder.data_agendamento ? formatDateBR(selectedOrder.data_agendamento) : 'Sem data'}
                   </p>
                 </div>
 

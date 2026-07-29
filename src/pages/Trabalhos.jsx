@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState, useRef, useCallback } from 'react';
 import { 
   Image as ImageIcon, 
@@ -246,7 +247,7 @@ const Trabalhos = () => {
                     <div className="flex items-center gap-3 text-slate-400">
                       <div className="flex items-center gap-1">
                         <Calendar size={10} strokeWidth={3} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">{new Date(work.created_at).toLocaleDateString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest">{formatDateBR(work.created_at)}</span>
                       </div>
                     </div>
                   </div>
@@ -381,7 +382,7 @@ const Trabalhos = () => {
                 <Tag size={12} /> {showPreview.categoria || 'Geral'}
               </span>
               <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                <Calendar size={12} /> {new Date(showPreview.created_at).toLocaleDateString()}
+                <Calendar size={12} /> {formatDateBR(showPreview.created_at)}
               </span>
             </div>
           </div>

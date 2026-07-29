@@ -174,7 +174,6 @@ const TemplatesMarketplace = () => {
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[9px] uppercase tracking-widest border border-emerald-500/30">
                 Rede de Parceiros • Ecossistema
               </span>
-              <span className="text-xs text-slate-400 font-bold">Fase 63</span>
             </div>
             <h3 className="text-xl font-black uppercase tracking-tight mt-1">
               Marketplace de Templates & Checklists

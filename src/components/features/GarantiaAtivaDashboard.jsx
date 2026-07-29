@@ -1,3 +1,4 @@
+import { formatDateBR } from '../../utils/dateUtils';
 import React, { useState, useMemo } from 'react';
 import { 
   ShieldCheck, 
@@ -15,7 +16,11 @@ import {
   Sparkles, 
   RefreshCw,
   FileText,
-  Award
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import { useBrand } from '../../contexts/BrandContext';
 import { toast } from '../../utils/toast';
@@ -30,10 +35,21 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
     return JSON.parse(localStorage.getItem('garantias_alertas_enviados_local') || '{}');
   });
 
-  // Função auxiliar para converter string de garantia ("12 meses", "3 anos", "6 meses") em meses
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  // Função auxiliar para converter string de garantia em meses (corrigida para lidar com 0)
   const parseMonths = (garantiaStr = '') => {
     const str = String(garantiaStr).toLowerCase().trim();
-    const num = parseInt(str.replace(/\D/g, ''), 10) || 12; // Padrão 12 meses
+    if (str === '0' || str.includes('sem garantia') || str === '0 meses') return 0;
+    
+    const match = str.match(/\d+/);
+    if (!match) return 0; // Se não tem número e chegou aqui, consideramos 0
+    
+    const num = parseInt(match[0], 10);
+    if (num === 0) return 0;
+    
     if (str.includes('ano')) return num * 12;
     if (str.includes('dia')) return Math.max(1, Math.round(num / 30));
     return num;
@@ -107,6 +123,7 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
           ...o,
           data_base: dataBase.toISOString(),
           meses_garantia: mesesGarantia,
+          garantia_str: garantiaStr, // Adicionado para exibição correta
           status_garantia,
           label_alerta,
           desc_alerta,
@@ -115,6 +132,7 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
           urgenciaColor
         };
       })
+      .filter(o => o.meses_garantia > 0) // Remove serviços sem garantia (0 meses)
       .sort((a, b) => {
         // Priorizar alertas urgentes e preventivos
         const priority = { WARNING_15_7: 1, PREVENTIVE: 2, WARNING_30: 3, ACTIVE: 4, EXPIRED: 5 };
@@ -144,6 +162,18 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
       return matchesType && matchesSearch;
     });
   }, [analyzedOrders, filterType, searchTerm]);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, searchTerm]);
+
+  // Paginação - Dados fatiados
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredOrders, currentPage]);
 
   // Disparo de Lembrete Inteligente por WhatsApp
   const handleSendReminderWhatsApp = (o) => {
@@ -330,7 +360,7 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {filteredOrders.map((o) => {
+            {paginatedOrders.map((o) => {
               const isUrgent = o.status_garantia === 'WARNING_15_7';
               const isWarning = o.status_garantia === 'WARNING_30';
               const isPrev = o.status_garantia === 'PREVENTIVE';
@@ -376,7 +406,7 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
                       </div>
 
                       <div className="text-xs font-medium text-slate-300 truncate">
-                        {o.servico || 'Serviço de Estética Automotiva'} <span className="text-slate-500 font-normal">({o.garantia || 'Garantia de 12 Meses'})</span>
+                        {o.servico || 'Serviço de Estética Automotiva'} <span className="text-slate-500 font-normal">({o.garantia_str || 'Garantia de 12 Meses'})</span>
                       </div>
 
                       <p className="text-[11px] text-slate-400 italic">
@@ -386,7 +416,7 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
                       {/* Barra de Progresso do Tempo de Garantia */}
                       <div className="pt-2 max-w-md">
                         <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
-                          <span>Início: {new Date(o.data_base).toLocaleDateString('pt-BR')}</span>
+                          <span>Início: {formatDateBR(o.data_base)}</span>
                           <span>{o.dias_restantes > 0 ? `Restam ${o.dias_restantes} dias` : 'Vencido / Concluído'}</span>
                         </div>
                         <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700/50">
@@ -436,6 +466,75 @@ const GarantiaAtivaDashboard = ({ orders = [] }) => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Controles de Paginação no padrão do sistema */}
+        {filteredOrders.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-slate-800/60 mt-6 gap-4">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              EXIBINDO {Math.min(filteredOrders.length, (currentPage - 1) * itemsPerPage + 1)} A {Math.min(filteredOrders.length, currentPage * itemsPerPage)} DE {filteredOrders.length} REGISTROS
+            </span>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">EXIBIR:</span>
+                <select 
+                  value={itemsPerPage} 
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold rounded-lg px-2 py-1.5 outline-none focus:border-emerald-500"
+                >
+                  <option value={5}>5 ITENS</option>
+                  <option value={10}>10 ITENS</option>
+                  <option value={20}>20 ITENS</option>
+                  <option value={50}>50 ITENS</option>
+                  <option value={100}>100 ITENS</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                  title="Primeira Página"
+                >
+                  <ChevronsLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                  title="Página Anterior"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                
+                <div className="text-xs font-black text-slate-200 bg-slate-900 border border-slate-800 px-4 py-2 rounded-lg">
+                  {currentPage} / {totalPages > 0 ? totalPages : 1}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                  title="Próxima Página"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 hover:text-white transition-all"
+                  title="Última Página"
+                >
+                  <ChevronsRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

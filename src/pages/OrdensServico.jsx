@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState } from 'react';
 import { 
   Search, 
@@ -213,7 +214,7 @@ const OrdensServico = () => {
                     <p className="text-xs font-black text-slate-800 tracking-tighter italic">#{os.id}</p>
                     <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
                         {os.created_at && !isNaN(new Date(os.created_at).getTime()) 
-                          ? new Date(os.created_at).toLocaleDateString('pt-BR') 
+                          ? formatDateBR(os.created_at) 
                           : '--'}
                     </p>
                   </td>

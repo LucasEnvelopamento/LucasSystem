@@ -1,3 +1,4 @@
+import { formatDateBR } from '../../utils/dateUtils';
 import React, { useRef } from 'react';
 import { 
   FileCheck, 
@@ -93,7 +94,7 @@ const CertificadoGarantia = ({ os, onClose }) => {
 
     return { 
       texto: texto.toUpperCase(), 
-      data: validUntil.toLocaleDateString('pt-BR') 
+      data: formatDateBR(validUntil) 
     };
   };
 
@@ -218,7 +219,7 @@ const CertificadoGarantia = ({ os, onClose }) => {
                     </div>
                     <div>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Data de Execução</p>
-                        <p className="text-sm font-black text-slate-800">{os.data || (os.created_at && new Date(os.created_at).toLocaleDateString('pt-BR')) || '--/--/----'}</p>
+                        <p className="text-sm font-black text-slate-800">{os.data || (os.created_at && formatDateBR(os.created_at)) || '--/--/----'}</p>
                     </div>
                  </div>
                  <div className="flex items-center gap-4 opacity-0 print:hidden">

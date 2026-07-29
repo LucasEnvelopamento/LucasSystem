@@ -1,3 +1,4 @@
+import { formatDateBR } from '../../utils/dateUtils';
 import React, { useState, useMemo } from 'react';
 import { 
   DollarSign, 
@@ -295,7 +296,7 @@ const ComissoesExtrato = ({ profiles = [], orders = [] }) => {
                                 <p className="text-[10px] text-slate-400">{item.cliente}</p>
                               </td>
                               <td className="p-3 text-slate-500">
-                                {item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '-'}
+                                {item.data ? formatDateBR(item.data) : '-'}
                               </td>
                               <td className="p-3 text-right font-bold text-slate-700 dark:text-slate-300">
                                 {formatMoney(item.valorOs)}

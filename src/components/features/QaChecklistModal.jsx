@@ -122,7 +122,7 @@ const QaChecklistModal = ({ os, onClose, onApprove, onReject }) => {
             </div>
             <div>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[9px] uppercase tracking-widest border border-emerald-500/30">
-                QA • Vistoria de Qualidade (Fase 61)
+                QA • Vistoria de Qualidade
               </span>
               <h3 className="text-xl font-black uppercase tracking-tight mt-0.5">
                 Liberação de OS #{os.id}

@@ -1,3 +1,4 @@
+import { formatDateBR } from '../utils/dateUtils';
 import React, { useState } from 'react';
 import { Plus, Search, Filter, MoreHorizontal, UserPlus, Car, Loader2, ArrowRight, FilePlus, X, Clock, CheckCircle2, History, Edit2, Wrench, Save, Trash2 } from 'lucide-react';
 import { useClients, useQuotes, useVehicles } from '../hooks/useData';
@@ -176,7 +177,7 @@ const ClientesView = () => {
                   </td>
                   <td className="px-6 py-5">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      {new Date(c.created_at).toLocaleDateString('pt-BR')}
+                      {formatDateBR(c.created_at)}
                     </span>
                   </td>
                   <td className="px-6 py-5 text-right">
@@ -404,7 +405,7 @@ const ClientesView = () => {
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                            <Clock size={10} /> {new Date(quote.created_at).toLocaleDateString()}
+                            <Clock size={10} /> {formatDateBR(quote.created_at)}
                           </span>
                           <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                             <ArrowRight size={12} strokeWidth={3} />

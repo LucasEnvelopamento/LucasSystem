@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../utils/dateUtils';
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, MapPin, Clock, User, Car, Loader2, MessageSquare } from 'lucide-react';
 import { useOrders, useQuotes } from '../hooks/useData';
@@ -205,7 +206,7 @@ const AgendaView = () => {
           </div>
           
           {agendamentos.map((item) => {
-            const timeString = new Date(item.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const timeString = formatTimeBR(item.data_agendamento);
             return (
             <div key={item.id} className="card-premium p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-slate-50/50 border-0 shadow-lg shadow-slate-200/40 transition-all hover:translate-x-1">
               <div className="flex items-center gap-8">
@@ -233,8 +234,8 @@ const AgendaView = () => {
                 <button 
                   onClick={() => {
                     const dateObj = new Date(item.data_agendamento);
-                    const dataStr = dateObj.toLocaleDateString('pt-BR');
-                    const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const dataStr = formatDateBR(dateObj);
+                    const horaStr = formatTimeBR(dateObj);
                     const cleanPhone = (item.cliente_telefone || '').replace(/\D/g, '');
                     
                     if (!cleanPhone) {

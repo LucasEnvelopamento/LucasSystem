@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../../utils/dateUtils';
 import React, { useRef } from 'react';
 import { 
   Printer, 
@@ -193,7 +194,7 @@ const VcrReportModal = ({
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Ordem de Serviço</span>
                 <span className="text-xl font-black text-slate-900">#{osData.id}</span>
                 <span className="text-[10px] font-bold text-slate-500 block mt-0.5">
-                  Emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  Emissão: {formatDateBR(new Date())} às {formatTimeBR(new Date())}
                 </span>
               </div>
             </div>
@@ -202,20 +203,20 @@ const VcrReportModal = ({
             <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Cliente / Proprietário</span>
-                <span className="text-sm font-black text-slate-900 block truncate">{osData.cliente || osData.nome_cliente || 'N/A'}</span>
-                <span className="text-xs font-bold text-slate-500 block">{osData.telefone || osData.celular || 'Sem telefone'}</span>
+                <span className="text-sm font-black text-slate-900 block truncate">{osData.cliente_nome || 'N/A'}</span>
+                <span className="text-xs font-bold text-slate-500 block">{osData.cliente_telefone || 'Sem telefone'}</span>
               </div>
 
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Veículo / Marca</span>
-                <span className="text-sm font-black text-slate-900 block truncate">{osData.carro || osData.veiculo || 'Veículo'}</span>
-                <span className="text-xs font-bold text-slate-500 uppercase">{osData.veiculos?.[0]?.cor || osData.cor || 'Cor N/A'}</span>
+                <span className="text-sm font-black text-slate-900 block truncate">{osData.veiculo_desc || 'Veículo'}</span>
+                <span className="text-xs font-bold text-slate-500 uppercase">{osData.veiculos?.cor || osData.cor || 'Cor N/A'}</span>
               </div>
 
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Placa do Veículo</span>
                 <span className="text-sm font-black font-mono bg-slate-900 text-white px-2.5 py-1 rounded-lg inline-block uppercase tracking-wider">
-                  {osData.placa || osData.veiculos?.[0]?.placa || 'PLACA'}
+                  {osData.placa || 'PLACA'}
                 </span>
               </div>
 

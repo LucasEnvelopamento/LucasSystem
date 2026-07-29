@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../../utils/dateUtils';
 import React, { useState, useEffect } from 'react';
 import { X, Save, User, Car, Wrench, DollarSign, Info, ChevronRight, Check, Search, UserPlus, Plus, FilePlus, Zap, Clock } from 'lucide-react';
 import { useClients, useVehicles, useCatalog, useInventory, useProfiles } from '../../hooks/useData';
@@ -183,8 +184,8 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
 
         if (confirmZap) {
           const dateObj = new Date(quoteData.data_agendamento);
-          const dataStr = dateObj.toLocaleDateString('pt-BR');
-          const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          const dataStr = formatDateBR(dateObj);
+          const horaStr = formatTimeBR(dateObj);
           const cleanPhone = (client.telefone || '').replace(/\D/g, '');
           
           sendWhatsApp(
@@ -676,7 +677,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                               <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-100 text-[11px]">
                                 <div className="flex items-center gap-3">
                                   <span className="font-black text-slate-900 border-r pr-3 border-slate-100">
-                                    {new Date(os.data_agendamento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    {formatTimeBR(os.data_agendamento)}
                                   </span>
                                   <span className="font-bold text-slate-600 uppercase truncate max-w-[120px]">{os.cliente_nome}</span>
                                 </div>

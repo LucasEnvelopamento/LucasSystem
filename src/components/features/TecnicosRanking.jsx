@@ -132,7 +132,7 @@ const TecnicosRanking = ({ profiles = [], orders = [] }) => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px] uppercase tracking-widest border border-emerald-500/30">
-                Fase 61 • Gamificação Ativa
+                Gamificação Ativa
               </span>
             </div>
             <h3 className="text-2xl md:text-3xl font-black tracking-tight uppercase">

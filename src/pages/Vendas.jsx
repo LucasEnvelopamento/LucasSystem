@@ -1,3 +1,4 @@
+import { formatDateBR, formatTimeBR } from '../utils/dateUtils';
 import React, { useState } from 'react';
 import { 
   Plus, 
@@ -109,8 +110,8 @@ const Vendas = () => {
 
         if (confirmZap) {
             const dateObj = new Date(appointmentData.data_agendamento);
-            const dataStr = dateObj.toLocaleDateString('pt-BR');
-            const horaStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const dataStr = formatDateBR(dateObj);
+            const horaStr = formatTimeBR(dateObj);
             const cleanPhone = (selectedQuote.cliente_telefone || '').replace(/\D/g, '');
             
             if (cleanPhone) {
@@ -339,7 +340,7 @@ const Vendas = () => {
                     <p className="text-xs font-black text-slate-800 tracking-tighter italic">#{q.id}</p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
                                 {q.data && !isNaN(new Date(q.data).getTime()) 
-                                  ? new Date(q.data).toLocaleDateString('pt-BR') 
+                                  ? formatDateBR(q.data) 
                                   : '--'}
                             </p>
                   </td>
