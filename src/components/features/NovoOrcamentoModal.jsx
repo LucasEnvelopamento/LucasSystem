@@ -287,7 +287,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
                                       placeholder="Ex: João Silva"
                                       value={newClientData.nome}
                                       onChange={e => setNewClientData({...newClientData, nome: e.target.value})}
@@ -297,7 +297,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp / Telefone</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
                                       placeholder="(00) 00000-0000"
                                       value={newClientData.telefone}
                                       onChange={e => setNewClientData({...newClientData, telefone: e.target.value})}
@@ -371,7 +371,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
                                       placeholder="Ex: BMW"
                                       value={newVehicleData.marca}
                                       onChange={e => setNewVehicleData({...newVehicleData, marca: e.target.value})}
@@ -381,7 +381,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
                                       placeholder="Ex: X5"
                                       value={newVehicleData.modelo}
                                       onChange={e => setNewVehicleData({...newVehicleData, modelo: e.target.value})}
@@ -391,7 +391,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Placa</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold font-mono"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold font-mono"
                                       placeholder="ABC-1234"
                                       value={newVehicleData.placa}
                                       onChange={e => setNewVehicleData({...newVehicleData, placa: e.target.value.toUpperCase()})}
@@ -401,7 +401,7 @@ const NovoOrcamentoModal = ({ onClose, onSave, initialClient, defaultStatus, def
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ano</label>
                                   <input 
                                       type="text" 
-                                      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
+                                      className="w-full px-4 py-3 bg-white text-slate-800 rounded-xl border border-slate-200 outline-none focus:border-primary transition-all text-sm font-bold"
                                       placeholder="Ex: 2023"
                                       value={newVehicleData.ano}
                                       onChange={e => setNewVehicleData({...newVehicleData, ano: e.target.value})}
